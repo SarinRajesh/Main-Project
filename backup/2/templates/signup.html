@@ -1,0 +1,235 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Sign Up | ElegantDecor</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        .blur-background {
+            position: fixed;
+            top: -12px;
+            left: -12px;
+            width: 103%;
+            height: 104%;
+            background-image: url({% static 'images/bg1.jpg' %});
+            background-size: cover;
+            filter: blur(8px); /* Adjust the blur intensity as needed */
+            z-index: -1;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="img" style="height: 826px;">
+<div class="blur-background"></div>
+<section class="ftco-section">
+    <div class="container1">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center mb-1">
+                <h2 class="heading-section">Sign Up</h2>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="login-wrap p-0">
+                    <h3 class="mb-4 text-center">Don't have an account?</h3>
+                    <form method="post" action="" class="signin-form">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <input type="text" id="name" class="form-control" name="name" placeholder="Your Name" required>
+                            <span id="text1" style="position: absolute;margin-top: -21px;margin-left: 39px;" class="error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" class="form-control" name="email" placeholder="Email Address" required>
+                            <span id="text2" style="position: absolute;margin-top: -21px;margin-left: 39px;" class="error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" id="phone" class="form-control" name="phone" placeholder="Phone Number" required>
+                            <span id="text3" style="position: absolute;margin-top: -21px;margin-left: 39px;" class="error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="username" class="form-control" name="username" placeholder="Username" required>
+                            <span id="text4" style="position: absolute;margin-top: -21px;margin-left: 39px;" class="error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input id="password-field" type="password" class="form-control" name="password" placeholder="Password" required>
+                            <span id="text5" style="position: absolute;margin-top: -21px;margin-left: 39px;" class="error"></span>
+                            <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                        </div>
+                        <div class="form-group">
+                            <input id="confirm-password-field" type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required>
+                            <span id="text6" class="error" style="position: absolute;margin-top: -21px;margin-left: 39px;"></span>
+                            <span toggle="#confirm-password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                        </div>
+                        <div class="form-group">
+                            <select id="user-type" class="form-control" name="user_type" required style="background-color: rgba(255, 255, 255, 0.08); color: #ffffff;">
+                                <option value="" disabled selected style="background-color: #121212; color: #ffffff;">Select User Type</option>
+                                <option value="designer" style="background-color: #121212; color: #ffffff;">Designer</option>
+                                <option value="customer" style="background-color: #121212; color: #ffffff;">Customer</option>
+                            </select>
+                            <span id="text7" class="error" style="position: absolute;margin-top: -21px;margin-left: 39px;"></span>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="button" style="width: 100%; padding: 10px 20px; border-radius: 50px; background-color: white; color: black; border: none; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease;"
+                            onmouseover="this.style.backgroundColor='black'; this.style.color='white';"
+                            onmouseout="this.style.backgroundColor='white'; this.style.color='black';" disabled>
+                        Sign Up
+                    </button>
+                    
+
+                        </div>
+                        <div class="form-group d-md-flex">
+                           <div class="w-50">
+                                <!-- <label class="checkbox-wrap checkbox-primary">Remember Me
+                                    <input type="checkbox" name="remember" checked>
+                                    <span class="checkmark"></span>
+                                </label>-->
+                            </div>
+                            <div class="w-50 text-md-right">
+                                <!--<a href="" style="color: #fff">Forgot Password</a>-->
+                            </div>
+                        </div>
+                    </form>
+                    <p class="w-100 text-center">&mdash; Or Signin &mdash;</p>
+                    <div class="social d-flex text-center">
+                        <a href="{% url 'signin' %}" class="px-2 py-2 ml-md-1 rounded"><span class="fa fa-sign-in mr-2"></span> Signin</a>
+                    </div>
+                  </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+    $(document).ready(function() {
+        var mod1 = 1;
+        var mod2 = 1;
+        var mod3 = 1;
+        var mod4 = 1;
+        var mod5 = 1;
+        var mod6 = 1;
+        var mod7 = 1;
+
+        $("#name").keyup(function() {
+            var n = document.getElementById("name");
+            var letter = /^[A-Za-z\s]+$/;
+
+            if (!n.value.match(letter)) {
+                document.getElementById("text1").innerHTML = "<span class='error'>This is not a valid name. Please try again</span>";
+                mod1 = 1;
+            } else {
+                document.getElementById("text1").innerHTML = "<span class='error'></span>";
+                mod1 = 0;
+            }
+            toggleSubmitButton();
+        });
+
+        $("#email").keyup(function() {
+            var email = document.getElementById("email");
+            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!email.value.match(emailPattern)) {
+                document.getElementById("text2").innerHTML = "<span class='error'>This is not a valid email. Please try again</span>";
+                mod2 = 1;
+            } else {
+                document.getElementById("text2").innerHTML = "<span class='error'></span>";
+                mod2 = 0;
+            }
+            toggleSubmitButton();
+        });
+
+        $("#phone").keyup(function() {
+            var phone = document.getElementById("phone");
+            var phonePattern = /^\d{10}$/;
+
+            if (!phone.value.match(phonePattern)) {
+                document.getElementById("text3").innerHTML = "<span class='error'>This is not a valid phone number. Please try again</span>";
+                mod3 = 1;
+            } else {
+                document.getElementById("text3").innerHTML = "<span class='error'></span>";
+                mod3 = 0;
+            }
+            toggleSubmitButton();
+        });
+
+        $("#username").keyup(function() {
+            var username = document.getElementById("username");
+            var usernamePattern = /^[a-zA-Z0-9_]+$/;
+
+            if (!username.value.match(usernamePattern)) {
+                document.getElementById("text4").innerHTML = "<span class='error'>This is not a valid username. Please try again</span>";
+                mod4 = 1;
+            } else {
+                document.getElementById("text4").innerHTML = "<span class='error'></span>";
+                mod4 = 0;
+            }
+            toggleSubmitButton();
+        });
+
+        $("#password-field").keyup(function() {
+            var password = document.getElementById("password-field");
+            var passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+
+            if (!password.value.match(passwordPattern)) {
+                document.getElementById("text5").innerHTML = "<span class='error'>This is not a valid username. Please try again</span>";
+                mod5 = 1;
+            } else {
+                document.getElementById("text5").innerHTML = "<span class='error'></span>";
+                mod5 = 0;
+            }
+            toggleSubmitButton();
+        });
+
+        $("#confirm-password-field").keyup(function() {
+            var confirmPassword = document.getElementById("confirm-password-field");
+            var password = document.getElementById("password-field");
+
+            if (confirmPassword.value !== password.value) {
+                document.getElementById("text6").innerHTML = "<span class='error'>Passwords do not match</span>";
+                mod6 = 1;
+            } else {
+                document.getElementById("text6").innerHTML = "<span class='error'></span>";
+                mod6 = 0;
+            }
+            toggleSubmitButton();
+        });
+
+        $("#user-type").change(function() {
+            var userType = document.getElementById("user-type");
+
+            if (userType.value === "") {
+                document.getElementById("text7").innerHTML = "<span class='error'>Please select a user type</span>";
+                mod7 = 1;
+            } else {
+                document.getElementById("text7").innerHTML = "<span class='error'></span>";
+                mod7 = 0;
+            }
+            toggleSubmitButton();
+        });
+
+        function toggleSubmitButton() {
+            if (mod1 === 0 && mod2 === 0 && mod3 === 0 && mod4 === 0 && mod5 === 0 && mod6 === 0 && mod7 === 0) {
+                $('.button').attr("disabled", false);
+            } else {
+                $('.button').attr("disabled", true);
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

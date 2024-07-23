@@ -1,0 +1,121 @@
+
+{% block content %}
+<h2>Profile</h2>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    h2 {
+        text-align: center;
+        margin-top: 20px;
+        color: #343a40;
+    }
+
+    .profile-form {
+        width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #495057;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+
+    .form-control:disabled {
+        background-color: #e9ecef;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        background-color: #007bff;
+        border: none;
+        border-radius: 4px;
+        color: #ffffff;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+</style>
+<form method="post" class="profile-form">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="{{ user.name }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="phone">Phone:</label>
+        <input type="text" id="phone" name="phone" value="{{ user.phone }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="{{ user.email }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" value="{{ user.username }}" class="form-control" disabled>
+    </div>
+
+    <div class="form-group">
+        <label for="user_type">User Type:</label>
+        <input type="text" id="user_type" name="user_type" value="{{ user.user_type }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="address">Address:</label>
+        <textarea id="address" name="address" class="form-control">{{ user.address }}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="home_town">Home Town:</label>
+        <input type="text" id="home_town" name="home_town" value="{{ user.home_town }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="district">District:</label>
+        <input type="text" id="district" name="district" value="{{ user.district }}" class="form-control">
+    </div>
+
+    
+    <div class="form-group">
+        <label for="state">State:</label>
+        <input type="text" id="state" name="state" value="{{ user.state }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="pincode">Pincode:</label>
+        <input type="text" id="pincode" name="pincode" value="{{ user.pincode }}" class="form-control">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update Profile</button>
+</form>
+{% endblock %}

@@ -1,0 +1,77 @@
+@charset "utf-8";
+/*--
+	Dark styles
+--*/
+
+
+body , .loader , footer.content-footer , #subscribe-button , .to-top , .fixed-filter-wrap .count-folio{
+	background:#000;
+}
+header.main-header  , .main-footer , .share-wrapper , .footer-inner  , .content-footer:before  , .fs-gallery-wrap .swiper-pagination , .content-nav , .sidebar-menu{
+	background:#000000;
+}
+header.main-header , .fixed-title , .footer-social , .show-search , .show-share-wrap  , .main-footer , .share-wrapper , .share-icon , .policy-box  , .social-wrap , .social-wrap ul li , .social-wrap ul li:last-child , .fs-gallery-wrap .swiper-pagination , .content-nav , .content-nav li  , .sb-menu-button-wrap, .nav-button-wrap , .menufilter   , .fixed-filter-wrap .gallery-filters , .vis-por-info .grid-item, .hid-por-info .grid-item {
+
+	border-color:rgba(255, 253, 253, 0.29);
+
+}
+
+.nav-holder nav li a , .footer-social li a , .show-search , .show-share-wrap , .fixed-title  , .share-icon:hover , .footer-header span , .footer-header , .footer-box ul li a , .policy-box  , .subcribe-form span , .social-wrap ul li a , .slider-wrap .sw-button, .fs-gallery-wrap .sw-button , .fs-gallery-wrap .swiper-pagination-bullet , .single-slider .swiper-pagination  , .content-nav li a , .content-nav li a.ln span.tooltip, .content-nav li a.rn span.tooltip , .content-nav li a.ln i, .content-nav li a.rn i, .customNavigation a i, .content-nav li a span.tooltip , .content-nav li a.cur-page span , .slider-wrap .gallery-popup, .fs-gallery-wrap .gallery-popup , .box-item a.popup-image  , .header-info li a , .menusb a , .sb-menu-footer , .menufilter .filter-button  , .fixed-filter-wrap h3 , .fixed-filter-wrap .gallery-filters a  , .fixed-filter-wrap .count-folio , .grid-item h3 a , .grid-item h3:after , .nav-holder nav ul li.lidec:before{
+	color:#fff;
+}
+.movingBallG , .list a i  , .sb-menu-button span, .nav-button span , .fixed-filter-wrap .bold-separator{
+	background:#fff;
+}
+.movingBallLineG , .footer-header:before , .sb-menu-footer:before , .hid-por-info .grid-item:before, .vis-por-info .grid-item:before, .hid-por-info .grid-item:after, .vis-por-info .grid-item:after , .grid-item h3:before , nav li a.act-link:before, nav.asl li a.act-scrlink:before{
+	background:rgba(255,255,255,0.21);
+}
+.social-wrap , .slider-wrap .sw-button, .fs-gallery-wrap .sw-button  , .single-slider .swiper-pagination:before   , .slider-wrap .gallery-popup, .fs-gallery-wrap .gallery-popup , .box-item a.popup-image , .header-section , .column-content  , .grid-item{
+	background:#212121;
+}
+.social-wrap ul li a:hover {
+	color:rgba(255,255,255,0.51);
+}
+.fixed-filter-wrap .partcile-dec {
+	opacity:0.2;
+}
+.nav-holder nav li a.act-link , .nav-holder nav li a:hover , .menusb a:hover , .menusb li i {
+	color:#999;
+}
+.social-wrap {
+
+    border-bottom: none;
+}
+
+ .slider-wrap.tpslw .swiper-slide , .slider-wrap.homecarousel .swiper-slide{
+	 padding-top:18px;
+
+
+}
+.slider-wrap.tpslw .swiper-slide:first-child , .slider-wrap.homecarousel .swiper-slide:first-child {
+	padding-left:20px;
+}
+.slider-wrap.homecarousel .swiper-slide:first-child  .thumb-info {
+	left:20px;
+}
+.slider-wrap .gallery-popup {
+	top:18px;
+}
+@media only screen and (max-width: 1064px){
+
+.nav-holder {
+
+    background: #292929;
+
+}
+nav li a:hover, nav.asl li a.act-scrlink {
+	color:#999;
+}
+.nav-holder nav li a, .nav-holder nav li ul li a {
+	color:#fff;
+}
+}
+@media only screen and  (max-width: 768px) {
+.menufilter {
+	background:#292929;
+}
+}
