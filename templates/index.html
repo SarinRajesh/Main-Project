@@ -4,7 +4,7 @@
     <head>
         <!--=============== basic  ===============-->
         <meta charset="UTF-8">
-        <title>Balkon - Creative Responsive Architecture Template</title>
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta name="robots" content="index, follow"/>
         <meta name="keywords" content=""/>
@@ -33,7 +33,7 @@
             <!--================= header ================-->
             <header class="main-header">
                 <!-- logo -->
-                <a class="logo-holder" href="{% url 'index' %}"><img src="{% static 'index/images/logo.png' %}" alt=""></a>
+                <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
                 <!-- share button-->  
                 <div class="show-share-wrap">
@@ -52,103 +52,67 @@
                 <div class="nav-holder">
                     <nav>
                         <ul>
+                                <li>
+                                    <a href="{% url 'index' %}" class="act-link">Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}">Portfolio</a>
+                                </li>
+                                {% if user_type == 'Designer' %}
+                                <li>
+                                    <a href="{% url 'add_portfolio' %}">Add Portfolio</a>
+                                </li>
+                                {% endif %}
+                            
+                                
                             <li>
-                                <a href="{% url 'index' %}" class="act-link">Home </a>
-                                <!--second level -->   
-                                <ul>
-        
-                                    <li><a href="index.html">Slider</a></li>
-                                    <li><a href="index2.html">Image</a></li>
-                                    <li><a href="index3.html">Video</a></li>
-                                    <li><a href="index4.html">Slideshow</a></li>
-                                    <li><a href="index5.html">Carousel</a></li>
-                                    <li><a href="index6.html">Sidebar menu</a></li>
-                                    <li>
-                                        <!--third level -->
-                                        <a>Onepage</a>
-                                        <ul>
-											<li><a href="onepage-slider.html">Slider</a></li>
-											<li><a href="onepage-image.html">Image</a></li>
-											<li><a href="onepage-video.html">Video</a></li>
-											<li><a href="onepage-slideshow.html">Slideshow</a></li>
-											<li><a href="onepage-carousel.html">Carousel</a></li>
-											<li><a href="onepage-sidebarmenu.html">Sidebar menu</a></li>
-                                        </ul>
-                                        <!--third level end-->
-                                    </li>									
-                                </ul>
-                                <!--second level end-->
-                            </li>
-                            <li>
-                                <a href="portfolio.html">Portfolio</a>
-                                <!--second level -->
-                                <ul>
-                                    <li>
-                                        <!--third level -->
-                                        <a>Single</a>
-                                        <ul>
-                                            <li><a href="portfolio-single.html">Carousel</a></li>
-                                            <li><a href="portfolio-single2.html">Gallery </a></li>
-                                            <li><a href="portfolio-single3.html">Fullwidth Slider</a></li>
-                                            <li><a href="portfolio-single4.html">Slider</a></li>
-                                            <li><a href="portfolio-single5.html">Video</a></li>
-                                            <li><a href="portfolio-single6.html">Vertical Images</a></li>
-                                        </ul>
-                                        <!--third level end-->
-                                    </li>
-                                    <li><a href="portfolio2.html">Fullwidth 2</a></li>
-                                    <li><a href="portfolio3.html">Sibebar filter</a></li>
-                                    <li><a href="portfolio4.html">Boxed</a></li>
-                                    <li><a href="portfolio5.html">Boxed 2</a></li>
-                                    <li><a href="portfolio6.html">Sibebar filter 2</a></li>
-                                    <li><a href="portfolio7.html">Parallax</a></li>
-                                    <li><a href="portfolio8.html">Fullwidth 3</a></li>
-                                    <li><a href="portfolio9.html">Fullwidth 4</a></li>
-                                </ul>
-                                <!--second level end-->
-                            </li>
-                            <li>
-                                <a href="about.html"  >About</a>
-                                <!--second level end-->
+                                <a href="about.html">About</a>
                                 <ul>
                                     <li><a href="about-personal.html">Personal</a></li>
                                     <li><a href="services.html">Services</a></li>
                                 </ul>
-                                <!--second level end-->
                             </li>
                             <li>
-                                <a href="contact.html">Contacts </a>
+                                <a href="contact.html">Contacts</a>
                             </li>
+                            {% if user_type == 'Designer' %}
                             <li>
-                                <a href="shop.html">Shop</a>
+                                <a href="{% url 'consultations' %}">Consultations</a>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a href="{% url 'shop' %}">Shop</a>
                                 <!--second level end-->
                                 <ul>
-                                    <li><a href="cart.html">Cart</a></li>
-                                    <li><a href="product-single.html">Product Single</a></li>
+                                    <li><a href="{% url 'cart' %}">Cart</a></li>
                                 </ul>
                                 <!--second level end-->
                             </li>
+                            {% endif %}
                             <li>
                                 <a href="blog.html">Journal</a>
-                                <!--second level end-->
                                 <ul>
                                     <li><a href="blog-grid.html">Grid</a></li>
                                     <li><a href="blog-masonry.html">Masonry</a></li>
                                     <li><a href="blog-single.html">Post Single</a></li>
                                     <li><a href="404.html">404</a></li>
                                 </ul>
-                                <!--second level end-->
                             </li>
+                            {% if user.is_authenticated %}
                             <li>
                                 <a href="{% url 'profile' %}" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">{{ user.username }}</a>
                                 <ul>
                                     <li><a href="{% url 'logout_view' %}">Logout</a></li>
                                 </ul>
                             </li>
-                            
+                            {% else %}
+                            <li>
+                                <a href="{% url 'signin' %}" style="color: #ffffff; font-weight: bold; font-size: 1.2em;">Signin</a>
+                            </li>
+                            {% endif %}
                         </ul>
-                    </li>
                     </nav>
+                    
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -164,7 +128,7 @@
                             <div class="video-holder">
                                 <div class="video-container">
                                     <video autoplay loop muted class="bgvid">
-                                        <source src="{% static 'index/video/1.mp4' %}" type="video/mp4">
+                                        <source src="{% static 'index/video/intro.mp4' %}" type="video/mp4">
                                     </video>
                                     
                                 </div>
@@ -185,7 +149,7 @@
                         <div class="hero-wrap alt">
                             <div class="container">
                                 <div class="hero-item">
-                                    <h2>Balkon<br>Creative  Architecture <br> Studio</h2>
+                                    <h2>ElegantDecor<br>Creative  Architecture <br> Studio</h2>
                                     <div class="clearfix"></div>
                                     <p>All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary .</p>
                                     <div class="clearfix"></div>
@@ -205,7 +169,7 @@
                                     <div class="row">
                                         <div class="col-md-7">
                                             <div class="content-wrap about-wrap">
-                                                <h3 class="bold-title">Welcome !  We are Balkon .  <br>   Architecture Studio <br> From NY</h3>
+                                                <h3 class="bold-title">Welcome !  We are ElegantDecor .  <br>   Architecture Studio <br> From NY</h3>
                                                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras lacinia magna vel molestie faucibus. Donec auctor et urnaLorem ipsum dolor sit amet, consectetur adipiscing elit. Cras lacinia magna vel molestie faucibus.  
                                                     Cras lacinia magna vel molestie faucibus. Donec auctor et urnaLorem ipsum dolor sit amet, consectetur adipiscing elit. Cras lacinia magna vel molestie faucibus.
                                                 </p>
@@ -475,7 +439,7 @@
                                 <div class="col-md-3"></div>
                                 <div class="col-md-9">
                                     <div class="fl-wrap policy-box">
-                                        <p> &#169; Balkon   2017.  All rights reserved.  </p>
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
                                     </div>
                                 </div>
                             </div>

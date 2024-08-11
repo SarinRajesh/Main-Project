@@ -70,14 +70,7 @@
                             <span id="text6" class="error" style="position: absolute;margin-top: -21px;margin-left: 39px;"></span>
                             <span toggle="#confirm-password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
                         </div>
-                        <div class="form-group">
-                            <select id="user-type" class="form-control" name="user_type" required style="background-color: rgba(255, 255, 255, 0.08); color: #ffffff;">
-                                <option value="" disabled selected style="background-color: #121212; color: #ffffff;">Select User Type</option>
-                                <option value="designer" style="background-color: #121212; color: #ffffff;">Designer</option>
-                                <option value="customer" style="background-color: #121212; color: #ffffff;">Customer</option>
-                            </select>
-                            <span id="text7" class="error" style="position: absolute;margin-top: -21px;margin-left: 39px;"></span>
-                        </div>
+                       
                         <div class="form-group">
                             <button type="submit" class="button" style="width: 100%; padding: 10px 20px; border-radius: 50px; background-color: white; color: black; border: none; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease;"
                             onmouseover="this.style.backgroundColor='black'; this.style.color='white';"
@@ -145,10 +138,23 @@
                 document.getElementById("text2").innerHTML = "<span class='error'>This is not a valid email. Please try again</span>";
                 mod2 = 1;
             } else {
-                document.getElementById("text2").innerHTML = "<span class='error'></span>";
-                mod2 = 0;
+                // AJAX call to check email uniqueness
+                $.ajax({
+                    url: "{% url 'check_email' %}",
+                    data: {'email': email.value},
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.is_taken) {
+                            document.getElementById("text2").innerHTML = "<span class='error'>Email already taken. Please try another</span>";
+                            mod2 = 1;
+                        } else {
+                            document.getElementById("text2").innerHTML = "<span class='error'></span>";
+                            mod2 = 0;
+                        }
+                        toggleSubmitButton();
+                    }
+                });
             }
-            toggleSubmitButton();
         });
 
         $("#phone").keyup(function() {
@@ -173,19 +179,31 @@
                 document.getElementById("text4").innerHTML = "<span class='error'>This is not a valid username. Please try again</span>";
                 mod4 = 1;
             } else {
-                document.getElementById("text4").innerHTML = "<span class='error'></span>";
-                mod4 = 0;
+                // AJAX call to check username uniqueness
+                $.ajax({
+                    url: "{% url 'check_username' %}",
+                    data: {'username': username.value},
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.is_taken) {
+                            document.getElementById("text4").innerHTML = "<span class='error'>Username already taken. Please try another</span>";
+                            mod4 = 1;
+                        } else {
+                            document.getElementById("text4").innerHTML = "<span class='error'></span>";
+                            mod4 = 0;
+                        }
+                        toggleSubmitButton();
+                    }
+                });
             }
-            toggleSubmitButton();
         });
 
         $("#password-field").keyup(function() {
             var password = document.getElementById("password-field");
             var passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 
-
             if (!password.value.match(passwordPattern)) {
-                document.getElementById("text5").innerHTML = "<span class='error'>This is not a valid username. Please try again</span>";
+                document.getElementById("text5").innerHTML = "<span class='error'>This is not a valid password. Please try again</span>";
                 mod5 = 1;
             } else {
                 document.getElementById("text5").innerHTML = "<span class='error'></span>";
@@ -208,21 +226,10 @@
             toggleSubmitButton();
         });
 
-        $("#user-type").change(function() {
-            var userType = document.getElementById("user-type");
-
-            if (userType.value === "") {
-                document.getElementById("text7").innerHTML = "<span class='error'>Please select a user type</span>";
-                mod7 = 1;
-            } else {
-                document.getElementById("text7").innerHTML = "<span class='error'></span>";
-                mod7 = 0;
-            }
-            toggleSubmitButton();
-        });
+       
 
         function toggleSubmitButton() {
-            if (mod1 === 0 && mod2 === 0 && mod3 === 0 && mod4 === 0 && mod5 === 0 && mod6 === 0 && mod7 === 0) {
+            if (mod1 === 0 && mod2 === 0 && mod3 === 0 && mod4 === 0 && mod5 === 0 && mod6 === 0 ) {
                 $('.button').attr("disabled", false);
             } else {
                 $('.button').attr("disabled", true);
@@ -230,6 +237,7 @@
         }
     });
 </script>
+
 
 </body>
 </html>

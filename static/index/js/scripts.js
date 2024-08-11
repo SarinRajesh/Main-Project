@@ -1,5 +1,5 @@
 //   all ------------------
-function initBalkon() {
+function initElegantDecor() {
 
 	//   loader ------------------
     $(".loader").fadeOut(500, function() {
@@ -562,6 +562,6 @@ document.addEventListener('gesturestart', function (e) {
     e.preventDefault();
 }); 
 $(document).ready(function () {
-    initBalkon();
+    initElegantDecor();
     initparallax();
 });

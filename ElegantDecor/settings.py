@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,7 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Application definition
 
@@ -48,7 +49,8 @@ INSTALLED_APPS = [
 
 ]
 
-LOGIN_REDIRECT_URL = '/index/'
+LOGIN_REDIRECT_URL = '/custom_login_redirect/'
+
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -64,7 +66,7 @@ SOCIALACCOUNT_PROVIDERS = {
             'prompt': 'select_account',
             'access_type': 'online',
         },
-        'LOGIN_REDIRECT_URL': 'index.html',  # Redirect URL after Google login
+        'LOGIN_REDIRECT_URL': 'usertype.html',  # Redirect URL after Google login
         'OAUTH2_REDIRECT_URI': 'http://localhost:8000/accounts/google/login/callback/',
     }
 }
@@ -89,7 +91,8 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 
-ROOT_URLCONF = 'home.urls'
+ROOT_URLCONF = 'ElegantDecor.urls'
+
 
 TEMPLATES = [
     {
@@ -174,3 +177,5 @@ EMAIL_HOST_PASSWORD = 'vbtj gkbm ovly phii'  # Consider moving this to an enviro
 AUTH_USER_MODEL = 'home.Users'
 
 SOCIALACCOUNT_LOGIN_ON_GET=True
+
+LOGIN_URL='/signin/'
