@@ -17,7 +17,8 @@
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
         <!--=============== favicons ===============-->
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
-
+        <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.min.css" rel="stylesheet">
+    
 
     
     <style>
@@ -90,62 +91,7 @@
     font-size: large;
 }
 
-/* The Modal (background) */
-.modal {
-    display: none; 
-    position: fixed; 
-    z-index: 1; 
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgb(0,0,0); 
-    background-color: rgba(0,0,0,0.4); 
-}
 
-/* Modal Content */
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto; 
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; 
-    max-width: 600px; 
-    border-radius: 10px;
-}
-
-/* The Close Button */
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.button {
-    float: left;
-    background: #292929;
-    color: #fff;
-    font-weight: bold;
-    border: none;
-    font-size: 10px;
-    font-family: 'Montserrat', sans-serif;
-    text-transform: uppercase;
-    padding: 15px 30px 15px 30px;
-    line-height: 17px;
-    cursor: pointer;
-    transition: all .2s linear;
-    margin-left: 80%;
-    margin-top: -10%;
-}
 
     </style>
     </head>
@@ -166,13 +112,15 @@
                 <!-- logo -->
                 <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
-                <!-- share button-->  
+                {% if user.is_authenticated %}
+                            
                 <div class="show-share-wrap">
-                    <div class="show-share"><span>Share</span><img src="{% static 'index/images/share.png' %}" alt=""></div>
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
                 </div>
+                {% else %}
+                {% endif %}
                 <!-- share button end-->  		
                 <!-- search button--> 	 
-                <div class="show-search show-fixed-search vissearch"><i class="fa fa-search"></i></div>
                 <!-- search button end --> 
                 <!-- mobile nav --> 
                 <div class="nav-button-wrap">
@@ -182,40 +130,68 @@
                 <!--  navigation --> 
                 <div class="nav-holder">
                     <nav>
-                        <ul>
+                        <ul>   
+                            {% if user_type != 'Designer' and user_type != 'Customer' %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
+                                </li>
+                                        
                             <li>
-                                <a href="{% url 'index' %}" >Home </a>
-                              
-                                  
-                            </li>
-                            <li>
-                                <a href="{% url 'portfolio' %}">Portfolio</a>
-                             
-                            </li>
-                            {% if user_type == 'Designer' %}
-                            <li>
-                                <a href="{% url 'add_portfolio' %}">Add Portfolio</a>
-                            </li>
-                            {% endif %}
-                            <li>
-                                <a href="about.html"  >About</a>
-                                <!--second level end-->
+                                <a href="about.html">About</a>
                                 <ul>
                                     <li><a href="about-personal.html">Personal</a></li>
                                     <li><a href="services.html">Services</a></li>
                                 </ul>
-                                <!--second level end-->
+                            </li>
+                                <li>
+                                    <a href="contact.html">Contacts</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'shop' %}">Shop</a>
+                                    <!--second level end-->
+                                    <ul>
+                                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                                    </ul>
+                                    <!--second level end-->
+                                </li>
+                                <li>
+                                    <a href="blog.html">Journal</a>
+                                    <ul>
+                                        <li><a href="blog-grid.html">Grid</a></li>
+                                        <li><a href="blog-masonry.html">Masonry</a></li>
+                                        <li><a href="blog-single.html">Post Single</a></li>
+                                        <li><a href="404.html">404</a></li>
+                                    </ul>
+                                </li>
+                             
+                                <li>
+                                    <a href="{% url 'signin' %}">Signin</a>
+                                </li>
+                                {% else %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
+                                </li>
+                            
+                                
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
                             </li>
                             <li>
                                 <a href="contact.html">Contacts</a>
                             </li>
-                            {% if user_type == 'Designer' %}
+                            {% if user_type != 'Designer' %}
                             <li>
-                                <a href="{% url 'consultations' %}">Consultations</a>
-                            </li>
-                            {% else %}
-                            <li>
-                                <a href="{% url 'shop' %}">Shop</a>
+                                <a href="{% url 'shop' %}" >Shop</a>
                                 <!--second level end-->
                                 <ul>
                                     <li><a href="{% url 'cart' %}">Cart</a></li>
@@ -225,32 +201,18 @@
                             {% endif %}
                             <li>
                                 <a href="blog.html">Journal</a>
-                                <!--second level end-->
                                 <ul>
                                     <li><a href="blog-grid.html">Grid</a></li>
                                     <li><a href="blog-masonry.html">Masonry</a></li>
                                     <li><a href="blog-single.html">Post Single</a></li>
                                     <li><a href="404.html">404</a></li>
                                 </ul>
-                                <!--second level end-->
                             </li>
-                            {% if user.is_authenticated %}
-                            <li>
-                                <a href="{% url 'profile' %}" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">{{ user.username }}</a>
-                                <ul>
-                                    <li><a href="{% url 'logout_view' %}">Logout</a></li>
-                                </ul>
-                            </li>
-                            {% else %}
-                            <li>
-                                <a href="{% url 'signin' %}" style="color: #ffffff; font-weight: bold; font-size: 1.2em;">Signin</a>
-                               
-                            </li>
+                            
                             {% endif %}
-
                         </ul>
-                    </li>
                     </nav>
+                    
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -278,12 +240,215 @@
                                                         {% else %}
                                                             <img src="{% static 'signup/images/profile.png' %}" alt="Default Profile Photo" class="profile-img">
                                                         {% endif %}
-                                                        <label for="photo-upload" class="camera-icon">
-                                                            <input type="file" id="photo-upload" name="photo" accept="image/*">
+                                                        <label class="camera-icon" style="cursor: pointer;">
                                                             <i class="fa fa-camera" aria-hidden="true"></i> <!-- Camera icon -->
                                                         </label>
                                                     </div>
-                                                </div>
+                                                    
+                                                    <!-- Hidden file input -->
+                                                    <input type="file" id="photo-upload" name="photo" accept="image/*" style="display:none;">
+                                                    
+        <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+        <script>
+            // Load face-api.js models
+            Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri('/static/models'),
+                faceapi.nets.faceLandmark68Net.loadFromUri('/static/models'),
+                faceapi.nets.faceRecognitionNet.loadFromUri('/static/models')
+            ]).then(startApp);
+
+            function startApp() {
+                document.querySelector('.camera-icon').addEventListener('click', function() {
+                    // Open SweetAlert2 modal
+                    Swal.fire({
+                        title: 'Choose an option',
+                        html: `
+                            <button id="choose-image" class="swal2-confirm swal2-styled" style="margin-right: 10px;">Choose Image</button>
+                            <button id="take-photo" class="swal2-confirm swal2-styled">Take Photo</button>
+                        `,
+                        showConfirmButton: false,
+                        didRender: () => {
+                            document.getElementById('choose-image').addEventListener('click', function() {
+                                document.getElementById('photo-upload').click();
+                            });
+                    
+                            document.getElementById('take-photo').addEventListener('click', function() {
+                                startCamera();
+                            });
+                        }
+                    });
+                });
+
+                function startCamera() {
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                        .then(stream => {
+                            const video = document.createElement('video');
+                            video.id = 'camera-stream';
+                            video.autoplay = true;
+                            video.playsInline = true;
+                            video.style.width = '100%';
+                            video.style.height = '100%';
+                            video.style.objectFit = 'cover';
+                            video.srcObject = stream;
+
+                            const canvas = document.createElement('canvas');
+                            canvas.id = 'face-detection-canvas';
+                            canvas.style.position = 'absolute';
+                            canvas.style.top = '0';
+                            canvas.style.left = '0';
+                            canvas.style.width = '100%';
+                            canvas.style.height = '100%';
+
+                            const container = document.createElement('div');
+                            container.style.position = 'relative';
+                            container.style.width = '400px';
+                            container.style.height = '400px';
+                            container.style.margin = '0 auto';
+                            container.appendChild(video);
+                            container.appendChild(canvas);
+
+                            Swal.fire({
+                                title: 'Capture Photo',
+                                html: container,
+                                width: 'auto',
+                                padding: '1em',
+                                background: '#fff',
+                                showCancelButton: true,
+                                confirmButtonText: 'Capture',
+                                cancelButtonText: 'Cancel',
+                                customClass: {
+                                    confirmButton: 'swal2-confirm swal2-styled',
+                                    cancelButton: 'swal2-cancel swal2-styled'
+                                },
+                                didOpen: () => {
+                                    video.play();
+                                    detectFaces(video, canvas);
+                                },
+                                preConfirm: () => {
+                                    return capturePhoto(video, canvas);
+                                },
+                                willClose: () => {
+                                    stream.getTracks().forEach(track => track.stop());
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    const photoData = result.value;
+                                    uploadPhoto(photoData);
+                                }
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error accessing camera:', error);
+                            Swal.fire('Error', 'Unable to access the camera.', 'error');
+                        });
+                }
+
+                async function detectFaces(video, canvas) {
+                    const displaySize = { width: video.clientWidth, height: video.clientHeight };
+                    faceapi.matchDimensions(canvas, displaySize);
+
+                    setInterval(async () => {
+                        if (video.readyState === 4) {
+                            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions());
+
+                            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                            
+                            const ctx = canvas.getContext('2d');
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            
+                            // Draw small squares for each detected face
+                            resizedDetections.forEach(detection => {
+                                const { x, y, width, height } = detection.box;
+                                ctx.strokeStyle = 'blue';
+                                ctx.lineWidth = 2;
+                                ctx.strokeRect(x, y, width, height);
+                            });
+
+                            // Add text to show single or multiple faces
+                            ctx.font = 'bold 20px Arial';
+                            ctx.fillStyle = 'black';
+                            const faceCount = resizedDetections.length;
+                            const text = faceCount === 1 ? 'Single Face Detected' : 
+                                         faceCount > 1 ? 'Multiple Faces Detected' : 'No Face Detected';
+                            ctx.fillText(text, 10, 30);
+                        }
+                    }, 100);
+                }
+
+                function capturePhoto(video, canvas) {
+                    canvas.width = video.clientWidth;
+                    canvas.height = video.clientHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    return new Promise(resolve => {
+                        canvas.toBlob(blob => {
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                Swal.fire('Error', 'Could not capture the image.', 'error');
+                            }
+                        }, 'image/jpeg');
+                    });
+                }
+
+                function uploadPhoto(photoBlob) {
+                    const formData = new FormData();
+                    formData.append('photo', photoBlob, 'captured-photo.jpg');
+                    
+                    fetch("{% url 'upload_photo' %}", {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.querySelector('.profile-img').src = data.photo_url;
+                            Swal.fire('Success', 'Photo uploaded successfully!', 'success');
+                        } else {
+                            Swal.fire('Error', 'Failed to upload photo.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'Error uploading photo.', 'error');
+                    });
+                }
+
+                document.getElementById('photo-upload').addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const formData = new FormData();
+                        formData.append('photo', file);
+                        
+                        fetch("{% url 'upload_photo' %}", {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                document.querySelector('.profile-img').src = data.photo_url;
+                                Swal.fire('Success', 'Photo uploaded successfully!', 'success');
+                            } else {
+                                Swal.fire('Error', 'Failed to upload photo.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire('Error', 'Error uploading photo.', 'error');
+                        });
+                    }
+                });
+            }
+        </script>                                        </div>
                                                 
                                                 
                                             </div>
@@ -293,7 +458,7 @@
                                             <div class="contact-form-holder fl-wrap">
                                                 <div id="contact-form">
                                                     <div id="message"></div>
-                                                    <div class="profile-details" style="background: rgba(0, 0, 0, 0.5); padding: 20px; border-radius: 10px;margin-left:14vh;">
+                                                    <div class="profile-details" style="background: rgb(0 0 0 / 85%); padding: 20px; border-radius: 10px;margin-left:14vh;">
                                                         <p class="profile-detail-text">Name: {{ user.name }}</p>
                                                         <p class="profile-detail-text">Phone: {{ user.phone }}</p>
                                                         <p class="profile-detail-text">Email: {{ user.email }}</p>
@@ -302,30 +467,8 @@
                                                         <p class="profile-detail-text">State: {{ user.state }}</p>
                                                         <p class="profile-detail-text">District: {{ user.district }}</p>
                                                         <p class="profile-detail-text">Pincode: {{ user.pincode }}</p>
-                                                         <button id="editButton"  class="button" onclick="openModal()">Edit</button>
-                                                        
+                                                        <button onclick="location.href='{% url 'edit_profile' %}'" type="button" class="btn float-btn flat-btn" style="margin-top: -11%;margin-left:68%; vertical-align: middle;">Edit Profile</button>
                                                     </div>
-                                                    
-                                                    
-                                                    <div id="editModal" class="modal">
-                                                        <div class="modal-content"><b>Edit Profile</b>
-                                                            <span class="close" onclick="closeModal()">&times;</span>
-                                                            <form method="post" action="{% url 'profile' %}" enctype="multipart/form-data">
-                                                                {% csrf_token %}
-                                                                <input type="text" id="name" name="name" value="{{ user.name }}" class="form-control">
-                                                                <input type="text" id="phone" name="phone" value="{{ user.phone }}" class="form-control">
-                                                                <input type="text" id="email" name="email" value="{{ user.email }}" class="form-control">
-                                                                <textarea id="address" name="address" placeholder="Address" class="form-control" value="{{ user.address }}"></textarea>
-                                                                <input type="text" placeholder=" Home Town" id="home_town" name="home_town" value="{{ user.home_town }}" class="form-control">
-                                                                <input type="text" id="state" name="state" placeholder="State" value="{{ user.state }}" class="form-control">
-                                                                <input type="text" id="district" name="district" placeholder="District" value="{{ user.district }}" class="form-control">
-                                                                <input type="text" id="pincode" name="pincode" placeholder="pincode" value="{{ user.pincode }}" class="form-control">
-                                                                <!-- <input type="file" id="photo" name="photo" class="form-control"> -->
-                                                                <button type="submit" id="submit" data-top-bottom="transform: translateY(-50px);" data-bottom-top="transform: translateY(50px);"><span>Submit</span></button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                    
                                                 </div>
                                             </div>
                                             <!-- contact form  end-->
@@ -337,52 +480,7 @@
                             <div class="partcile-dec" data-parcount="200"></div>
                             <!--  partcile-dec  end-->
                         </section>
-                        <script>
-                            function openModal() {
-    document.getElementById("editModal").style.display = "block";
-}
-
-function closeModal() {
-    document.getElementById("editModal").style.display = "none";
-}
-
-// Close the modal if the user clicks outside of it
-window.onclick = function(event) {
-    var modal = document.getElementById("editModal");
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-}
-document.getElementById('photo-upload').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const formData = new FormData();
-        formData.append('photo', file);
-
-        // Make an AJAX request to upload the photo
-        fetch("{% url 'upload_photo' %}", {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.querySelector('.profile-img').src = data.photo_url;
-            } else {
-                alert('Error uploading photo');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error uploading photo');
-        });
-    }
-});
-
-                        </script>
+                   
                         <!--  section  end-->
                         <!--  social-wrap  -->
                         <div class="social-wrap fl-wrap">
@@ -461,12 +559,40 @@ document.getElementById('photo-upload').addEventListener('change', function(even
             <!--search-form-holder  end-->
             <!-- Share container  -->
             <div class="share-wrapper isShare">
-                <div class="share-container"></div>
+                <div class="share-container" style="padding: 20px;">
+                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                        {% if user_type == 'Customer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'profile' %}"  style="color: #000; background-color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;">My Account</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
+                        </li>
+                    {% endif %}
+                    {% if user_type == 'Designer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                        </li>
+                    {% endif %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                    </li>
+                    </ul>
+                </div>
             </div>
             <!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
-                <div class="fixed-title"><span>Profile</span></div>
+                <div class="fixed-title"><span>My Account</span></div>
                 <div class="footer-social">
                     <ul>
                         <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
@@ -485,6 +611,6 @@ document.getElementById('photo-upload').addEventListener('change', function(even
           <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
-        <script type="text/javascript" src="{% static 'index/js/map.js' %}"></script>
+        <script type="text/javascript" src="{% static 'index/js/map.js' %}"></script>    
     </body>
 </html>

@@ -1,0 +1,398 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+    </head>
+
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
+            </div>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder"href="{% url 'admin_index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                <!-- share button-->  
+                <div class="show-share-wrap">
+                    <div class="show-share">
+                        <span>Admin</span>
+                        <a href="{% url 'logout_view' %}"><img src="{% static 'index/images/logout.png' %}" alt=""></a>
+                    </div>
+                </div>
+                <!-- share button end-->  		
+                <!-- search button--> 	 
+                <div class="show-search show-fixed-search vissearch"> <img src="{% static 'index/images/prof.png' %}" alt="Profile Picture" style="height: 50px; width: 50px;"></div>
+                <!-- search button end --> 
+                <!-- mobile nav --> 
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
+                <div class="nav-holder">
+                
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header  end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!--  content -->
+                    <div class="content">
+                        <!--  section  -->
+                     
+                        <!--  section  end-->
+                        <!--  section  -->
+                        <section >
+                            <div class="container" >
+                              
+                               
+                                <div class="contact-details-wrap fl-wrap" style="margin-top: -5%;">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="small-sec-title">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9" style="margin-left: 25vh;">
+                                            <!-- Customers Table -->
+                                      <!-- Centered Tables Container -->
+<div style="display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 30px; margin: 40px -145px;">
+    
+    <!-- Customers Table -->
+    <div style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 20px; border-radius: 8px; width: 80%; background-color: white;">
+        <h2 style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; color: #34495e; margin-bottom: 20px;">Customers</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-left-radius: 8px;">Image</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Name</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Email</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Phone</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Address</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Home Town</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">District</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">State</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: -4px;">Pincode</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                        {% if customer.photo %}
+                            <img src="{{ customer.photo.url }}" alt="Customer Image" style="width: 50px; height: 50px; border-radius: 50%;">
+                        {% else %}
+                            <img src="{% static 'signup/images/profile.png' %}" alt="Default Image" style="width: 50px; height: 50px; border-radius: 50%;">
+                        {% endif %}
+                    </td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ customer.name }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ customer.email }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ customer.phone }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ customer.address }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ customer.home_town }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ customer.district }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ customer.state }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ customer.pincode }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                        <form action="{% url 'users_table' %}" method="post" class="deactivate-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ customer.id }}">
+                            <button type="button" class="deactivate-button" 
+                                style="background-color: {% if customer.status == 'active' %} red {% else %} green {% endif %}; color: white; border: none; padding: 10px; border-radius: 5px;">
+                                {% if customer.status == 'active' %}
+                                    Deactivate
+                                {% else %}
+                                    Activate
+                                {% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Designers Table -->
+    <div style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 20px; border-radius: 8px; width: 80%; background-color: white;">
+        <h2 style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; color: #34495e; margin-bottom: 20px;">Designers</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-left-radius: 8px;">Image</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Name</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Email</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Phone</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Address</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Home Town</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">District</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">State</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: -4px;">Pincode</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for designer in designers %}
+                <tr>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                        {% if designer.photo %}
+                            <img src="{{ designer.photo.url }}" alt="Designer Image" style="width: 50px; height: 50px; border-radius: 50%;">
+                        {% else %}
+                            <img src="{% static 'signup/images/profile.png' %}" alt="Default Image" style="width: 50px; height: 50px; border-radius: 50%;">
+                        {% endif %}
+                    </td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.name }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.email }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.phone }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.address }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.home_town }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.district }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.state }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.pincode }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                        <form action="{% url 'users_table' %}" method="post" class="deactivate-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ designer.id }}">
+                            <button type="button" class="deactivate-button" 
+                                style="background-color: {% if designer.status == 'active' %} red {% else %} green {% endif %}; color: white; border: none; padding: 10px; border-radius: 5px;">
+                                {% if designer.status == 'active' %}
+                                    Deactivate
+                                {% else %}
+                                    Activate
+                                {% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+</div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!--  partcile-dec  -->
+                            <div class="partcile-dec" data-parcount="200"></div>
+                            <!--  partcile-dec  end-->
+                        </section>
+                        <!--  section  end-->
+                        <!--  social-wrap  -->
+                        <div class="social-wrap fl-wrap">
+                            <ul>
+                                <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                            </ul>
+                        </div>
+                        <!--  social-wrap  end-->
+                    </div>
+                    <!-- content end -->
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+            <!--search-form-holder -->
+            <div class="search-form-holder fixed-search">
+                <div class="search-form-bg"></div>
+                <div class="search-form-wrap">
+                    <div class="container">
+                        <form class="searchform" method="get"  >
+                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
+                        </form>
+                        <div class="close-fixed-search"></div>
+                    </div>
+                    <div class="dublicated-text"></div>
+                </div>
+            </div>
+            <!--search-form-holder  end-->
+            <!-- Share container  -->
+            <div class="share-wrapper isShare">
+                <div class="share-container"></div>
+            </div>
+            <!-- Share container  end-->
+<footer class="main-footer" style="width: 15%;    background-color: #000000f2; padding: 20px; height: 100vh; position: fixed;">
+
+    <!-- Admin links moved to the top with inline CSS and white underline border -->
+    <div class="footer-admin-links">
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'users_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Users Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'designs_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Designs Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'consultations_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Consultations Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'products_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Products Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'add_designer' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Add Designers
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Add Products
+                </a>
+            </li>
+        </ul>
+        
+    </div>
+
+</footer>
+
+            <!-- footer end-->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+                document.querySelectorAll('.deactivate-button').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const form = this.closest('form');
+                        const isDeactivate = this.textContent.trim() === 'Deactivate'; // Check if the button is for deactivation
+
+                        if (isDeactivate) {
+                            // Show reason for deactivation
+                            Swal.fire({
+                                title: 'Reason for Deactivation',
+                                input: 'textarea',
+                                inputPlaceholder: 'Type your reason here...',
+                                showCancelButton: true,
+                                confirmButtonText: 'Submit',
+                                preConfirm: (reason) => {
+                                    if (!reason) {
+                                        Swal.showValidationMessage('You need to provide a reason!');
+                                    }
+                                    return reason;
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    const reasonInput = document.createElement('input');
+                                    reasonInput.type = 'hidden';
+                                    reasonInput.name = 'reason';
+                                    reasonInput.value = result.value;
+                                    form.appendChild(reasonInput);
+                                    form.submit();
+                                }
+                            });
+                        } else {
+                            // Show confirmation for activation
+                            Swal.fire({
+                                title: 'Confirm Activation',
+                                text: "Are you sure you want to activate this user?",
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Yes, activate it!',
+                                cancelButtonText: 'No, cancel!'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    form.submit(); // Submit the form for activation
+                                }
+                            });
+                        }
+                    });
+                });
+            </script>
+ </body>
+</html>

@@ -36,13 +36,15 @@
                 <!-- logo -->
                 <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
-                <!-- share button-->  
+                {% if user.is_authenticated %}
+                            
                 <div class="show-share-wrap">
-                    <div class="show-share"><span>Share</span><img src="{% static 'index/images/share.png' %}" alt=""></div>
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
                 </div>
+                {% else %}
+                {% endif %}
                 <!-- share button end-->  		
                 <!-- search button--> 	 
-                <div class="show-search show-fixed-search vissearch"><i class="fa fa-search"></i></div>
                 <!-- search button end --> 
                 <!-- mobile nav --> 
                 <div class="nav-button-wrap">
@@ -52,39 +54,66 @@
                 <!--  navigation --> 
                 <div class="nav-holder">
                     <nav>
-                        <ul>
+                        <ul>   
+                            {% if user_type != 'Designer' and user_type != 'Customer' %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}" >Designs</a>
+                                </li>
+                                        
                             <li>
-                                <a href="{% url 'index' %}" >Home </a>
-                              
-											
-                                   
-                            </li>
-                            <li>
-                                <a href="{% url 'portfolio' %}"  >Portfolio</a>
-                              
-                            </li>
-                            {% if user_type == 'Designer' %}
-                            <li>
-                                <a href="{% url 'add_portfolio' %}">Add Portfolio</a>
-                            </li>
-                            {% endif %}
-                            <li>
-                                <a href="about.html"  >About</a>
-                                <!--second level end-->
+                                <a href="about.html">About</a>
                                 <ul>
                                     <li><a href="about-personal.html">Personal</a></li>
                                     <li><a href="services.html">Services</a></li>
                                 </ul>
-                                <!--second level end-->
+                            </li>
+                                <li>
+                                    <a href="contact.html">Contacts</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'shop' %}">Shop</a>
+                                    <!--second level end-->
+                                    <ul>
+                                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                                    </ul>
+                                    <!--second level end-->
+                                </li>
+                                <li>
+                                    <a href="blog.html">Journal</a>
+                                    <ul>
+                                        <li><a href="blog-grid.html">Grid</a></li>
+                                        <li><a href="blog-masonry.html">Masonry</a></li>
+                                        <li><a href="blog-single.html">Post Single</a></li>
+                                        <li><a href="404.html">404</a></li>
+                                    </ul>
+                                </li>
+                             
+                                <li>
+                                    <a href="{% url 'signin' %}">Signin</a>
+                                </li>
+                                {% else %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}" >Designs</a>
+                                </li>
+                            
+                                
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
                             </li>
                             <li>
-                                <a href="contact.html">Contacts </a>
+                                <a href="contact.html">Contacts</a>
                             </li>
-                            {% if user_type == 'Designer' %}
-                            <li>
-                                <a href="{% url 'consultations' %}" class="act-link">Consultations</a>
-                            </li>
-                            {% else %}
+                            {% if user_type != 'Designer' %}
                             <li>
                                 <a href="{% url 'shop' %}">Shop</a>
                                 <!--second level end-->
@@ -95,34 +124,19 @@
                             </li>
                             {% endif %}
                             <li>
-                            <li>
                                 <a href="blog.html">Journal</a>
-                                <!--second level end-->
                                 <ul>
                                     <li><a href="blog-grid.html">Grid</a></li>
                                     <li><a href="blog-masonry.html">Masonry</a></li>
                                     <li><a href="blog-single.html">Post Single</a></li>
                                     <li><a href="404.html">404</a></li>
                                 </ul>
-                                <!--second level end-->
                             </li>
-                            {% if user.is_authenticated %}
-                            <li>
-                                <a href="{% url 'profile' %}" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">{{ user.username }}</a>
-                                <ul>
-                                    <li><a href="{% url 'logout_view' %}">Logout</a></li>
-                                </ul>
-                            </li>
-                            {% else %}
-                            <li>
-                                <a href="{% url 'signin' %}" style="color: #ffffff; font-weight: bold; font-size: 1.2em;">Signin</a>
-                               
-                            </li>
+                            
                             {% endif %}
-
                         </ul>
-                    </li>
                     </nav>
+                    
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -164,6 +178,10 @@
                                                                 <h5 class="product-name">{{ consultation.design_id.name }}</h5>
                                                             </td>
                                                             <td>
+                                                                <label><b>Customer: </b></label>
+                                                                <span>{{ consultation.customer_id.name }}</span>
+                                                            </td>
+                                                            <td>
                                                                 <label><b>Date & Time: </b></label>
                                                                 <span>{{ consultation.date_time|date:"F d, Y H:i" }}</span>
                                                             </td>
@@ -171,7 +189,7 @@
                                                                 <h5 class="order-money">Rs. {{ consultation.design_id.amount.amount|floatformat:2 }}</h5>
                                                             </td>
                                                             <td>
-                                                                <label><b>Status :</b></label>
+                                                                <label><b>Status:</b></label>
                                                                 <span>{{ consultation.consultation_status }}</span>
                                                             </td>
                                                         </tr>
@@ -185,8 +203,22 @@
                                                             <p>{{ consultation.design_id.description|truncatewords:20 }}</p>
                                                         </div>
                                                         <div class="col-md-2">
-                                                            <button type="submit" class="btn float-btn flat-btn" style="margin-left: -25vh;height: 4vh;">Schedule</button>
-                                                            <button type="submit" class="btn float-btn flat-btn" style="display: inline-block;height: 4vh; background-color: #ff0000; color: #ffffff;">Cancel</button>
+                                                            {% if consultation.consultation_status == 'Approved' %}
+                                                                <button type="submit" class="btn float-btn flat-btn" style="margin-left: -27vh;height: 4vh;" disabled>Scheduled</button>
+                                                            {% else %}
+                                                                <form method="POST" action="{% url 'consultations' %}">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
+                                                                    <input type="hidden" name="action" value="approve">
+                                                                    <button type="submit" class="btn float-btn flat-btn" style="margin-left: -25vh;height: 4vh;">Schedule</button>
+                                                                </form>
+                                                            {% endif %}
+                                                            <form method="POST" action="{% url 'consultations' %}">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
+                                                                <input type="hidden" name="action" value="cancel">
+                                                                <button type="submit" class="btn float-btn flat-btn" style="display: inline-block;height: 4vh; background-color: #ff0000;border: none; color: #ffffff;">Cancel</button>
+                                                            </form>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -272,12 +304,40 @@
             <!--search-form-holder  end-->  
             <!-- Share container  -->
             <div class="share-wrapper isShare">
-                <div class="share-container"></div>
+                <div class="share-container" style="padding: 20px;">
+                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                        {% if user_type == 'Customer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
+                        </li>
+                    {% endif %}
+                    {% if user_type == 'Designer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'consultations' %}"  style="color: #000; background-color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;">Manage Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                        </li>
+                    {% endif %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                    </li>
+                    </ul>
+                </div>
             </div>
             <!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
-                <div class="fixed-title"><span>Your Cart</span></div>
+                <div class="fixed-title"><span>Consultations</span></div>
                 <div class="footer-social">
                     <ul>
                         <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>

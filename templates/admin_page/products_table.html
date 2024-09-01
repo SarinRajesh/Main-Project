@@ -1,0 +1,380 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+    </head>
+
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
+            </div>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder" href="{% url 'admin_index' %}"><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                <!-- share button-->  
+                <div class="show-share-wrap">
+                    <div class="show-share">
+                        <span>Admin</span>
+                        <a href="{% url 'logout_view' %}"><img src="{% static 'index/images/logout.png' %}" alt=""></a>
+                    </div>
+                </div>
+                <!-- share button end-->  		
+                <!-- search button--> 	 
+                <div class="show-search show-fixed-search vissearch"> <img src="{% static 'index/images/prof.png' %}" alt="Profile Picture" style="height: 50px; width: 50px;"></div>
+                <!-- search button end --> 
+                <!-- mobile nav --> 
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
+                <div class="nav-holder">
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header  end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!--  content -->
+                    <div class="content">
+                        <!--  section  -->
+                        <section>
+                            <div class="container">
+                                <div class="contact-details-wrap fl-wrap" style="margin-top: -5%;">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="small-sec-title">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9" style="margin-left: 25vh;">
+                                            <!-- Products Table -->
+                                            <div style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 20px; border-radius: 8px; width: 105%; background-color: white;">
+                                                <h2 style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; color: #34495e; margin-bottom: 20px;">Products</h2>
+                                                <table style="width: 100%; border-collapse: collapse;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-left-radius: 8px;">Name</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Description</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Amount</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Stock</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Image</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 8px;">Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for product in products %}
+                                                        <tr>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ product.name }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ product.description|slice:":50" }}{% if product.description|length > 50 %}...{% endif %}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ product.amount.amount }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ product.stock }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;"><img src="{{ product.image.url }}" alt="Product Image" style="width: 50px; height: 50px;"></td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                <button class="edit-button" data-id="{{ product.id }}" data-name="{{ product.name }}" data-description="{{ product.description }}" data-amount="{{ product.amount.amount }}" data-stock="{{ product.stock }}" style="background-color: black; color: white; padding: 8px 16px; border-radius: 4px; margin-right: 8px;">Edit</button>
+                                                                <button class="delete-button" data-id="{{ product.id }}" style="background-color: red; color: white; padding: 8px 16px; border-radius: 4px;border:none">Delete</button>
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                                
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!--  partcile-dec  -->
+                            <div class="partcile-dec" data-parcount="200"></div>
+                            <!--  partcile-dec  end-->
+                        </section>
+                        <!--  section  end-->
+                        <!--  social-wrap  -->
+                        <div class="social-wrap fl-wrap">
+                            <ul>
+                                <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                            </ul>
+                        </div>
+                        <!--  social-wrap  end-->
+                    </div>
+                    <!-- content end -->
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+            <!--search-form-holder -->
+            <div class="search-form-holder fixed-search">
+                <div class="search-form-bg"></div>
+                <div class="search-form-wrap">
+                    <div class="container">
+                        <form class="searchform" method="get"  >
+                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
+                        </form>
+                        <div class="close-fixed-search"></div>
+                    </div>
+                    <div class="dublicated-text"></div>
+                </div>
+            </div>
+            <!--search-form-holder  end-->
+            <!-- Share container  -->
+            <div class="share-wrapper isShare">
+                <div class="share-container"></div>
+            </div>
+            <!-- Share container  end-->
+<footer class="main-footer" style="width: 15%;    background-color: #000000f2; padding: 20px; height: 100vh; position: fixed;">
+
+    <!-- Admin links moved to the top with inline CSS and white underline border -->
+    <div class="footer-admin-links">
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'users_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Users Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'designs_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Designs Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'consultations_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Consultations Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'products_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Products Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'add_designer' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Add Designers
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Add Products
+                </a>
+            </li>
+        </ul>
+        
+    </div>
+
+</footer>
+
+            <!-- footer end-->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script type="text/javascript">
+               $(document).ready(function() {
+                    $('.edit-button').on('click', function() {
+                        var productId = $(this).data('id');
+                        var productName = $(this).data('name');
+                        var productDescription = $(this).data('description');
+                        var productAmount = $(this).data('amount');
+                        var productStock = $(this).data('stock');
+            
+                        Swal.fire({
+                            title: '<h2 style="font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px;">Edit Product</h2>',
+                            html:
+                                '<input id="swal-input1" class="swal2-input" value="' + productName + '" placeholder="Product Name" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' +
+                                '<textarea id="swal-input2" class="swal2-input" rows="3" placeholder="Description" style="width: 100%; padding: 10px; height:38%; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' + productDescription + '</textarea>' +
+                                '<input id="swal-input3" type="number" class="swal2-input" value="' + productAmount + '" placeholder="Price" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' +
+                                '<input id="swal-input4" type="number" class="swal2-input" value="' + productStock + '" placeholder="Stock" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">',
+                            focusConfirm: false,
+                            confirmButtonText: 'Save',
+                            confirmButtonColor: '#6c63ff',
+                            buttonsStyling: false,
+                            customClass: {
+                                confirmButton: 'swal2-confirm'
+                            },
+                            willOpen: () => {
+                                const confirmButton = Swal.getConfirmButton();
+                                confirmButton.style.backgroundColor = 'black'; // Background color
+                                confirmButton.style.color = '#fff'; // Text color
+                                confirmButton.style.border = 'none'; // Remove border
+                                confirmButton.style.padding = '10px 20px'; // Padding
+                                confirmButton.style.borderRadius = '5px'; // Rounded corners
+                                confirmButton.style.fontSize = '16px'; // Font size
+                                confirmButton.style.cursor = 'pointer'; // Pointer cursor on hover
+                                confirmButton.style.transition = 'background-color 0.3s ease'; // Smooth transition
+                            },
+                            preConfirm: () => {
+                                return {
+                                    name: document.getElementById('swal-input1').value,
+                                    description: document.getElementById('swal-input2').value,
+                                    amount: document.getElementById('swal-input3').value,
+                                    stock: document.getElementById('swal-input4').value
+                                }
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Send the updated data to the server using AJAX
+                                $.ajax({
+                                    url: '{% url "products_table" %}',
+                                    method: 'POST',
+                                    data: {
+                                        'id': productId,
+                                        'name': result.value.name,
+                                        'description': result.value.description,
+                                        'amount': result.value.amount,
+                                        'stock': result.value.stock,
+                                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                                    },
+                                    success: function(response) {
+                                        // Reload the page or update the table row
+                                        if(response.status === 'success'){
+                                            location.reload(); // Reload the page to see the changes
+                                        } else {
+                                            Swal.fire('Error', 'There was an error updating the product.', 'error');
+                                        }
+                                    },
+                                    error: function(xhr, status, error) {
+                                        Swal.fire('Error', 'There was an error updating the product.', 'error');
+                                    }
+                                });
+                            }
+                        });
+                    });
+                });
+            </script>
+
+            
+            <script>
+                $('.delete-button').on('click', function() {
+    var productId = $(this).data('id');
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This action cannot be undone.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'No, cancel!',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Send the delete request to the server using AJAX
+            $.ajax({
+                url: '{% url "products_table" %}', // Ensure this is the correct URL
+                method: 'POST',
+                data: {
+                    '_method': 'DELETE',
+                    'id': productId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        location.reload(); // Reload the page to see the changes
+                    } else {
+                        Swal.fire('Error', 'There was an error deleting the product.', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error); // Log the error for debugging
+                    Swal.fire('Error', 'There was an error deleting the product.', 'error');
+                }
+            });
+        }
+    });
+});
+
+            </script>
+            
+ </body>
+</html>

@@ -3059,23 +3059,6 @@ section.parallax-section  .pr-title:after {
     font-weight: normal;
     text-decoration: inherit;
 }
-.share-icon-facebook:before  {
-    content: "\f09a";
-}
-.share-icon-twitter:before {
-    content: "\f099";
-}
-.share-icon-tumblr:before {
-   content: "\f173";
-}
-.share-icon-linkedin:before {
-     content: "\f08c";
-}
- 
-.share-icon-pinterest:before {
-    content: "\f0d2";
-}
- 
 .small-sec-title {
 	float:left;
 	width:100%;

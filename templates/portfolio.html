@@ -35,14 +35,13 @@
                 <!-- logo -->
                 <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
-                <!-- share button-->  
+                {% if user.is_authenticated %}
+                            
                 <div class="show-share-wrap">
-                    <div class="show-share"><span>Share</span><img src="{% static 'index/images/share.png' %}" alt=""></div>
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
                 </div>
-                <!-- share button end-->  		
-                <!-- search button--> 	 
-                <div class="show-search show-fixed-search vissearch"><i class="fa fa-search"></i></div>
-                <!-- search button end --> 
+                {% else %}
+                {% endif %}
                 <!-- mobile nav --> 
                 <div class="nav-button-wrap">
                     <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
@@ -51,39 +50,66 @@
                 <!--  navigation --> 
                 <div class="nav-holder">
                     <nav>
-                        <ul>
+                        <ul>   
+                            {% if user_type != 'Designer' and user_type != 'Customer' %}
+                                <li>
+                                    <a href="{% url 'index' %}">Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
+                                </li>
+                                        
                             <li>
-                                <a href="{% url 'index' %}" >Home </a>
-                              
-											
-                                   
-                            </li>
-                            <li>
-                                <a href="{% url 'portfolio' %}"  class="act-link">Portfolio</a>
-                              
-                            </li>
-                            {% if user_type == 'Designer' %}
-                            <li>
-                                <a href="{% url 'add_portfolio' %}">Add Portfolio</a>
-                            </li>
-                            {% endif %}
-                            <li>
-                                <a href="about.html"  >About</a>
-                                <!--second level end-->
+                                <a href="about.html">About</a>
                                 <ul>
                                     <li><a href="about-personal.html">Personal</a></li>
                                     <li><a href="services.html">Services</a></li>
                                 </ul>
-                                <!--second level end-->
+                            </li>
+                                <li>
+                                    <a href="contact.html">Contacts</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'shop' %}">Shop</a>
+                                    <!--second level end-->
+                                    <ul>
+                                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                                    </ul>
+                                    <!--second level end-->
+                                </li>
+                                <li>
+                                    <a href="blog.html">Journal</a>
+                                    <ul>
+                                        <li><a href="blog-grid.html">Grid</a></li>
+                                        <li><a href="blog-masonry.html">Masonry</a></li>
+                                        <li><a href="blog-single.html">Post Single</a></li>
+                                        <li><a href="404.html">404</a></li>
+                                    </ul>
+                                </li>
+                             
+                                <li>
+                                    <a href="{% url 'signin' %}">Signin</a>
+                                </li>
+                                {% else %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
+                                </li>
+                            
+                                
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
                             </li>
                             <li>
-                                <a href="contact.html">Contacts </a>
+                                <a href="contact.html">Contacts</a>
                             </li>
-                            {% if user_type == 'Designer' %}
-                            <li>
-                                <a href="{% url 'consultations' %}">Consultations</a>
-                            </li>
-                            {% else %}
+                            {% if user_type != 'Designer' %}
                             <li>
                                 <a href="{% url 'shop' %}">Shop</a>
                                 <!--second level end-->
@@ -95,32 +121,18 @@
                             {% endif %}
                             <li>
                                 <a href="blog.html">Journal</a>
-                                <!--second level end-->
                                 <ul>
                                     <li><a href="blog-grid.html">Grid</a></li>
                                     <li><a href="blog-masonry.html">Masonry</a></li>
                                     <li><a href="blog-single.html">Post Single</a></li>
                                     <li><a href="404.html">404</a></li>
                                 </ul>
-                                <!--second level end-->
                             </li>
-                            {% if user.is_authenticated %}
-                            <li>
-                                <a href="{% url 'profile' %}" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">{{ user.username }}</a>
-                                <ul>
-                                    <li><a href="{% url 'logout_view' %}">Logout</a></li>
-                                </ul>
-                            </li>
-                            {% else %}
-                            <li>
-                                <a href="{% url 'signin' %}" style="color: #ffffff; font-weight: bold; font-size: 1.2em;">Signin</a>
-                               
-                            </li>
+                            
                             {% endif %}
-
                         </ul>
-                    </li>
                     </nav>
+                    
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -131,29 +143,64 @@
                 <div class="content-holder scale-bg2">
                     <!-- content -->
                     <div class="content">
+                        <!--=============== Filter Button ===============-->
+                        <div class="filter-container" style="margin: 20px 0;">
+                            <form id="filter-form" method="GET">
+                                <label for="category-filter">Filter by Category:</label>
+                                <select id="category-filter" name="category" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px;">
+                                    <option value="all" {% if request.GET.category == "all" %}selected{% endif %}>All Categories</option>
+                                    <option value="bedroom" {% if request.GET.category == "bedroom" %}selected{% endif %}>Bedroom</option>
+                                    <option value="kitchen" {% if request.GET.category == "kitchen" %}selected{% endif %}>Kitchen</option>
+                                    <option value="dining_room" {% if request.GET.category == "dining_room" %}selected{% endif %}>Dining Room</option>
+                                    <option value="bathroom" {% if request.GET.category == "bathroom" %}selected{% endif %}>Bathroom</option>
+                                </select>
+                            
+                                {% if user_type != 'Designer' %}
+                                <label for="designer-filter">Filter by Designer:</label>
+                                <select id="designer-filter" name="designer" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px;">
+                                    <option value="all" {% if request.GET.designer == "all" %}selected{% endif %}>All Designers</option>
+                                    {% for designer in designers %}
+                                        <option value="{{ designer }}" {% if request.GET.designer == designer %}selected{% endif %}>{{ designer }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% endif %}
+
+                                <label for="sqft-filter">Filter by Square Feet:</label>
+                                <select id="sqft-filter" name="sqft_range" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px;">
+                                    <option value="all" {% if request.GET.sqft_range == "all" %}selected{% endif %}>All Sizes</option>
+                                    <option value="0-500" {% if request.GET.sqft_range == "0-500" %}selected{% endif %}>0 - 500 sq ft</option>
+                                    <option value="501-1000" {% if request.GET.sqft_range == "501-1000" %}selected{% endif %}>501 - 1000 sq ft</option>
+                                    <option value="1001-1500" {% if request.GET.sqft_range == "1001-1500" %}selected{% endif %}>1001 - 1500 sq ft</option>
+                                    <option value="1501+" {% if request.GET.sqft_range == "1501+" %}selected{% endif %}>1501+ sq ft</option>
+                                </select>
+                            </form>
+                            
+                        </div>
+                        
+                        <!--=============== Filter Button end ===============-->
                         <!-- gallery-items   -->
                         <div class="gallery-items grid-no-pad vis-por-info">
-                            <!-- 1 -->    {% for portfolio in portfolios %}
-                            <div class="gallery-item houses apartments">
-                                <div class="grid-item-holder">
-                                    <div class="box-item">
-                                        <img src="{{ portfolio.image.url }}" alt="{{ portfolio.name }}">
-                                        <div class="overlay"></div>
-                                        <a href="images/folio/1.jpg" class="image-popup popup-image"><i class="fa fa-search"  ></i></a>
-                                    </div>
-                                    <div class="grid-item">
-                                        <h3><a href="{% url 'portfolio_details' portfolio.id %}">{{ portfolio.name }}</a></h3>
-                                        <span>portfolio.description</span>
-                                       
+                            {% if no_results %}
+                                <div class="no-results" style="text-align: center; padding: 20px; font-size: 18px; color: #666;">
+                                    No results found for the current filters. Please try different filter options.
+                                </div>
+                            {% else %}
+                                {% for portfolio in portfolios %}
+                                <div class="gallery-item houses apartments">
+                                    <div class="grid-item-holder">
+                                        <div class="box-item">
+                                            <img src="{{ portfolio.image.url }}" alt="{{ portfolio.name }}">
+                                            <div class="overlay"></div>
+                                            <a href="{{ portfolio.image.url }}" class="image-popup popup-image"><i class="fa fa-search"></i></a>
+                                        </div>
+                                        <div class="grid-item">
+                                            <h3><a href="{% url 'portfolio_details' portfolio.id %}">{{ portfolio.name }}</a></h3>
+                                            <span>{{ portfolio.description|truncatechars:50 }}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            {% empty %}
-                            <p>No portfolios available.</p>
-                            {% endfor %}
-                            <!-- 2 end -->
-                           
-                                                   
+                                {% endfor %}
+                            {% endif %}
                         </div>
                         <!-- end gallery items -->                    
                     </div>
@@ -222,12 +269,40 @@
             <!--search-form-holder  end-->  
             <!-- Share container  -->
             <div class="share-wrapper isShare">
-                <div class="share-container"></div>
+                <div class="share-container" style="padding: 20px;">
+                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                        {% if user_type == 'Customer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
+                        </li>
+                    {% endif %}
+                    {% if user_type == 'Designer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                        </li>
+                    {% endif %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                    </li>
+                    </ul>
+                </div>
             </div>
             <!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
-                <div class="fixed-title"><span>Portfolio</span></div>
+                <div class="fixed-title"><span>Designs</span></div>
                 <div class="footer-social">
                     <ul>
                         <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
@@ -245,6 +320,47 @@
  <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
  <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
  <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
+
+ <script>
+    $(document).ready(function() {
+        // Initialize Masonry on document load
+        var $grid = $('.gallery-items').masonry({
+            itemSelector: '.gallery-item',
+            percentPosition: true,
+            columnWidth: '.gallery-item'
+        });
+
+        // Filter change event
+        $('#category-filter, #designer-filter, #sqft-filter').change(function() {
+            var category = $('#category-filter').val();
+            var designer = $('#designer-filter').length ? $('#designer-filter').val() : 'all';
+            var sqft_range = $('#sqft-filter').val();
+
+            $.ajax({
+                url: '{% url "portfolio" %}',
+                type: 'GET',
+                data: {
+                    'category': category,
+                    'designer': designer,
+                    'sqft_range': sqft_range,
+                },
+                success: function(response) {
+                    // Replace the gallery items with new content
+                    $('.gallery-items').html($(response).find('.gallery-items').html());
+                    
+                    // Re-initialize Masonry after new content is loaded
+                    $grid.masonry('reloadItems'); // Reset items for Masonry
+                    $grid.masonry('layout'); // Recalculate layout
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX error: " + error);
+                }
+            });
+        });
+    });
+</script>
+
 
     </body>
 </html>

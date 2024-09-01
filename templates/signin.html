@@ -86,6 +86,19 @@
 <script src="{% static 'signup/js/popper.js' %}"></script>
 <script src="{% static 'signup/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'signup/js/main.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>  <!-- SweetAlert JS -->
+<!-- Include SweetAlert2 via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    {% if request.session.custom_error_message %}
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: '{{ request.session.custom_error_message }}',
+        });
+    {% endif %}
+</script>
 
 </body>
 </html>

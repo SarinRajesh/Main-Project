@@ -242,10 +242,10 @@ function initElegantDecor() {
     $(".show-share").on("click", function() {
         if (r.hasClass("isShare")) s(); else t();
     });
-    var u = $(".share-container");
-    u.share({
-        networks: [ "facebook", "pinterest",   "twitter", "linkedin" ]
-    });
+    // var u = $(".share-container");
+    // u.share({
+    //     networks: [ "facebook", "pinterest",   "twitter", "linkedin" ]
+    // });
 	//   tabs------------------
     $(".tabs-menu a").on("click", function(a) {
         a.preventDefault();

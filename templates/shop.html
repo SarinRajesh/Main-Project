@@ -36,13 +36,15 @@
                 <!-- logo -->
                 <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
-                <!-- share button-->  
+                {% if user.is_authenticated %}
+                            
                 <div class="show-share-wrap">
-                    <div class="show-share"><span>Share</span><img src="{% static 'index/images/share.png' %}" alt=""></div>
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
                 </div>
+                {% else %}
+                {% endif %}
                 <!-- share button end-->  		
                 <!-- search button--> 	 
-                <div class="show-search show-fixed-search vissearch"><i class="fa fa-search"></i></div>
                 <!-- search button end --> 
                 <!-- mobile nav --> 
                 <div class="nav-button-wrap">
@@ -52,67 +54,89 @@
                 <!--  navigation --> 
                 <div class="nav-holder">
                     <nav>
-                        <ul>
+                        <ul>   
+                            {% if user_type != 'Designer' and user_type != 'Customer' %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
+                                </li>
+                                        
                             <li>
-                                <a href="{% url 'index' %}" >Home </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'portfolio' %}">Portfolio</a>
-                            </li>
-                            {% if user_type == 'Designer' %}
-                            <li>
-                                <a href="{% url 'add_portfolio' %}">Add Portfolio</a>
-                            </li>
-                            {% endif %}
-                            <li>
-                                <a href="about.html"  >About</a>
-                                <!--second level end-->
+                                <a href="about.html">About</a>
                                 <ul>
                                     <li><a href="about-personal.html">Personal</a></li>
                                     <li><a href="services.html">Services</a></li>
                                 </ul>
-                                <!--second level end-->
+                            </li>
+                                <li>
+                                    <a href="contact.html">Contacts</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'shop' %}" class="act-link">Shop</a>
+                                    <!--second level end-->
+                                    <ul>
+                                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                                    </ul>
+                                    <!--second level end-->
+                                </li>
+                                <li>
+                                    <a href="blog.html">Journal</a>
+                                    <ul>
+                                        <li><a href="blog-grid.html">Grid</a></li>
+                                        <li><a href="blog-masonry.html">Masonry</a></li>
+                                        <li><a href="blog-single.html">Post Single</a></li>
+                                        <li><a href="404.html">404</a></li>
+                                    </ul>
+                                </li>
+                             
+                                <li>
+                                    <a href="{% url 'signin' %}">Signin</a>
+                                </li>
+                                {% else %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
+                                </li>
+                            
+                                
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
                             </li>
                             <li>
-                                <a href="contact.html">Contacts </a>
+                                <a href="contact.html">Contacts</a>
                             </li>
+                            {% if user_type != 'Designer' %}
                             <li>
                                 <a href="{% url 'shop' %}" class="act-link">Shop</a>
                                 <!--second level end-->
                                 <ul>
                                     <li><a href="{% url 'cart' %}">Cart</a></li>
-                                    
                                 </ul>
                                 <!--second level end-->
                             </li>
+                            {% endif %}
                             <li>
                                 <a href="blog.html">Journal</a>
-                                <!--second level end-->
                                 <ul>
                                     <li><a href="blog-grid.html">Grid</a></li>
                                     <li><a href="blog-masonry.html">Masonry</a></li>
                                     <li><a href="blog-single.html">Post Single</a></li>
                                     <li><a href="404.html">404</a></li>
                                 </ul>
-                                <!--second level end-->
                             </li>
-                            {% if user.is_authenticated %}
-                            <li>
-                                <a href="{% url 'profile' %}" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">{{ user.username }}</a>
-                                <ul>
-                                    <li><a href="{% url 'logout_view' %}">Logout</a></li>
-                                </ul>
-                            </li>
-                            {% else %}
-                            <li>
-                                <a href="{% url 'signin' %}" style="color: #ffffff; font-weight: bold; font-size: 1.2em;">Signin</a>
-                               
-                            </li>
+                            
                             {% endif %}
-
                         </ul>
-                    </li>
                     </nav>
+                    
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -125,85 +149,48 @@
                     <div class="content">
                        
                         <section>
-                            <div class="container"  style="margin-top:-17vh">
+                            <div class="container" style="margin-top:-17vh">
                                 <div class="product-filter-wrap fl-wrap">
-                                    <div class="product-cat-filter">
-                                        <span>Filter : </span>
-                                        <a href="#">Chair</a>
-                                        <a href="#">Decor</a>
-                                        <a href="#">Sofa</a>
-                                        <a href="#">Lamp</a>
+                                    <div class="product-search" style="display: inline-block; margin-right: 20px; position: relative;">
+                                        <input type="text" id="search-input" placeholder="Search products..." style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; padding-left: 40px;">
+                                        <i class="fa fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);"></i>
                                     </div>
-                                    <div class="product-cat-filter">
-                                        <span>Price : </span>
-                                        <a href="#">Low to high</a>
-                                        <a href="#">High to low</a>
+                                    <div class="product-cat-filter" style="display: inline-block; margin-right: 20px;">
+                                        <span style="font-weight: bold; margin-right: 10px;">Filter:</span>
+                                        <select id="category-filter" onchange="applyFilters()" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px;">
+                                            <option value="all" {% if selected_category == 'all' or not selected_category %}selected{% endif %}>All Categories</option>
+                                            {% for category in categories %}
+                                                <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+                                            {% endfor %}
+                                        </select>
                                     </div>
-                                    <a href="#" class="btn   flat-btn show-exfilter">Extended Filter</a>
-                                </div>
-                                <div class="product-mainfilter  fl-wrap">
-                                    <div class="row">
-                                        <!-- product-mainfilter-item-->
-                                        <div class="col-md-4">
-                                            <div class="product-mainfilter-item fl-wrap">
-                                                <span class="product-mainfilter-header">Material</span>
-                                                <ul class="material-list">
-                                                    <li><a href="#">Wood</a></li>
-                                                    <li><a href="#">Plastic</a></li>
-                                                    <li><a href="#">Metal</a></li>
-                                                    <li><a href="#">Textile</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <!-- product-mainfilter-item end -->
-                                        <!-- product-mainfilter-item-->
-                                        <div class="col-md-4">
-                                            <div class="product-mainfilter-item fl-wrap">
-                                                <span class="product-mainfilter-header">Color</span>
-                                                <ul class="colorfilter-list">
-                                                    <li><a href="#" style="background:#B3CCE6"></a></li>
-                                                    <li><a href="#" style="background:#CC8080"> </a></li>
-                                                    <li><a href="#" style="background:#CCE6B3"> </a></li>
-                                                    <li><a href="#" style="background:#E6E680"> </a></li>
-                                                    <li><a href="#" style="background:#B3E6E6"> </a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <!-- product-mainfilter-item end -->                                   
-                                        <!-- product-mainfilter-item-->
-                                        <div class="col-md-4">
-                                            <div class="product-mainfilter-item fl-wrap no-decline">
-                                                <span class="product-mainfilter-header">Size</span>
-                                                <ul class="size-list">
-                                                    <li><a href="#">XL/XXl</a></li>
-                                                    <li><a href="#">M/L</a></li>
-                                                    <li><a href="#">S/M</a></li>
-                                                    <li><a href="#">XS/S</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <!-- product-mainfilter-item end -->
+                                    <div class="product-cat-filter" style="display: inline-block;">
+                                        <span style="font-weight: bold; margin-right: 10px;">Price:</span>
+                                        <select id="price-filter" onchange="applyFilters()" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px;">
+                                            <option value="">Select Order</option>
+                                            <option value="low_to_high" {% if selected_price_order == 'low_to_high' %}selected{% endif %}>Low to high</option>
+                                            <option value="high_to_low" {% if selected_price_order == 'high_to_low' %}selected{% endif %}>High to low</option>
+                                        </select>
                                     </div>
                                 </div>
-                               <!-- products -->
-<div class="products fl-wrap">
-    {% for product in products %}
-    <!-- product item-->
-    <div class="product-cat-mains">
-        <div class="product-cat-img fl-wrap">
-            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            <a href="{% url 'product' product.id %}">View</a>
-        </div>
-        <div class="product-cat-title">
-            <h4><a href="{% url 'product' product.id %}">{{ product.name }}</a></h4>
-            <div class="product-cats"><a href="#">{{ product.category }}</a></div>
-            <span class="product-price">Rs.{{ product.amount }}</span>	
-        </div>
-    </div>
-    <!-- product item end-->
-    {% endfor %}
-</div>
-<!-- products end -->
+                                <!-- products -->
+                                <div class="products fl-wrap" id="product-container">
+                                    {% for product in products %}
+                                    <!-- product item-->
+                                    <div class="product-cat-mains" data-category="{{ product.category }}" data-price="{{ product.amount.amount }}">
+                                        <div class="product-cat-img fl-wrap">
+                                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                            <a href="{% url 'product' product.id %}">View</a>
+                                        </div>
+                                        <div class="product-cat-title">
+                                            <h4><a href="{% url 'product' product.id %}">{{ product.name }}</a></h4>
+                                            <div class="product-cats"><a href="#">{{ product.category }}</a></div>
+                                            <span class="product-price">Rs.{{ product.amount.amount }}</span>	
+                                        </div>
+                                    </div>
+                                    <!-- product item end-->
+                                    {% endfor %}
+                                </div>
                                 <!-- products end -->
                                 <div class="content-nav">
                                     <ul>
@@ -219,7 +206,14 @@
                         <!--  section end --> 
                     </div>
                     <!-- content end -->	
-                    <div class="show-cart"><i class="fa fa-shopping-cart"></i><span>3</span></div>
+                    <div class="show-cart">
+                        <i class="fa fa-shopping-cart"></i>
+                        {% if user.is_authenticated %}
+                        <span>{{ cart_count }}</span>
+                        {% else %}
+                        <span>0</span>
+                        {% endif %}
+                    </div>
                     <!--=============== content-footer   ===============-->
                     <div class="height-emulator"></div>
                     <footer class="content-footer">
@@ -270,23 +264,29 @@
                             <span class="close-cart">Close <i class="fa fa-times"></i> </span>
                             <h3>Your cart</h3>
                             <ul class="cart-modal-list fl-wrap">
-                               
-                                <li>
-                                    <a class="cart-modal-image" href="product-single.html">
-                                    <img src="images/shop/3.jpg" alt="">
-                                    </a>
-                                    <div class="cart-modal-det">
-                                        <a href="product-single.html">White Sofa</a>
-                                        <div class="quantity"><span>2</span> x <span class="woocommerce-Price-amount">$160</span></div>
-                                    </div>
-                                    <a href="#" class="remove"><i class="fa fa-times"></i></a>
-                                </li>
+                                {% if user.is_authenticated and cart_items %}
+                                    {% for item in cart_items %}
+                                    <li>
+                                        <a class="cart-modal-image" href="{% url 'product' item.product_id.id %}">
+                                            <img src="{{ item.product_id.image.url }}" alt="{{ item.product_id.name }}">
+                                        </a>
+                                        <div class="cart-modal-det">
+                                            <a href="{% url 'product' item.product_id.id %}">{{ item.product_id.name }}</a>
+                                            <div class="quantity">{{ item.quantity }} x <span class="woocommerce-Price-amount">Rs. {{ item.product_id.amount.amount }}</span></div>
+                                        </div>
+                                        <a href="{% url 'remove_from_cart' item.id %}" class="remove"><i class="fa fa-times"></i></a>
+                                    </li>
+                                    {% endfor %}
+                                {% else %}
+                                    <li>Your cart is empty.</li>
+                                {% endif %}
                             </ul>
+                            {% if user.is_authenticated and cart_items %}
                             <div class="cart-modal-total fl-wrap">
-                                <span  class="cart-modal-total-title">SUBTOTAL:</span> <span class="woocommerce-Price-amount"> $1050</span>
+                                <span  class="cart-modal-total-title">SUBTOTAL:</span> <span class="woocommerce-Price-amount">Rs. {{ cart_total }}</span>
                             </div>
-                            <a href="#" class="btn float-btn flat-btn">View Cart</a>
-                            <a href="#" class="btn float-btn flat-btn">Checkout</a>
+                            <a href="{% url 'cart' %}" class="btn float-btn flat-btn">View Cart</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -309,7 +309,35 @@
             <!--search-form-holder  end-->  
             <!-- Share container  -->
             <div class="share-wrapper isShare">
-                <div class="share-container"></div>
+                <div class="share-container" style="padding: 20px;">
+                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                        {% if user_type == 'Customer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
+                        </li>
+                    {% endif %}
+                    {% if user_type == 'Designer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                        </li>
+                    {% endif %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                    </li>
+                    </ul>
+                </div>
             </div>
             <!-- Share container  end-->
             <!-- footer -->
@@ -332,5 +360,57 @@
         <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+            <script>
+                function applyFilters() {
+                    var category = document.getElementById('category-filter').value;
+                    var priceOrder = document.getElementById('price-filter').value;
+                    var url = new URL(window.location.href);
+                    
+                    if (category !== 'all') {
+                        url.searchParams.set('category', category);
+                    } else {
+                        url.searchParams.delete('category');
+                    }
+                    
+                    if (priceOrder) {
+                        url.searchParams.set('price_order', priceOrder);
+                    } else {
+                        url.searchParams.delete('price_order');
+                    }
+                    
+                    // Update the URL without refreshing the page
+                    history.pushState({}, '', url);
+
+                    // Fetch new results
+                    fetch(url)
+                        .then(response => response.text())
+                        .then(html => {
+                            var parser = new DOMParser();
+                            var doc = parser.parseFromString(html, 'text/html');
+                            var newProducts = doc.getElementById('product-container');
+                            document.getElementById('product-container').innerHTML = newProducts.innerHTML;
+                        });
+                }
+
+                // Add this new function for search
+                function searchProducts() {
+                    var searchTerm = document.getElementById('search-input').value.toLowerCase();
+                    var products = document.getElementsByClassName('product-cat-mains');
+                    
+                    for (var i = 0; i < products.length; i++) {
+                        var productName = products[i].querySelector('h4 a').textContent.toLowerCase();
+                        var productCategory = products[i].querySelector('.product-cats a').textContent.toLowerCase();
+                        
+                        if (productName.includes(searchTerm) || productCategory.includes(searchTerm)) {
+                            products[i].style.display = 'block';
+                        } else {
+                            products[i].style.display = 'none';
+                        }
+                    }
+                }
+
+                // Add event listener for search input
+                document.getElementById('search-input').addEventListener('input', searchProducts);
+                </script>
  </body>
 </html>

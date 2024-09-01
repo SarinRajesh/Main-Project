@@ -35,13 +35,15 @@
                 <!-- logo -->
                 <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
-                <!-- share button-->  
+                {% if user.is_authenticated %}
+                            
                 <div class="show-share-wrap">
-                    <div class="show-share"><span>Share</span><img src="{% static 'index/images/share.png' %}" alt=""></div>
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
                 </div>
+                {% else %}
+                {% endif %}
                 <!-- share button end-->  		
                 <!-- search button--> 	 
-                <div class="show-search show-fixed-search vissearch"><i class="fa fa-search"></i></div>
                 <!-- search button end --> 
                 <!-- mobile nav --> 
                 <div class="nav-button-wrap">
@@ -51,18 +53,53 @@
                 <!--  navigation --> 
                 <div class="nav-holder">
                     <nav>
-                        <ul>
+                        <ul>   
+                            {% if user_type != 'Designer' and user_type != 'Customer' %}
                                 <li>
                                     <a href="{% url 'index' %}" class="act-link">Home</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'portfolio' %}">Portfolio</a>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
                                 </li>
-                                {% if user_type == 'Designer' %}
+                                        
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
+                            </li>
                                 <li>
-                                    <a href="{% url 'add_portfolio' %}">Add Portfolio</a>
+                                    <a href="contact.html">Contacts</a>
                                 </li>
-                                {% endif %}
+                                <li>
+                                    <a href="{% url 'shop' %}">Shop</a>
+                                    <!--second level end-->
+                                    <ul>
+                                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                                    </ul>
+                                    <!--second level end-->
+                                </li>
+                                <li>
+                                    <a href="blog.html">Journal</a>
+                                    <ul>
+                                        <li><a href="blog-grid.html">Grid</a></li>
+                                        <li><a href="blog-masonry.html">Masonry</a></li>
+                                        <li><a href="blog-single.html">Post Single</a></li>
+                                        <li><a href="404.html">404</a></li>
+                                    </ul>
+                                </li>
+                             
+                                <li>
+                                    <a href="{% url 'signin' %}">Signin</a>
+                                </li>
+                                {% else %}
+                                <li>
+                                    <a href="{% url 'index' %}" class="act-link">Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
+                                </li>
                             
                                 
                             <li>
@@ -75,11 +112,7 @@
                             <li>
                                 <a href="contact.html">Contacts</a>
                             </li>
-                            {% if user_type == 'Designer' %}
-                            <li>
-                                <a href="{% url 'consultations' %}">Consultations</a>
-                            </li>
-                            {% else %}
+                            {% if user_type != 'Designer' %}
                             <li>
                                 <a href="{% url 'shop' %}">Shop</a>
                                 <!--second level end-->
@@ -98,17 +131,7 @@
                                     <li><a href="404.html">404</a></li>
                                 </ul>
                             </li>
-                            {% if user.is_authenticated %}
-                            <li>
-                                <a href="{% url 'profile' %}" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">{{ user.username }}</a>
-                                <ul>
-                                    <li><a href="{% url 'logout_view' %}">Logout</a></li>
-                                </ul>
-                            </li>
-                            {% else %}
-                            <li>
-                                <a href="{% url 'signin' %}" style="color: #ffffff; font-weight: bold; font-size: 1.2em;">Signin</a>
-                            </li>
+                            
                             {% endif %}
                         </ul>
                     </nav>
@@ -465,11 +488,39 @@
                 </div>
             </div>
             <!--search-form-holder  end-->  
-            <!-- Share container  -->
-            <div class="share-wrapper isShare">
-                <div class="share-container"></div>
-            </div>
-            <!-- Share container  end-->
+<!-- Share container  -->
+<div class="share-wrapper isShare">
+    <div class="share-container" style="padding: 20px;">
+        <ul style="list-style-type: none; padding: 0; margin: 0;">
+            {% if user_type == 'Customer' %}
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+            </li>
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+            </li>
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
+            </li>
+        {% endif %}
+        {% if user_type == 'Designer' %}
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+            </li>
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
+            </li>
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+            </li>
+        {% endif %}
+        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+            <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+        </li>
+        </ul>
+    </div>
+</div>
+<!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
                 <div class="fixed-title"><span>Home Slider</span></div>

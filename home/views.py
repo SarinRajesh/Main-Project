@@ -7,13 +7,20 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.hashers import make_password
-from .models import UserType, Consultation, Users, Design, Amount, Product, Cart
+from .models import UserType, Consultation, Users, Design, Amount, Product, Cart, Feedback, Order, Payment_Type
 from .decorators import nocache
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from allauth.socialaccount.models import SocialAccount
 from django.views.decorators.csrf import csrf_exempt
 import random
+from django.utils.dateparse import parse_datetime
+from decimal import Decimal
+from django.views.decorators.http import require_POST
+from django.utils import timezone
+from django.middleware.csrf import get_token
+from django.db.models import Sum
+from django.db import transaction
 
 
 
@@ -23,17 +30,20 @@ class CustomTokenGenerator(PasswordResetTokenGenerator):
 
 token_generator = CustomTokenGenerator()
 
-@login_required
 @nocache
 def index(request):
+    context = {}
     if request.user.is_authenticated:
         user = request.user
         user_type = user.user_type_id.user_type if user.user_type_id else None
-        return render(request, 'index.html', {'user': user, 'user_type': user_type})
-    return render(request, 'index.html')
+        context = {'user': user, 'user_type': user_type}
+    return render(request, 'index.html', context)
 
 
+from django.contrib import messages  # Make sure to import messages
 
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
 
 def signin(request):
     if request.method == 'POST':
@@ -42,54 +52,61 @@ def signin(request):
 
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
-            return custom_login_redirect(request)
+            if user.status == 'active':  # Check if user is active
+                login(request, user)  # Log in the user
+                return custom_login_redirect(request)  # Redirect to the appropriate page
+            else:
+                # Store message in session under a custom key
+                request.session['custom_error_message'] = "User account is inactive."
+                return redirect('signin')  # Redirect to sign-in page
         else:
-            return HttpResponse("Invalid username or password.")
+            # Store message in session under a custom key
+            request.session['custom_error_message'] = "Invalid username or password."
+            return redirect('signin')  # Redirect to sign-in page
     
     return render(request, 'signin.html')
+
 
 def custom_login_redirect(request):
     user = request.user
     if not user.is_authenticated:
         return redirect('signin')
 
-    # Check if the user has set their user type
-    if not user.user_type_id:
-        return redirect('usertype')
+    if user.status != 'active':  # Check if user is active
+        logout(request)  # Log out inactive users
+        # Store message in session under a custom key
+        request.session['custom_error_message'] = "User account is inactive."
+        return redirect('signin')  # Redirect to sign-in page
 
-    user_type = user.user_type_id.user_type
-    if user_type == 'Admin':
-        return redirect('tables')
+    if user.user_type_id and user.user_type_id.user_type == 'Admin':
+        return redirect('admin_index')
     else:
         return redirect('index')
 
-    return redirect('index')
-
-
-@login_required
-def usertype(request):
-    user = request.user
-    if request.method == 'POST':
-        user_type_id = request.POST.get('user_type_id')
-        if user_type_id:
-            try:
-                user_type = UserType.objects.get(id=user_type_id)
-                user.user_type_id = user_type
-                user.save()
-                request.session['user_type_set'] = True  # Mark user type as set
-                return custom_login_redirect(request)  # Redirect based on user type after setting user type
-            except UserType.DoesNotExist:
-                messages.error(request, 'Invalid user type selected.')
-        else:
-            messages.error(request, 'No user type selected.')
-    
-    user_types = UserType.objects.all()
-    return render(request, 'usertype.html', {'user_types': user_types})
 
 
 def generate_otp():
     return random.randint(100000, 999999)
+
+from allauth.account.adapter import DefaultAccountAdapter
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from .models import UserType, Users
+from django.contrib.auth.hashers import make_password
+
+class CustomAccountAdapter(DefaultAccountAdapter):
+    def save_user(self, request, user, form, commit=True):
+        user = super().save_user(request, user, form, commit=False)
+        user.user_type_id = UserType.objects.get(user_type='Customer')
+        if commit:
+            user.save()
+        return user
+
+class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
+    def save_user(self, request, sociallogin, form=None):
+        user = super().save_user(request, sociallogin, form)
+        user.user_type_id = UserType.objects.get(user_type='Customer')
+        user.save()
+        return user
 
 def signup(request):
     if request.method == 'POST':
@@ -141,6 +158,7 @@ def verify_otp(request):
                         email=user_data['email'],
                         username=user_data['username'],
                         password=make_password(user_data['password']),  # Hash the password
+                        user_type_id=UserType.objects.get(user_type='Customer')  # Set default user type to Customer
                     )
                     user.save()
 
@@ -153,7 +171,7 @@ def verify_otp(request):
                     # Clear user data from session
                     request.session.pop('user_data', None)
 
-                    return redirect('usertype')
+                    return redirect('index')
                 except Exception as e:
                     messages.error(request, f"Error creating account: {str(e)}")
             else:
@@ -171,23 +189,42 @@ def verify_otp(request):
 def profile(request):
     user = request.user
     user_type = user.user_type_id.user_type if user.user_type_id else None
+    return render(request, 'profile.html', {'user': user, 'user_type': user_type})
+
+@login_required
+def edit_profile(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
 
     if request.method == 'POST':
+        # Update user profile fields
         user.name = request.POST.get('name')
         user.phone = request.POST.get('phone')
+        user.username = request.POST.get('username')
         user.email = request.POST.get('email')
         user.address = request.POST.get('address')
         user.home_town = request.POST.get('home_town')
         user.district = request.POST.get('district')
         user.state = request.POST.get('state')
         user.pincode = request.POST.get('pincode')
+
+        # Handle photo upload if present
         if 'photo' in request.FILES:
             user.photo = request.FILES['photo']
-        user.save()
-        messages.success(request, 'Profile updated successfully.')
-        return redirect('profile')
 
-    return render(request, 'profile.html', {'user': user, 'user_type': user_type})
+        try:
+            user.save()
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('profile')
+        except Exception as e:
+            messages.error(request, f'Error updating profile: {str(e)}')
+            return redirect('edit_profile')
+
+    context = {
+        'user': user,
+        'user_type': user_type
+    }
+    return render(request, 'edit_profile.html', context)
 
 
 
@@ -279,27 +316,8 @@ def logout_view(request):
     logout(request)
     return redirect('signin')
 
-@nocache
-@login_required
-def dashboard(request):
-    return render(request, 'admin_page/dashboard.html')
 
-@nocache
-@login_required
-def tables(request):
-    users = Users.objects.all()
-    user_types = UserType.objects.all()
-    designs = Design.objects.all()
-    products = Product.objects.all()
-    consultations = Consultation.objects.all()
 
-    return render(request, 'admin_page/tables.html', {
-        'users': users,
-        'user_types': user_types,
-        'designs': designs,
-        'products': products,
-        'consultations': consultations
-    })
 @login_required
 @nocache
 def add_product(request):
@@ -309,18 +327,20 @@ def add_product(request):
         amount_value = request.POST.get('amount')
         image = request.FILES.get('image')
         category = request.POST.get('category')
+        stock = request.POST.get('stock')
 
         amount = Amount(amount=amount_value)
         amount.save()
 
-        portfolio = Product(
+        product = Product(
             name=name,
             description=description,
             amount=amount,
             category=category,
-            image=image
+            image=image,
+            stock=stock  # Add the quantity field
         )
-        portfolio.save()
+        product.save()
 
         return redirect('add_product')
 
@@ -332,11 +352,29 @@ def add_portfolio(request):
     user = request.user
     user_type = user.user_type_id.user_type if user.user_type_id else None
 
+    # Check if user details are complete
+    user_details_complete = all([
+        user.name,
+        user.email,
+        user.phone,
+        user.address,
+        user.home_town,
+        user.district,
+        user.state,
+        user.pincode
+    ])
+
     if request.method == 'POST':
+        if not user_details_complete:
+            messages.error(request, 'Please complete your profile before adding a portfolio.')
+            return redirect('profile')
+
         name = request.POST.get('name')
         description = request.POST.get('description')
         amount_value = request.POST.get('amount')
         image = request.FILES.get('image')
+        category = request.POST.get('category')
+        sqft = request.POST.get('sqft', 0)
 
         amount = Amount(amount=amount_value)
         amount.save()
@@ -346,155 +384,314 @@ def add_portfolio(request):
             name=name,
             description=description,
             amount=amount,
-            image=image
+            image=image,
+            category=category,
+            sqft=sqft
         )
         portfolio.save()
 
+        messages.success(request, 'Portfolio added successfully.')
         return redirect('portfolio')
 
-    return render(request, 'add_portfolio.html', {'user_type': user_type})
+    context = {
+        'user_type': user_type,
+        'user_details_complete': user_details_complete
+    }
+    return render(request, 'add_portfolio.html', context)
+
+
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 @nocache
-@login_required
 def portfolio(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-    portfolios = Design.objects.all()
-    return render(request, 'portfolio.html', {'portfolios': portfolios, 'user_type': user_type})
+    category = request.GET.get('category', 'all')
+    sqft_range = request.GET.get('sqft_range', 'all')
+
+    if request.user.is_authenticated and request.user.user_type_id.user_type == 'Designer':
+        # For designers, show only their designs
+        portfolios = Design.objects.filter(designer_id=request.user)
+    else:
+        # For other users, show all designs
+        portfolios = Design.objects.all()
+        designer = request.GET.get('designer', 'all')
+        if designer != 'all':
+            portfolios = portfolios.filter(designer_id__username=designer)
+
+    if category != 'all':
+        portfolios = portfolios.filter(category__iexact=category)
+
+    if sqft_range != 'all':
+        if sqft_range == '0-500':
+            portfolios = portfolios.filter(sqft__lte=500)
+        elif sqft_range == '501-1000':
+            portfolios = portfolios.filter(sqft__gt=500, sqft__lte=1000)
+        elif sqft_range == '1001-1500':
+            portfolios = portfolios.filter(sqft__gt=1000, sqft__lte=1500)
+        elif sqft_range == '1501+':
+            portfolios = portfolios.filter(sqft__gt=1500)
+
+    all_designers = Users.objects.filter(user_type_id__user_type='Designer').values_list('username', flat=True).distinct()
+    all_categories = Design.objects.values_list('category', flat=True).distinct()
+
+    context = {
+        'portfolios': portfolios,
+        'designers': all_designers,
+        'categories': all_categories,
+        'no_results': portfolios.count() == 0,
+        'selected_category': category,
+        'selected_sqft_range': sqft_range,
+    }
+
+    if request.user.is_authenticated:
+        user = request.user
+        user_type = user.user_type_id.user_type if user.user_type_id else None
+        context['user_type'] = user_type
+
+    return render(request, 'portfolio.html', context)
+
+
 
 @nocache
-@login_required
 def shop(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
+    products = Product.objects.all()
     
-    product = Product.objects.all()
-    return render(request, 'shop.html', {'products': product, 'user_type': user_type})
+    # Get filter parameters
+    category = request.GET.get('category')
+    price_order = request.GET.get('price_order')
+    
+    # Filter by category
+    if category and category != 'all':
+        products = products.filter(category=category)
+    
+    # Order by price
+    if price_order == 'low_to_high':
+        products = products.order_by('amount__amount')
+    elif price_order == 'high_to_low':
+        products = products.order_by('-amount__amount')
+    
+    # Get unique categories for the dropdown
+    categories = Product.objects.values_list('category', flat=True).distinct()
+    
+    context = {
+        'products': products,
+        'categories': categories,
+        'selected_category': category,
+        'selected_price_order': price_order,
+    }
+
+    if request.user.is_authenticated:
+        user = request.user
+        user_type = user.user_type_id.user_type if user.user_type_id else None
+        context['user_type'] = user_type
+        context['user'] = user
+
+        # Get cart items for the current user
+        cart_items = Cart.objects.filter(user_id=user)
+        context['cart_items'] = cart_items
+        context['cart_total'] = sum(item.amount for item in cart_items)
+        context['cart_count'] = cart_items.count()
+
+    return render(request, 'shop.html', context)
 
 from django.shortcuts import render, get_object_or_404
 
+
 @nocache
-@login_required
 def portfolio_details(request, portfolio_id):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
     portfolio = get_object_or_404(Design.objects.select_related('designer_id'), id=portfolio_id)
+    
+    # Replace underscores with spaces in the category
+    portfolio.category_display = portfolio.category.replace("_", " ")
+    
+    context = {'portfolio': portfolio}
 
-    if request.method == 'POST':
-        # Check if the request is to reject a consultation
-        if 'reject' in request.POST:
-            # Delete the consultation entry if it exists
-            Consultation.objects.filter(
-                design_id=portfolio_id,
-                customer_id=user,
-                designer_id=portfolio.designer_id
-            ).delete()
+    if request.user.is_authenticated:
+        user = request.user
+        user_type = user.user_type_id.user_type if user.user_type_id else None
+        context['user_type'] = user_type
 
-            messages.success(request, 'Consultation request rejected.')
-            return redirect('portfolio_details', portfolio_id=portfolio_id)
+        # Check if user details are complete
+        user_details_complete = all([
+            user.address,
+            user.home_town,
+            user.district,
+            user.state,
+            user.pincode
+        ])
+        context['user_details_complete'] = user_details_complete
+
+        if request.method == 'POST':
+            # Check if the request is to reject a consultation
+            if 'reject' in request.POST:
+                # Delete the consultation entry if it exists
+                Consultation.objects.filter(
+                    design_id=portfolio_id,
+                    customer_id=user,
+                    designer_id=portfolio.designer_id
+                ).delete()
+
+                messages.success(request, 'Consultation request Cancelled.')
+                return redirect('portfolio_details', portfolio_id=portfolio_id)
+
+        # Check for existing consultation status
+        consultation_status = Consultation.objects.filter(
+            design_id=portfolio_id,
+            customer_id=user,
+            designer_id=portfolio.designer_id
+        ).values_list('consultation_status', flat=True).first()
         
-        # Extract data from the hidden form for booking a consultation
-        proposal = request.POST.get('proposal')
-        consultation_status = request.POST.get('consultation_status')
-        design_id = request.POST.get('design_id')
-        customer_id = request.POST.get('customer_id')
-        designer_id = request.POST.get('designer_id')
-
-        # Check if there's an existing consultation
-        existing_consultation = Consultation.objects.filter(
-            design_id=design_id,
-            customer_id=customer_id,
-            designer_id=designer_id
-        ).first()
-
-        if not existing_consultation:
-            # Create a new consultation entry
-            consultation = Consultation(
-                customer_id=Users.objects.get(id=customer_id),
-                designer_id=Users.objects.get(id=designer_id),
-                design_id=Design.objects.get(id=design_id),
-                consultation_status=consultation_status,
-                proposal=proposal
-            )
-            consultation.save()
-            messages.success(request, 'Consultation request submitted successfully.')
-        else:
-            messages.info(request, 'Consultation already booked.')
-
-        return redirect('portfolio_details', portfolio_id=portfolio_id)
-
-    # Check for existing consultation status
-    consultation_status = Consultation.objects.filter(
-        design_id=portfolio_id,
-        customer_id=user,
-        designer_id=portfolio.designer_id
-    ).values_list('consultation_status', flat=True).first()
-
-    context = {
-        'portfolio': portfolio,
-        'user_type': user_type,
-        'consultation_status': consultation_status
-    }
+        context['consultation_status'] = consultation_status
 
     return render(request, 'portfolio_details.html', context)
 
+
+from django.utils import timezone
+from datetime import datetime, time
+
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+
+@login_required
+@csrf_exempt
+def consultation_booking(request, portfolio_id):
+    portfolio = get_object_or_404(Design.objects.select_related('designer_id', 'amount'), id=portfolio_id)
+    
+    # Fetch available consultation dates for the designer
+    available_dates = ConsultationDate.objects.filter(
+        designer=portfolio.designer_id,
+        date_time__gte=timezone.now(),
+        is_booked=False
+    ).order_by('date_time')
+
+    if request.method == 'POST':
+        schedule_date_time = request.POST.get('schedule_date')
+        room_length = Decimal(request.POST.get('room_length', '0'))
+        room_width = Decimal(request.POST.get('room_width', '0'))
+        room_height = Decimal(request.POST.get('room_height', '0'))
+        design_preferences = request.POST.get('design_preferences')
+
+        # Create or get the Amount instance
+        consultation_amount = Amount.objects.create(amount=Decimal('5000.00'))  # Assuming 5000 INR as the consultation fee
+
+        # Parse the schedule_date_time
+        schedule_datetime = parse_datetime(schedule_date_time)
+
+        if not schedule_datetime:
+            return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+
+        # Make sure the datetime is timezone-aware
+        if timezone.is_naive(schedule_datetime):
+            schedule_datetime = timezone.make_aware(schedule_datetime)
+
+        # Create consultation object
+        consultation = Consultation(
+            customer_id=request.user,
+            designer_id=portfolio.designer_id,
+            design_id=portfolio,
+            date_time=schedule_datetime,
+            consultation_status='Requested',
+            proposal='Pending',
+            schedule_date_time=schedule_datetime,
+            room_length=room_length,
+            room_width=room_width,
+            room_height=room_height,
+            design_preferences=design_preferences,
+            payment_type=Payment_Type.objects.get(payment_type='online'),
+            payment_status='Paid',
+            amount=consultation_amount
+        )
+        consultation.save()
+
+        # Mark the selected date as booked
+        ConsultationDate.objects.filter(
+            designer=portfolio.designer_id,
+            date_time=schedule_datetime
+        ).update(is_booked=True)
+
+        return JsonResponse({'status': 'success', 'message': 'Consultation booked successfully'})
+    
+    context = {
+        'portfolio': portfolio,
+        'user_type': request.user.user_type_id.user_type if request.user.user_type_id else None,
+        'available_dates': available_dates,
+    }
+    return render(request, 'consultation_booking.html', context)
 
 from decimal import Decimal, InvalidOperation
 from django.core.exceptions import ValidationError
 
 @nocache
-@login_required
 def product(request, product_id):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
     product = get_object_or_404(Product, id=product_id)
-
-    if request.method == 'POST':
-        if 'product_id' in request.POST:
-            product_id = int(request.POST.get('product_id'))
-            status = request.POST.get('status')
-            quantity = int(request.POST.get('quantity', 1))
-            amount_value = request.POST.get('amount')
-            
-            if status == 'Added':
-                product_instance = get_object_or_404(Product, id=product_id)
-                
-                try:
-                    # Try to convert the amount to a Decimal
-                    unit_price = Decimal(amount_value)
-                except (InvalidOperation, TypeError):
-                    # If conversion fails, use the product's amount
-                    unit_price = product_instance.amount.amount
-
-                cart_item, created = Cart.objects.get_or_create(
-                    user_id=user,
-                    product_id=product_instance,
-                    defaults={'quantity': quantity, 'amount': unit_price * quantity, 'status': status}
-                )
-                
-                if not created:
-                    cart_item.quantity += quantity
-                    cart_item.amount = unit_price * cart_item.quantity
-                    cart_item.save()
-
-                # Store success message in session
-                request.session['cart_message'] = 'Product added to cart successfully.'
-                return redirect('product', product_id=product_id)
-
-    # Get and clear the cart message from the session
-    cart_message = request.session.pop('cart_message', None)
-
     context = {
         'product': product,
-        'user_type': user_type,
-        'cart_message': cart_message,
+        'product_amount_paise': int(product.amount.amount * 100),  # Convert to paise
+        'csrf_token': get_token(request),  # Add CSRF token to context
     }
+
+    if request.user.is_authenticated:
+        user = request.user
+        user_type = user.user_type_id.user_type if user.user_type_id else None
+        context['user_type'] = user_type
+        context['user'] = user
+
+        # Get cart items for the current user
+        cart_items = Cart.objects.filter(user_id=user).select_related('product_id__amount')
+        context['cart_items'] = cart_items
+        context['cart_total'] = cart_items.aggregate(total=Sum('amount'))['total'] or 0
+        context['cart_count'] = cart_items.count()
+
+        if request.method == 'POST':
+            if 'product_id' in request.POST:
+                product_id = int(request.POST.get('product_id'))
+                status = request.POST.get('status')
+                quantity = int(request.POST.get('quantity', 1))
+                amount_value = request.POST.get('amount')
+                
+                if status == 'Added':
+                    product_instance = get_object_or_404(Product, id=product_id)
+                    
+                    try:
+                        unit_price = Decimal(amount_value)
+                    except (InvalidOperation, TypeError):
+                        unit_price = product_instance.amount.amount
+
+                    cart_item, created = Cart.objects.get_or_create(
+                        user_id=user,
+                        product_id=product_instance,
+                        defaults={'quantity': quantity, 'amount': unit_price * quantity, 'status': status}
+                    )
+                    
+                    if not created:
+                        cart_item.quantity += quantity
+                        cart_item.amount = unit_price * cart_item.quantity
+                        cart_item.save()
+
+                    messages.success(request, 'Product added to cart successfully.')
+                    return redirect('product', product_id=product_id)
+
+    # Get related products (same category, excluding the current product)
+    related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
+    context['related_products'] = related_products
+
+    # Get and clear the cart message from the session
+    cart_message = messages.get_messages(request)
+    context['cart_message'] = cart_message
 
     return render(request, 'product.html', context)
 
 
-@nocache
+
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_protect
+
 @login_required
+@never_cache
 def cart(request):
     cart_items = Cart.objects.filter(user_id=request.user)
     
@@ -507,19 +704,13 @@ def cart(request):
     }
     return render(request, 'cart.html', context)
 
-def remove_from_cart(request, item_id):
-    cart_item = get_object_or_404(Cart, id=item_id, user_id=request.user.id)
-    cart_item.delete()
-    return redirect('cart')
-
-from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404
-import json
-
-@nocache
+@login_required
+@never_cache
 @require_POST
-@csrf_exempt
+@csrf_protect
 def update_cart_quantity(request):
+    import json
+    from decimal import Decimal
     data = json.loads(request.body)
     item_id = data.get('item_id')
     quantity = int(data.get('quantity'))
@@ -541,11 +732,34 @@ def update_cart_quantity(request):
 
         return JsonResponse({
             'success': True,
-            'total_price': total_price,
-            'item_total': cart_item.amount
+            'total_price': float(total_price),
+            'item_total': float(cart_item.amount),
+            'total_items': sum(item.quantity for item in cart_items)
         })
     except Cart.DoesNotExist:
         return JsonResponse({'success': False}, status=400)
+
+@login_required
+@never_cache
+def remove_from_cart(request, item_id):
+    cart_item = get_object_or_404(Cart, id=item_id, user_id=request.user.id)
+    cart_item.delete()
+    
+    # Recalculate total price and items count
+    cart_items = Cart.objects.filter(user_id=request.user)
+    total_price = sum(item.amount for item in cart_items)
+    total_items = sum(item.quantity for item in cart_items)
+    
+    return JsonResponse({
+        'success': True,
+        'total_price': float(total_price),
+        'total_items': total_items
+    })
+@login_required
+@require_POST
+def clear_cart(request):
+    Cart.objects.filter(user_id=request.user).delete()
+    return JsonResponse({'status': 'success'})
 
 @nocache
 @login_required
@@ -561,6 +775,8 @@ def edit_portfolio(request, portfolio_id):
     description = request.POST.get('description')
     image = request.FILES.get('image')
     amount_value = request.POST.get('amount')
+    category = request.POST.get('category')  # New: Get the category from the POST request
+    sqft = request.POST.get('sqft')  # New: Get the sqft from the POST request
 
     try:
         portfolio.name = name
@@ -578,6 +794,12 @@ def edit_portfolio(request, portfolio_id):
                 amount = Amount.objects.create(amount=amount_value)
                 portfolio.amount = amount
 
+        if category:  # New: Update the category if provided
+            portfolio.category = category
+
+        if sqft:  # New: Update the sqft if provided
+            portfolio.sqft = sqft
+
         portfolio.save()
 
         return redirect('portfolio_details', portfolio_id=portfolio_id)
@@ -594,8 +816,445 @@ def consultations(request):
     designer = Users.objects.get(username=user.username)
     consultations = Consultation.objects.filter(designer_id=designer).select_related('customer_id', 'design_id')
     
+    if request.method == 'POST':
+        if 'consultation_id' in request.POST:
+            consultation_id = request.POST.get('consultation_id')
+            action = request.POST.get('action')
+            
+            consultation = Consultation.objects.get(id=consultation_id)
+            
+            if action == 'approve':
+                consultation.consultation_status = 'Approved'
+                consultation.save()
+            elif action == 'cancel':
+                consultation.delete()
+            
+            return redirect('consultations')
+    
     context = {
         'consultations': consultations,
         'user_type': user_type,
     }
     return render(request, 'consultations.html', context)
+
+@nocache
+@login_required
+def my_consultations(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    # Fetch consultations for the current user
+    consultations = Consultation.objects.filter(customer_id=user).select_related('designer_id', 'design_id')
+    
+    context = {
+        'consultations': consultations,
+        'user_type': user_type,
+    }
+    return render(request, 'my_consultations.html', context)
+
+
+import re
+from django.contrib.auth.hashers import make_password
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Users, UserType
+
+@login_required
+def add_designer(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        # Validate username existence
+        if Users.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists.')
+            return render(request, 'admin_page/add_designer.html')
+        
+        # Validate email existence
+        if Users.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists.')
+            return render(request, 'admin_page/add_designer.html')
+
+        # Validate password criteria
+        password_pattern = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
+        if not password_pattern.match(password):
+            messages.error(request, 'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.')
+            return render(request, 'admin_page/add_designer.html')
+        
+        # Check if passwords match
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'admin_page/add_designer.html')
+        
+        try:
+            designer_type = UserType.objects.get(user_type='Designer')
+            
+            new_designer = Users.objects.create(
+                username=username,
+                email=email,
+                password=make_password(password),
+                user_type_id=designer_type
+            )
+            new_designer.save()
+            
+            # Send email with username and password
+            send_mail(
+                'Welcome to ElegantDecor',
+                f'Dear {username},\n\nYour account has been successfully created. Your login credentials are as follows:\nUsername: {username}\nPassword: {password}\n\nBest regards,\nThe ElegantDecor Team',
+                'your-email@gmail.com',  # Replace with your actual email
+                [email],
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Designer added successfully.')
+            return redirect('tables')
+        except Exception as e:
+            messages.error(request, f'Error adding designer: {str(e)}')
+    
+    return render(request, 'admin_page/add_designer.html')
+
+
+
+@nocache
+@login_required
+def users_table(request):
+    # Separate users into customers and designers
+    customers = Users.objects.filter(user_type_id__user_type='Customer')
+    designers = Users.objects.filter(user_type_id__user_type='Designer')
+
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        reason = request.POST.get('reason', '')  # Get the reason from the request
+        user = get_object_or_404(Users, id=user_id)
+        
+        # Toggle the status and save the reason if deactivating
+        if user.status == 'active':
+            user.status = 'inactive'
+            user.deactivation_reason = reason  # Save the reason for deactivation
+            
+            # Send email to user about deactivation
+            send_mail(
+                'Account Deactivation Notice',
+                f'Your account has been deactivated. Reason: {reason}',
+                'your-email@gmail.com',  # Replace with your actual email
+                [user.email],
+                fail_silently=False,
+            )
+        else:
+            user.status = 'active'
+            user.deactivation_reason = ''  # Clear the reason if activating
+            
+            # Send email to user about activation
+            send_mail(
+                'Account Activation Notice',
+                'Your account has been activated successfully.',
+                'your-email@gmail.com',  # Replace with your actual email
+                [user.email],
+                fail_silently=False,
+            )
+
+        user.save()
+        messages.success(request, f'User {"activated" if user.status == "active" else "deactivated"} successfully.')
+
+    return render(request, 'admin_page/users_table.html', {
+        'customers': customers,
+        'designers': designers,
+    })
+
+
+@nocache
+@login_required
+def designs_table(request):
+    designs = Design.objects.select_related('designer_id', 'amount').all()
+    context = {
+        'designs': designs,
+    }
+    return render(request, 'admin_page/designs_table.html', context)
+
+    
+@nocache
+@login_required
+def consultations_table(request):
+    consultations = Consultation.objects.select_related('customer_id', 'designer_id', 'design_id').all()
+    context = {
+        'consultations': consultations
+    }
+    return render(request, 'admin_page/consultations_table.html', context)
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.cache import never_cache as nocache
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
+from .models import Product
+
+@nocache
+@login_required
+@require_http_methods(["GET", "POST"])
+def products_table(request):
+    if request.method == 'POST':
+        if '_method' in request.POST and request.POST['_method'] == 'DELETE':
+            # Handle product delete
+            product_id = request.POST.get('id')
+            product = get_object_or_404(Product, id=product_id)
+            product.delete()
+            return JsonResponse({'status': 'success'})
+        
+        # Handle product update
+        product_id = request.POST.get('id')
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        amount = request.POST.get('amount')
+        stock = request.POST.get('stock')
+
+        product = get_object_or_404(Product, id=product_id)
+        product.name = name
+        product.description = description
+        product.amount.amount = amount
+        product.stock = stock
+        product.save()
+
+        return JsonResponse({'status': 'success'})
+
+    # For GET requests, render the table
+    products = Product.objects.select_related('amount').all()
+    context = {
+        'products': products
+    }
+    return render(request, 'admin_page/products_table.html', context)
+
+@nocache
+@login_required
+def admin_index(request):
+    
+    return render(request, 'admin_page/admin_index.html')
+
+# ... existing imports ...
+from django.views.decorators.http import require_POST
+from .models import Order, Payment_Type, Amount
+from django.utils import timezone
+
+# ... existing code ...
+
+from django.views.decorators.http import require_POST
+from .models import Order, Payment_Type, Amount
+from django.utils import timezone
+
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import Order, Payment_Type, Amount, Product
+from django.utils import timezone
+
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import Order, Payment_Type, Amount, Product, Cart
+from django.utils import timezone
+from django.db import transaction
+from django.db import transaction
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from .models import Order, Payment_Type, Amount, Product, Cart
+from django.utils import timezone
+
+@login_required
+@require_POST
+def create_order_from_product(request):
+    try:
+        with transaction.atomic():
+            product_id = request.POST.get('product_id')
+            quantity = int(request.POST.get('quantity', 1))
+            
+            product = Product.objects.get(id=product_id)
+            
+            # Check if there's enough stock
+            if product.stock < quantity:
+                return JsonResponse({'status': 'error', 'message': f'Not enough stock for {product.name}'}, status=400)
+            
+            # Create or get the Amount instance
+            amount_value = product.amount.amount * quantity
+            amount, _ = Amount.objects.get_or_create(amount=amount_value)
+            
+            # Get or create the Payment_Type instance
+            payment_type, _ = Payment_Type.objects.get_or_create(payment_type='online')
+            
+            # Create the order
+            order = Order.objects.create(
+                user=request.user,
+                product=product,
+                quantity=quantity,
+                amount=amount,
+                order_date=timezone.now(),
+                order_status='Completed',
+                payment_type=payment_type,
+                payment_status='Paid'
+            )
+            
+            # Update product stock
+            product.stock -= quantity
+            product.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Order created successfully.',
+                'order_id': order.id
+            })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@login_required
+@require_POST
+def create_order_from_cart(request):
+    try:
+        with transaction.atomic():
+            cart_items = Cart.objects.filter(user_id=request.user)
+            
+            if not cart_items.exists():
+                return JsonResponse({'status': 'error', 'message': 'Your cart is empty'}, status=400)
+            
+            orders_created = []
+            
+            for cart_item in cart_items:
+                product = cart_item.product_id
+                quantity = cart_item.quantity
+                
+                # Check if there's enough stock
+                if product.stock < quantity:
+                    return JsonResponse({'status': 'error', 'message': f'Not enough stock for {product.name}'}, status=400)
+                
+                # Create or get the Amount instance
+                amount_value = product.amount.amount * quantity
+                amount, _ = Amount.objects.get_or_create(amount=amount_value)
+                
+                # Get or create the Payment_Type instance
+                payment_type, _ = Payment_Type.objects.get_or_create(payment_type='online')
+                
+                # Create the order
+                order = Order.objects.create(
+                    user=request.user,
+                    product=product,
+                    quantity=quantity,
+                    amount=amount,
+                    order_date=timezone.now(),
+                    order_status='Completed',
+                    payment_type=payment_type,
+                    payment_status='Paid'
+                )
+                
+                orders_created.append(order)
+                
+                # Update product stock
+                product.stock -= quantity
+                product.save()
+                
+                # Remove item from cart
+                cart_item.delete()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Successfully created {len(orders_created)} orders.',
+                'order_ids': [order.id for order in orders_created]
+            })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@nocache
+@login_required
+def orders(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    # Fetch orders for the current user
+    orders = Order.objects.filter(user=user).select_related('product', 'amount').order_by('-order_date')
+    
+    context = {
+        'orders': orders,
+        'user_type': user_type,
+        'user': user
+    }
+    return render(request, 'my_orders.html', context)
+
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from .models import ConsultationDate
+from django.utils.dateparse import parse_date
+from django.contrib.auth.decorators import login_required
+import json
+from django.utils import timezone
+from datetime import datetime, time
+# ... existing imports ...
+from django.utils.dateparse import parse_datetime
+
+from django.utils.dateparse import parse_datetime
+from django.utils import timezone
+
+@login_required
+@require_http_methods(["GET", "POST", "DELETE"])
+def schedule_consultation(request):
+    if request.method == 'POST':
+        date_time_str = request.POST.get('date_time')
+        date_time = parse_datetime(date_time_str)
+
+        if not date_time:
+            return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+
+        # Make the datetime timezone-aware
+        date_time = timezone.make_aware(date_time)
+
+        if date_time < timezone.now():
+            return JsonResponse({'status': 'error', 'message': 'Cannot schedule consultations for past dates'})
+
+        consultation_date, created = ConsultationDate.objects.get_or_create(
+            designer=request.user,
+            date_time=date_time,
+            defaults={'is_booked': False}
+        )
+
+        if created:
+            return JsonResponse({'status': 'success', 'message': 'Consultation date scheduled successfully'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'This date and time is already scheduled'})
+
+    elif request.method == 'DELETE':
+        date_time_str = request.GET.get('date_time')
+        
+        try:
+            date_time = parse_datetime(date_time_str)
+            if date_time is None:
+                raise ValueError("Invalid date-time format")
+            
+            # Ensure the datetime is timezone-aware
+            if timezone.is_naive(date_time):
+                date_time = timezone.make_aware(date_time)
+            
+            consultation_date = ConsultationDate.objects.get(designer=request.user, date_time=date_time)
+            consultation_date.delete()
+            return JsonResponse({'status': 'success', 'message': 'Consultation date removed successfully'})
+        except (ValueError, ConsultationDate.DoesNotExist) as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+    else:
+        # Handle GET request
+        consultation_dates = ConsultationDate.objects.filter(designer=request.user).values('date_time', 'is_booked')
+        consultation_dates_list = [
+            {
+                'id': date['date_time'].isoformat(),
+                'title': 'Consultation',
+                'start': date['date_time'].isoformat(),
+                'allDay': False,
+                'className': 'past-date' if date['date_time'] < timezone.now() else '',
+                'editable': date['date_time'] >= timezone.now() and not date['is_booked']
+            } for date in consultation_dates
+        ]
+        
+        context = {
+            'consultation_dates': json.dumps(consultation_dates_list)
+        }
+        return render(request, 'schedule_consultation.html', context)

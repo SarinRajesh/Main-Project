@@ -35,13 +35,15 @@
                 <!-- logo -->
                 <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
-                <!-- share button-->  
+                {% if user.is_authenticated %}
+                            
                 <div class="show-share-wrap">
-                    <div class="show-share"><span>Share</span><img src="{% static 'index/images/share.png' %}" alt=""></div>
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
                 </div>
+                {% else %}
+                {% endif %}
                 <!-- share button end-->  		
                 <!-- search button--> 	 
-                <div class="show-search show-fixed-search vissearch"><i class="fa fa-search"></i></div>
                 <!-- search button end --> 
                 <!-- mobile nav --> 
                 <div class="nav-button-wrap">
@@ -51,39 +53,66 @@
                 <!--  navigation --> 
                 <div class="nav-holder">
                     <nav>
-                        <ul>
+                        <ul>   
+                            {% if user_type != 'Designer' and user_type != 'Customer' %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %} class="act-link"">Designs</a>
+                                </li>
+                                        
                             <li>
-                                <a href="{% url 'index' %}" >Home </a>
-                              
-											
-                                   
-                            </li>
-                            <li>
-                                <a href="{% url 'portfolio' %}"  class="act-link">Portfolio</a>
-                              
-                            </li>
-                            {% if user_type == 'Designer' %}
-                            <li>
-                                <a href="{% url 'add_portfolio' %}">Add Portfolio</a>
-                            </li>
-                            {% endif %}
-                            <li>
-                                <a href="about.html"  >About</a>
-                                <!--second level end-->
+                                <a href="about.html">About</a>
                                 <ul>
                                     <li><a href="about-personal.html">Personal</a></li>
                                     <li><a href="services.html">Services</a></li>
                                 </ul>
-                                <!--second level end-->
+                            </li>
+                                <li>
+                                    <a href="contact.html">Contacts</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'shop' %}">Shop</a>
+                                    <!--second level end-->
+                                    <ul>
+                                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                                    </ul>
+                                    <!--second level end-->
+                                </li>
+                                <li>
+                                    <a href="blog.html">Journal</a>
+                                    <ul>
+                                        <li><a href="blog-grid.html">Grid</a></li>
+                                        <li><a href="blog-masonry.html">Masonry</a></li>
+                                        <li><a href="blog-single.html">Post Single</a></li>
+                                        <li><a href="404.html">404</a></li>
+                                    </ul>
+                                </li>
+                             
+                                <li>
+                                    <a href="{% url 'signin' %}">Signin</a>
+                                </li>
+                                {% else %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}" class="act-link">Designs</a>
+                                </li>
+                            
+                                
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
                             </li>
                             <li>
-                                <a href="contact.html">Contacts </a>
+                                <a href="contact.html">Contacts</a>
                             </li>
-                            {% if user_type == 'Designer' %}
-                            <li>
-                                <a href="{% url 'consultations' %}">Consultations</a>
-                            </li>
-                            {% else %}
+                            {% if user_type != 'Designer' %}
                             <li>
                                 <a href="{% url 'shop' %}">Shop</a>
                                 <!--second level end-->
@@ -94,34 +123,19 @@
                             </li>
                             {% endif %}
                             <li>
-                            <li>
                                 <a href="blog.html">Journal</a>
-                                <!--second level end-->
                                 <ul>
                                     <li><a href="blog-grid.html">Grid</a></li>
                                     <li><a href="blog-masonry.html">Masonry</a></li>
                                     <li><a href="blog-single.html">Post Single</a></li>
                                     <li><a href="404.html">404</a></li>
                                 </ul>
-                                <!--second level end-->
                             </li>
-                            {% if user.is_authenticated %}
-                            <li>
-                                <a href="{% url 'profile' %}" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">{{ user.username }}</a>
-                                <ul>
-                                    <li><a href="{% url 'logout_view' %}">Logout</a></li>
-                                </ul>
-                            </li>
-                            {% else %}
-                            <li>
-                                <a href="{% url 'signin' %}" style="color: #ffffff; font-weight: bold; font-size: 1.2em;">Signin</a>
-                               
-                            </li>
+                            
                             {% endif %}
-
                         </ul>
-                    </li>
                     </nav>
+                    
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -163,25 +177,40 @@
                                                     <p style="margin-top: 20px;">
                                                         <textarea name="description" style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; font-family: Arial, sans-serif;">{{ portfolio.description }}</textarea>
                                                     </p>
-                                                    <div class="clearfix"></div>
-                                                    <span class="bold-separator" style="display: block; margin: 20px 0; height: 2px; background-color: #e0e0e0;"></span>
-                                                    <ul class="pr-list" style="list-style-type: none; padding: 0;">
+                                                    <!-- <div class="clearfix"></div>
+                                                    <span class="bold-separator" style="display: block; margin: 20px 0; height: 2px; background-color: #e0e0e0;"></span> -->
+                                                    <!-- <ul class="pr-list" style="list-style-type: none; padding: 0;">
                                                         <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Client :</span> {{ portfolio.designer_id.name }}</li>
-                                                        <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Status :</span> {{ consultation_status|default:"Editable" }}</li>
+                                                        <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Status :</span> {{ consultation_status|default:"Not " }}</li>
                                                         <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Location :</span> <a href="https://goo.gl/maps/UzN5m" target="_blank" style="color: #007bff; text-decoration: none;">{{ portfolio.designer_id.address }}, {{ portfolio.designer_id.home_town }}, {{ portfolio.designer_id.district }}, {{ portfolio.designer_id.state }}, {{ portfolio.designer_id.pincode}}</a></li>
-                                                    </ul>
-                                                    <span class="bold-separator" style="display: block; margin: 20px 0; height: 2px; background-color: #e0e0e0;"></span>
+                                                    </ul> -->
+                                                    <!-- <span class="bold-separator" style="display: block; margin: 20px 0; height: 2px; background-color: #e0e0e0;"></span> -->
+                                                    <div class="form-group" style="margin-bottom: 20px;    margin-top: -178px;">
+                                                        <label for="category" style="display: block; margin-bottom: 5px; font-weight: bold;    margin-top: 34%;margin-left: -86%; color: #555;">Category:</label>
+                                                        <select name="category" id="category" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+                                                            <option value="" disabled {% if not portfolio.category %}selected{% endif %}>Select Category</option>
+                                                            <option value="living_room" {% if portfolio.category == 'living_room' %}selected{% endif %}>Living Room</option>
+                                                            <option value="bedroom" {% if portfolio.category == 'bedroom' %}selected{% endif %}>Bedroom</option>
+                                                            <option value="kitchen" {% if portfolio.category == 'kitchen' %}selected{% endif %}>Kitchen</option>
+                                                            <option value="dining_room" {% if portfolio.category == 'dining_room' %}selected{% endif %}>Dining Room</option>
+                                                            <option value="bathroom" {% if portfolio.category == 'bathroom' %}selected{% endif %}>Bathroom</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group" style="margin-bottom: 20px;">  <!-- Added sqft field -->
+                                                        <label for="sqft" style="display: block; margin-bottom: 5px; margin-left: -86%;font-weight: bold; color: #555;">Square Feet:</label>
+                                                        <input type="number" name="sqft" id="sqft" value="{{ portfolio.sqft }}" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+                                                    </div>
                                                     <div class="form-group" style="margin-bottom: 20px;">
-                                                        <label for="amount" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Amount:</label>
+                                                        <label for="amount" style="display: block; margin-top:0%; margin-bottom: 5px;margin-left: -86%; font-weight: bold; color: #555;">Amount:</label>
                                                         <input type="number" name="amount" id="amount" value="{{ portfolio.amount.amount }}" min="0" step="0.01" style="display: block; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
                                                     </div>
                                                     <div class="form-group" style="margin-bottom: 75px">
-                                                        <label for="image" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Update Image:</label>
+                                                        <label for="image" style="display: block; margin-bottom: 5px; font-weight: bold;margin-left: -83%; color: #555;">Update Image:</label>
                                                         <input type="file" name="image" id="image" accept="image/*" style="display: block; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
                                                     </div>
                                                     <span class="dec-border fl-wrap" style="display: block; margin: 20px 0; height: 1px; background-color: #e0e0e0;"></span>
                                                     <!-- Submit button for saving changes -->
-                                                    <button type="submit" class="btn float-btn flat-btn" style="margin-top: -106px;margin-left: 52%;padding: 16px 16px;">Save Changes</button>
+                                                    <button type="submit" class="btn float-btn flat-btn" style="margin-top: -106px;margin-left: 52%;">Save Changes</button>
                                                     
                                                     </form>
 
@@ -191,52 +220,91 @@
                                             <h3 class="bold-title" style="padding-bottom: 14px;">{{ portfolio.name }}</h3>
                                             <p>{{ portfolio.description }}</p>
                                             <div class="clearfix"></div>
+                                            
                                             <span class="bold-separator"></span>
                                             <ul class="pr-list">
+
                                                 <li><span>Client :</span> {{ portfolio.designer_id.name }}</li>
+                                                <li><span>Category :</span> {{ portfolio.category_display }}</span></li>
+                                                <li><span>Square Feet :</span> {{ portfolio.sqft }}</li>  <!-- Added sqft display -->
+                                                <li><span>Amount :</span> {{ portfolio.amount.amount }}</li>
                                                 <li><span>Status :</span> {{ consultation_status|default:"Not Booked" }}</li>
                                                 <li><span>Location :</span> <a href="https://goo.gl/maps/UzN5m" target="_blank">{{ portfolio.designer_id.address }}, {{ portfolio.designer_id.home_town }}, {{ portfolio.designer_id.district }}, {{ portfolio.designer_id.state }}, {{ portfolio.designer_id.pincode}}</a></li>
+                                             
                                             </ul>
                                             <span class="dec-border fl-wrap"></span>
+                                            {% if user.is_authenticated %}
                                             {% if consultation_status == 'Requested' %}
                                                 <!-- Show Proceed and Cancel buttons if the consultation is booked -->
-                                                <a href="" class="btn float-btn flat-btn" style="margin-top:-11%">Already requested</a>
+                                                <a href="" class="btn float-btn flat-btn" style="margin-top:-11%">Requested</a>
+                                              
                                                 <form method="post" style="display:inline;">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="portfolio_id" value="{{ portfolio.id }}">
                                                     <button type="submit" name="reject" class="btn float-btn flat-btn" style="background-color: #ab1605;height: 9vh;border:none;margin-left: 5vh;margin-top:-11%">Cancel</button>
                                                 </form>
+                                            {% elif consultation_status == 'Approved' %}
+                                                <!-- Show Approved button if the consultation is approved -->
+                                                <button class="btn float-btn flat-btn" style="margin-top:-11%" disabled>Approved</button>
                                             {% else %}
                                                 <!-- Show Book Consultation button if the consultation is not booked -->
-                                                <a href="#" class="btn float-btn flat-btn" style="margin-top:-11%" id="bookConsultationBtn">Book Consultation</a>
+                                                <a href="#" id="bookConsultationBtn" class="btn float-btn flat-btn" style="margin-top:-11%">Book Consultation</a>
                                             {% endif %}
+                                        {% else %}
+                                            <!-- Show sign in button for guest users -->
+                                            <a href="{% url 'signin' %}" class="btn float-btn flat-btn" style="margin-top:-11%">Sign in to book consultation</a>
+                                        {% endif %}
                                         {% endif %}
                                         </div>
                                         
                                         <!-- Hidden Consultation Form -->
-                                        <form id="consultationForm" method="post" style="display:none;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="proposal" value="Pending">
-                                            <input type="hidden" name="consultation_status" value="Requested">
-                                            <input type="hidden" name="design_id" value="{{ portfolio.id }}">
-                                            <input type="hidden" name="customer_id" value="{{ user.id }}">
-                                            <input type="hidden" name="designer_id" value="{{ portfolio.designer_id.id }}">
-                                        </form>
-                                        
-                                        <!-- JavaScript to handle form submission -->
-                                        <script>
-                                            document.getElementById('bookConsultationBtn').addEventListener('click', function(event) {
-                                                event.preventDefault(); // Prevent the default link behavior
-                                        
-                                                var form = document.getElementById('consultationForm');
-                                                form.submit(); // Submit the hidden form
-                                            });
-                                        </script>
+                                      
+                                        {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const bookConsultationBtn = document.getElementById('bookConsultationBtn');
+        
+        if (bookConsultationBtn) {
+            bookConsultationBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                {% if not user_details_complete %}
+                    Swal.fire({
+                        title: 'Profile Incomplete',
+                        text: 'Please complete your profile before booking a consultation.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Go to Profile',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{% url 'profile' %}";
+                        }
+                    });
+                {% else %}
+                    window.location.href = "{% url 'consultation_booking' portfolio_id=portfolio.id %}";
+                {% endif %}
+            });
+        }
+    });
+</script>
+{% endblock %}
                                         
                                     </div>
                                 </div>
                                 
-                               
+                                {% if messages %}
+                                                    {% for message in messages %}
+                                                        {% if forloop.last %}
+                                                            <div style="margin-top: 15px;margin-left: 100vh;" class="alert alert-{{ message.tags }}">
+                                                                {{ message }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    {% endif %}
                             </div>
                             <!-- container end -->
                             <div class="partcile-dec" data-parcount="120"></div>
@@ -308,12 +376,40 @@
             <!--search-form-holder  end-->  
             <!-- Share container  -->
             <div class="share-wrapper isShare">
-                <div class="share-container"></div>
+                <div class="share-container" style="padding: 20px;">
+                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                        {% if user_type == 'Customer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
+                        </li>
+                    {% endif %}
+                    {% if user_type == 'Designer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                        </li>
+                    {% endif %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                    </li>
+                    </ul>
+                </div>
             </div>
             <!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
-                <div class="fixed-title"><span>Portfolio</span></div>
+                <div class="fixed-title"><span>Designs</span></div>
                 <div class="footer-social">
                     <ul>
                         <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>

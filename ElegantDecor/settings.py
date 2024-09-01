@@ -66,7 +66,7 @@ SOCIALACCOUNT_PROVIDERS = {
             'prompt': 'select_account',
             'access_type': 'online',
         },
-        'LOGIN_REDIRECT_URL': 'usertype.html',  # Redirect URL after Google login
+        'LOGIN_REDIRECT_URL': 'index',  # Changed from 'usertype.html' to 'index'
         'OAUTH2_REDIRECT_URI': 'http://localhost:8000/accounts/google/login/callback/',
     }
 }
@@ -179,3 +179,7 @@ AUTH_USER_MODEL = 'home.Users'
 SOCIALACCOUNT_LOGIN_ON_GET=True
 
 LOGIN_URL='/signin/'
+
+# Add this new setting
+ACCOUNT_ADAPTER = 'home.views.CustomAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'home.views.CustomSocialAccountAdapter'

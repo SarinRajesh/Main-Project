@@ -1,0 +1,438 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+    </head>
+
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
+            </div>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder"href="{% url 'admin_index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                <!-- share button-->  
+                <div class="show-share-wrap">
+                    <div class="show-share">
+                        <span>Admin</span>
+                        <a href="{% url 'logout_view' %}"><img src="{% static 'index/images/logout.png' %}" alt=""></a>
+                    </div>
+                </div>
+                <!-- share button end-->  		
+                <!-- search button--> 	 
+                <div class="show-search show-fixed-search vissearch"> <img src="{% static 'index/images/prof.png' %}" alt="Profile Picture" style="height: 50px; width: 50px;"></div>
+                <!-- search button end --> 
+                <!-- mobile nav --> 
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
+                <div class="nav-holder">
+                
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header  end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!--  content -->
+                    <div class="content">
+                        <!--  section  -->
+                     
+                        <!--  section  end-->
+                        <!--  section  -->
+                        <section >
+                            <div class="container" >
+                              
+                               
+                                <div class="contact-details-wrap fl-wrap" style="margin-top: -5%;">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="small-sec-title">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <!-- contact form -->
+                                            <div class="contact-form-holder fl-wrap">
+                                                <div id="contact-form">
+                                                    <div id="message"></div>
+                                                    <form method="post" action="{% url 'add_designer' %}" id="designerForm">
+                                                        {% csrf_token %}
+                                                        
+                                                        <!-- Username Field -->
+                                                        <div style="margin-bottom: 20px; position: relative;">
+                                                            <input name="username" type="text" id="username" placeholder="Username" required 
+                                                                   style="width: 100%; height: 41px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+                                                            <div id="usernameError" style="color: red; position: absolute; top: 100%; left: 12px; margin-top: 43px; font-size: 12px;"></div>
+                                                        </div>    
+                                                    
+                                                        <!-- Email Field -->
+                                                        <div style="margin-bottom: 20px; position: relative;">
+                                                            <input name="email" type="email" id="email" placeholder="Email" required 
+                                                                   style="width: 100%; height: 41px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+                                                            <div id="emailError" style="color: red; position: absolute; top: 100%; left: 12px; margin-top: 5px; font-size: 12px;"></div>
+                                                        </div>
+                                                        
+                                                        <!-- Password Field -->
+                                                        <div style="margin-bottom: 20px; position: relative;">
+                                                            <input name="password" type="password" id="password" placeholder="Password" required 
+                                                                   style="width: 100%; height: 41px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+                                                            <div id="passwordError" style="color: red; position: absolute; top: 100%; left: 0; margin-top: 5px; font-size: 12px;"></div>
+                                                        </div>
+                                                        
+                                                        <!-- Confirm Password Field -->
+                                                        <div style="margin-bottom: 20px; position: relative;">
+                                                            <input name="confirm_password" type="password" id="confirm_password" placeholder="Confirm Password" required 
+                                                                   style="width: 100%; height: 41px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+                                                            <div id="confirmPasswordError" style="color: red; position: absolute; top: 100%; left: 12px; margin-top: 5px; font-size: 12px;"></div>
+                                                        </div>
+                                                        
+                                                        <!-- Submit Button -->
+                                                        <button type="submit" id="submit" style="padding: 10px 20px; border: none; background-color: #000; color: #fff; border-radius: 5px;">
+                                                            <span>Add Designer</span>
+                                                        </button>
+                                                    </form>
+                                                    
+                                                    
+                                                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                                                    <script>
+                                                        $(document).ready(function() {
+                                                            // Function to validate the form and toggle the submit button
+                                                            function validateForm() {
+                                                                const usernameError = $('#usernameError').text();
+                                                                const emailError = $('#emailError').text();
+                                                                const passwordError = $('#passwordError').text();
+                                                                const confirmPasswordError = $('#confirmPasswordError').text();
+                                                
+                                                                // If any error message exists, disable the submit button
+                                                                if (usernameError || emailError || passwordError || confirmPasswordError) {
+                                                                    $('#submit').prop('disabled', true);
+                                                                } else {
+                                                                    $('#submit').prop('disabled', false);
+                                                                }
+                                                            }
+                                                
+                                                            // Function to validate username
+                                                            $('#username').on('keyup', function() {
+                                                                let username = $(this).val();
+                                                                let errorMessage = '';
+                                                
+                                                                // Validate username length
+                                                                if (username.length < 3) {
+                                                                    errorMessage = 'Username must be at least 3 characters long.';
+                                                                } else {
+                                                                    // AJAX call to check if username exists
+                                                                    $.ajax({
+                                                                        url: "{% url 'check_username' %}",
+                                                                        data: {
+                                                                            'username': username
+                                                                        },
+                                                                        success: function(data) {
+                                                                            if (data.is_taken) {
+                                                                                errorMessage = 'Username already exists.';
+                                                                            }
+                                                                            $('#usernameError').html(errorMessage);
+                                                                            validateForm();
+                                                                        }
+                                                                    });
+                                                                }
+                                                
+                                                                // Display error message
+                                                                $('#usernameError').html(errorMessage);
+                                                                validateForm();
+                                                            });
+                                                
+                                                            // Function to validate email
+                                                            $('#email').on('keyup', function() {
+                                                                let email = $(this).val();
+                                                                let errorMessage = '';
+                                                
+                                                                // Validate email format
+                                                                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                                                if (!emailPattern.test(email)) {
+                                                                    errorMessage = 'Please enter a valid email address.';
+                                                                } else {
+                                                                    // AJAX call to check if email exists
+                                                                    $.ajax({
+                                                                        url: "{% url 'check_email' %}",
+                                                                        data: {
+                                                                            'email': email
+                                                                        },
+                                                                        success: function(data) {
+                                                                            if (data.is_taken) {
+                                                                                errorMessage = 'Email already exists.';
+                                                                            }
+                                                                            $('#emailError').html(errorMessage);
+                                                                            validateForm();
+                                                                        }
+                                                                    });
+                                                                }
+                                                
+                                                                // Display error message
+                                                                $('#emailError').html(errorMessage);
+                                                                validateForm();
+                                                            });
+                                                
+                                                            // Function to validate password
+                                                            $('#password').on('keyup', function() {
+                                                                let password = $(this).val();
+                                                                let errorMessage = '';
+                                                
+                                                                // Validate password criteria
+                                                                const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+                                                                if (!passwordPattern.test(password)) {
+                                                                    errorMessage = 'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
+                                                                }
+                                                
+                                                                // Display error message
+                                                                $('#passwordError').html(errorMessage);
+                                                                validateForm();
+                                                            });
+                                                
+                                                            // Function to validate confirm password
+                                                            $('#confirm_password').on('keyup', function() {
+                                                                let password = $('#password').val();
+                                                                let confirmPassword = $(this).val();
+                                                                let errorMessage = '';
+                                                
+                                                                // Validate confirm password
+                                                                if (password !== confirmPassword) {
+                                                                    errorMessage = 'Passwords do not match.';
+                                                                }
+                                                
+                                                                // Display error message
+                                                                $('#confirmPasswordError').html(errorMessage);
+                                                                validateForm();
+                                                            });
+                                                
+                                                            // Handle form submission
+                                                            $('#designerForm').on('submit', function(event) {
+                                                                event.preventDefault(); // Prevent default form submission
+                                                
+                                                                if ($('#submit').is(':disabled')) {
+                                                                    Swal.fire({
+                                                                        title: 'Error!',
+                                                                        text: 'Please fix the errors before submitting.',
+                                                                        icon: 'error',
+                                                                        confirmButtonText: 'OK'
+                                                                    });
+                                                                    return;
+                                                                }
+                                                
+                                                                $.ajax({
+                                                                    url: $(this).attr('action'), // Form action URL
+                                                                    type: $(this).attr('method'), // Form method (POST)
+                                                                    data: $(this).serialize(), // Serialize form data
+                                                                    success: function(response) {
+                                                                        // Show the success message
+                                                                        Swal.fire({
+                                                                            title: 'Success!',
+                                                                            text: 'Designer has been added successfully.',
+                                                                            icon: 'success',
+                                                                            confirmButtonText: 'OK'
+                                                                        }).then((result) => {
+                                                                            if (result.isConfirmed) {
+                                                                                // Redirect to the same page
+                                                                                window.location.reload(); // Reload the current page
+                                                                            }
+                                                                        });
+                                                                    },
+                                                                    error: function(response) {
+                                                                        // Handle error (optional)
+                                                                        Swal.fire({
+                                                                            title: 'Error!',
+                                                                            text: 'There was an issue adding the designer.',
+                                                                            icon: 'error',
+                                                                            confirmButtonText: 'OK'
+                                                                        });
+                                                                    }
+                                                                });
+                                                            });
+                                                        });
+                                                    </script>
+                                                    
+                                                    
+                                                </div>
+                                            </div>
+                                            <!-- contact form  end-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--  partcile-dec  -->
+                            <div class="partcile-dec" data-parcount="200"></div>
+                            <!--  partcile-dec  end-->
+                        </section>
+                        <!--  section  end-->
+                        <!--  social-wrap  -->
+                        <div class="social-wrap fl-wrap">
+                            <ul>
+                                <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                            </ul>
+                        </div>
+                        <!--  social-wrap  end-->
+                    </div>
+                    <!-- content end -->
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+            <!--search-form-holder -->
+            <div class="search-form-holder fixed-search">
+                <div class="search-form-bg"></div>
+                <div class="search-form-wrap">
+                    <div class="container">
+                        <form class="searchform" method="get"  >
+                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
+                        </form>
+                        <div class="close-fixed-search"></div>
+                    </div>
+                    <div class="dublicated-text"></div>
+                </div>
+            </div>
+            <!--search-form-holder  end-->
+            <!-- Share container  -->
+            <div class="share-wrapper isShare">
+                <div class="share-container"></div>
+            </div>
+            <!-- Share container  end-->
+<footer class="main-footer" style="width: 15%;    background-color: #000000f2; padding: 20px; height: 100vh; position: fixed;">
+
+    <!-- Admin links moved to the top with inline CSS and white underline border -->
+    <div class="footer-admin-links">
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'users_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Users Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'designs_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Designs Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'consultations_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Consultations Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'products_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Products Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'add_designer' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Add Designers
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Add Products
+                </a>
+            </li>
+        </ul>
+        
+    </div>
+
+</footer>
+
+            <!-- footer end-->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+ </body>
+</html>

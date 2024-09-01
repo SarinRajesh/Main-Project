@@ -1,0 +1,668 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <!--=============== basic  ===============-->
+    <meta charset="UTF-8">
+    <title>ElegantDecor - Creative Responsive Architecture Template</title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="robots" content="index, follow" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <!--=============== css  ===============-->
+    <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+    <!--=============== favicons ===============-->
+    <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+
+
+
+    <style>
+        /* Container for the profile photo and camera icon */
+        /* Container for the profile photo and camera icon */
+        .photo-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Profile photo styling */
+        .profile-img {
+            width: 100px;
+            /* Adjust size as needed */
+            height: 100px;
+            /* Adjust size as needed */
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Styling for the camera icon */
+        .camera-icon {
+            position: absolute;
+            bottom: 10px;
+            /* Adjust spacing from bottom */
+            right: 10px;
+            /* Adjust spacing from right */
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            width: 40px;
+            /* Adjust size as needed */
+            height: 40px;
+            /* Adjust size as needed */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            /* Ensures the label covers the icon area */
+            z-index: 1;
+        }
+
+        /* Hide the file input */
+        #photo-upload {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            /* Makes the input invisible but clickable */
+            cursor: pointer;
+            /* Ensures the cursor changes to a pointer */
+        }
+
+        /* Hover effect for camera icon */
+        .camera-icon:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Additional styling */
+        .profile-photo {
+            text-align: center;
+            margin-bottom: -1vh;
+        }
+
+        .profile-photo img {
+            border-radius: 0%;
+            width: 50vh;
+            height: 50vh;
+        }
+
+        .profile-detail-text {
+            color: white;
+            font-weight: 100;
+            font-size: large;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+       
+    </style>
+</head>
+
+<body>
+    <!-- loader -->
+    <div class="loader">
+        <div id="movingBallG">
+            <div class="movingBallLineG"></div>
+            <div id="movingBallG_1" class="movingBallG"></div>
+        </div>
+    </div>
+    <!-- loader end -->
+    <!--================= Main   ================-->
+    <div id="main">
+        <!--================= header ================-->
+        <header class="main-header">
+            <!-- logo -->
+            <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+            <!-- logo end -->  
+            {% if user.is_authenticated %}
+                        
+            <div class="show-share-wrap">
+                <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
+            </div>
+            {% else %}
+            {% endif %}
+            <!-- share button end-->  		
+            <!-- search button--> 	 
+            <!-- search button end --> 
+            <!-- mobile nav --> 
+            <div class="nav-button-wrap">
+                <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+            </div>
+            <!-- mobile nav end--> 
+            <!--  navigation --> 
+            <div class="nav-holder">
+                <nav>
+                    <ul>   
+                        {% if user_type != 'Designer' and user_type != 'Customer' %}
+                            <li>
+                                <a href="{% url 'index' %}" >Home</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'portfolio' %}">Designs</a>
+                            </li>
+                                    
+                        <li>
+                            <a href="about.html">About</a>
+                            <ul>
+                                <li><a href="about-personal.html">Personal</a></li>
+                                <li><a href="services.html">Services</a></li>
+                            </ul>
+                        </li>
+                            <li>
+                                <a href="contact.html">Contacts</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'shop' %}">Shop</a>
+                                <!--second level end-->
+                                <ul>
+                                    <li><a href="{% url 'cart' %}">Cart</a></li>
+                                </ul>
+                                <!--second level end-->
+                            </li>
+                            <li>
+                                <a href="blog.html">Journal</a>
+                                <ul>
+                                    <li><a href="blog-grid.html">Grid</a></li>
+                                    <li><a href="blog-masonry.html">Masonry</a></li>
+                                    <li><a href="blog-single.html">Post Single</a></li>
+                                    <li><a href="404.html">404</a></li>
+                                </ul>
+                            </li>
+                         
+                            <li>
+                                <a href="{% url 'signin' %}">Signin</a>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a href="{% url 'index' %}" >Home</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'portfolio' %}">Designs</a>
+                            </li>
+                        
+                            
+                        <li>
+                            <a href="about.html">About</a>
+                            <ul>
+                                <li><a href="about-personal.html">Personal</a></li>
+                                <li><a href="services.html">Services</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="contact.html">Contacts</a>
+                        </li>
+                        {% if user_type != 'Designer' %}
+                        <li>
+                            <a href="{% url 'shop' %}" >Shop</a>
+                            <!--second level end-->
+                            <ul>
+                                <li><a href="{% url 'cart' %}">Cart</a></li>
+                            </ul>
+                            <!--second level end-->
+                        </li>
+                        {% endif %}
+                        <li>
+                            <a href="blog.html">Journal</a>
+                            <ul>
+                                <li><a href="blog-grid.html">Grid</a></li>
+                                <li><a href="blog-masonry.html">Masonry</a></li>
+                                <li><a href="blog-single.html">Post Single</a></li>
+                                <li><a href="404.html">404</a></li>
+                            </ul>
+                        </li>
+                        
+                        {% endif %}
+                    </ul>
+                </nav>
+                
+            </div>
+            <!-- navigation  end -->
+        </header>
+        <!-- header  end -->
+        <!--=============== wrapper ===============-->
+        <div id="wrapper">
+            <!-- content-holder  -->
+            <div class="content-holder">
+                <!--  content -->
+                <div class="content">
+                    <!--  section  -->
+
+                    <section>
+                        <div class="container">
+
+
+                            <div class="contact-details-wrap fl-wrap">
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <!-- contact form -->
+                                        <div class="contact-form-holder fl-wrap">
+                                            <div id="contact-form" style="margin-left: 16%;margin-top: -12%;">
+                                                <div id="message"></div>
+                                                <form method="post" action="{% url 'edit_profile' %}" enctype="multipart/form-data" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                                    {% csrf_token %}
+                                                    <h3 class="bold-title" style="padding-bottom: 14px; color: #333; border-bottom: 2px solid #e0e0e0;">
+                                                        Complete profile here...
+                                                    </h3>
+                                                    <p style="margin-top: 20px;">
+                                                        <label for="name" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Name:</label>
+                                                        <input type="text" id="name" name="name" value="{{ user.name }}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                        <span id="text1" style="position: absolute;margin-top: 8%;margin-left: -35%;" class="error"></span>
+                                                    </p>
+                                                 
+                                                    <p style="margin-top: 20px;">
+                                                        <label for="phone" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Phone:</label>
+                                                        <input type="text" id="phone" name="phone" value="{{ user.phone }}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                    </p> <span id="text3" style="position: absolute;margin-top: 7%;margin-left: -35%;" class="error"></span>
+                    
+                                                    <p style="margin-top: 20px;">
+                                                        <label for="email" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Email:</label>
+                                                        <input type="email" id="email" name="email" value="{{ user.email }}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                        <span id="text2" style="position: absolute;margin-top: 4%;margin-left: -35%;" class="error"></span>
+                                                    </p>
+                                                    <p style="margin-top: 20px;">
+                                                        <label for="username" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Username:</label>
+                                                        <input type="text" id="username" name="username" value="{{ user.username }}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                        <span id="text4" style="position: absolute;margin-top: 8%;margin-left: -35%;" class="error"></span>
+                                                    </p>
+                                                   
+                                                <p style="margin-top: 20px;">
+                                                    <label for="address" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Address:</label>
+                                                    <input type="text" id="address" required name="address" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                    <span id="addressError" style="position: absolute;margin-top: 8%;margin-left: -35%;"  class="error"></span>
+                                                </p>
+                                                    <p style="margin-top: 20px;">
+                                                            <label for="home_town" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Home Town:</label>
+                                                            <input type="text" required id="home_town" name="home_town" value="{{ user.home_town }}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                            <span id="text5" style="position: absolute;margin-top: 8%;margin-left: -35%;"  class="error"></span>
+                                                        </p>
+                                                        <p style="margin-top: 20px;">
+                                                            <label for="district" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">District:</label>
+                                                            <input type="text" required id="district" name="district" value="{{ user.district }}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                            <span id="text6" style="position: absolute;margin-top: 8%;margin-left: -35%;"  class="error"></span>
+                                                        </p>
+                                                        <p style="margin-top: 20px;">
+                                                            <label for="state" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">State:</label>
+                                                            <input type="text" required id="state" name="state" value="{{ user.state }}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                            <span id="text7" style="position: absolute;margin-top: 8%;margin-left: -35%;"  class="error"></span>
+                                                        </p>
+                                                        <p style="margin-top: 20px;">
+                                                            <label for="pincode" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Pincode:</label>
+                                                            <input type="text" required id="pincode" name="pincode" value="{{ user.pincode }}" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6)" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                            <span id="pincodeError" style="position: absolute;margin-top: 8%;margin-left: -35%;" class="error" style="display: none;">Pincode must be exactly 6 digits.</span>
+                                                    <button type="submit" class="btn float-btn flat-btn" style="margin-top: 20px;">Update Profile</button>
+                                                    
+                                                    <div class="clearfix"></div>
+                                                    <span class="bold-separator" style="display: block; margin: 20px 0; height: 2px; background-color: #e0e0e0;"></span>
+                                                 
+                                                </form>
+                                            </div>
+                                        </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.2/jquery.validate.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        var mod1 = 0, mod2 = 0, mod3 = 0, mod4 = 0, mod5 = 0, mod6 = 0, mod7 = 0, mod8 = 0, mod9 = 0;
+
+        function validateName() {
+            var n = document.getElementById("name");
+            var namePattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+            if (!n.value.match(namePattern) || n.value.trim() !== n.value) {
+                document.getElementById("text1").innerHTML = "<span class='error'>Invalid name format. Please use only letters with single spaces between words.</span>";
+                mod1 = 1;
+            } else {
+                document.getElementById("text1").innerHTML = "<span class='error'></span>";
+                mod1 = 0;
+            }
+            toggleSubmitButton();
+        }
+
+        function validateEmail() {
+            var email = document.getElementById("email");
+            var emailPattern = /^\S+@\S+\.\S+$/;
+            if (!email.value.match(emailPattern) || email.value.trim() !== email.value) {
+                document.getElementById("text2").innerHTML = "<span class='error'>Invalid email format. Please check and try again.</span>";
+                mod2 = 1;
+                toggleSubmitButton();
+            } else {
+                $.ajax({
+                    url: "{% url 'check_email' %}",
+                    data: {'email': email.value},
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.is_taken && email.value !== "{{ user.email }}") {
+                            document.getElementById("text2").innerHTML = "<span class='error'>Email already taken. Please try another</span>";
+                            mod2 = 1;
+                        } else {
+                            document.getElementById("text2").innerHTML = "<span class='error'></span>";
+                            mod2 = 0;
+                        }
+                        toggleSubmitButton();
+                    }
+                });
+            }
+        }
+
+        function validatePhone() {
+            var phone = document.getElementById("phone");
+            var phonePattern = /^\d{10}$/;
+            if (!phone.value.match(phonePattern) || phone.value.trim() !== phone.value) {
+                document.getElementById("text3").innerHTML = "<span class='error'>Invalid phone number. Please enter exactly 10 digits without spaces.</span>";
+                mod3 = 1;
+            } else {
+                document.getElementById("text3").innerHTML = "<span class='error'></span>";
+                mod3 = 0;
+            }
+            toggleSubmitButton();
+        }
+
+        function validateUsername() {
+            var username = document.getElementById("username");
+            var usernamePattern = /^[a-zA-Z0-9_]+$/;
+            if (!username.value.match(usernamePattern) || username.value.trim() !== username.value) {
+                document.getElementById("text4").innerHTML = "<span class='error'>Invalid username. Use only letters, numbers, and underscores without spaces.</span>";
+                mod4 = 1;
+                toggleSubmitButton();
+            } else {
+                $.ajax({
+                    url: "{% url 'check_username' %}",
+                    data: {'username': username.value},
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.is_taken && username.value !== "{{ user.username }}") {
+                            document.getElementById("text4").innerHTML = "<span class='error'>Username already taken. Please try another</span>";
+                            mod4 = 1;
+                        } else {
+                            document.getElementById("text4").innerHTML = "<span class='error'></span>";
+                            mod4 = 0;
+                        }
+                        toggleSubmitButton();
+                    }
+                });
+            }
+        }
+
+        function validateHomeTown() {
+            var homeTown = document.getElementById("home_town");
+            var letterPattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+            if (!homeTown.value.match(letterPattern) || homeTown.value.trim() !== homeTown.value) {
+                document.getElementById("text5").innerHTML = "<span class='error'>Invalid home town. Use only letters with single spaces between words.</span>";
+                mod5 = 1;
+            } else {
+                document.getElementById("text5").innerHTML = "<span class='error'></span>";
+                mod5 = 0;
+            }
+            toggleSubmitButton();
+        }
+
+        function validateDistrict() {
+            var district = document.getElementById("district");
+            var letterPattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+            if (!district.value.match(letterPattern) || district.value.trim() !== district.value) {
+                document.getElementById("text6").innerHTML = "<span class='error'>Invalid district. Use only letters with single spaces between words.</span>";
+                mod6 = 1;
+            } else {
+                document.getElementById("text6").innerHTML = "<span class='error'></span>";
+                mod6 = 0;
+            }
+            toggleSubmitButton();
+        }
+
+        function validateState() {
+            var state = document.getElementById("state");
+            var letterPattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+            if (!state.value.match(letterPattern) || state.value.trim() !== state.value) {
+                document.getElementById("text7").innerHTML = "<span class='error'>Invalid state. Use only letters with single spaces between words.</span>";
+                mod7 = 1;
+            } else {
+                document.getElementById("text7").innerHTML = "<span class='error'></span>";
+                mod7 = 0;
+            }
+            toggleSubmitButton();
+        }
+
+        function validatePincode() {
+            var pincode = document.getElementById("pincode");
+            var pincodePattern = /^\d{6}$/;
+            if (!pincode.value.match(pincodePattern) || pincode.value.trim() !== pincode.value) {
+                document.getElementById("pincodeError").style.display = "block";
+                document.getElementById("pincodeError").innerHTML = "Pincode must be exactly 6 digits without spaces.";
+                mod8 = 1;
+            } else {
+                document.getElementById("pincodeError").style.display = "none";
+                mod8 = 0;
+            }
+            toggleSubmitButton();
+        }
+
+        function validateAddress() {
+            var address = document.getElementById("address");
+            var addressPattern = /^[A-Za-z0-9,.'#\-]+(\s[A-Za-z0-9,.'#\-]+)*$/;
+            if (!address.value.match(addressPattern) || address.value.trim() !== address.value) {
+                document.getElementById("addressError").innerHTML = "<span class='error'>Invalid address format. Please use single spaces between words and avoid leading/trailing spaces.</span>";
+                mod9 = 1;
+            } else {
+                document.getElementById("addressError").innerHTML = "<span class='error'></span>";
+                mod9 = 0;
+            }
+            toggleSubmitButton();
+        }
+
+        function toggleSubmitButton() {
+            if (mod1 === 0 && mod2 === 0 && mod3 === 0 && mod4 === 0 && mod5 === 0 && mod6 === 0 && mod7 === 0 && mod8 === 0 && mod9 === 0) {
+                $('.btn').attr("disabled", false);
+            } else {
+                $('.btn').attr("disabled", true);
+            }
+        }
+
+        // Initial validation
+        validateName();
+        validateEmail();
+        validatePhone();
+        validateUsername();
+        validateHomeTown();
+        validateDistrict();
+        validateState();
+        validatePincode();
+        validateAddress();
+
+        // Event listeners
+        $("#name").keyup(validateName);
+        $("#email").keyup(validateEmail);
+        $("#phone").keyup(validatePhone);
+        $("#username").keyup(validateUsername);
+        $("#home_town").keyup(validateHomeTown);
+        $("#district").keyup(validateDistrict);
+        $("#state").keyup(validateState);
+        $("#pincode").keyup(validatePincode);
+        $("#address").keyup(validateAddress);
+    });
+</script>
+                        
+                        <!--  partcile-dec  -->
+                        <div class="partcile-dec" data-parcount="200"></div>
+                        <!--  partcile-dec  end-->
+                    </section>
+                    <script>
+                        document.getElementById('photo-upload').addEventListener('change', function (event) {
+                            const file = event.target.files[0];
+                            if (file) {
+                                const formData = new FormData();
+                                formData.append('photo', file);
+
+                                // Make an AJAX request to upload the photo
+                                fetch("{% url 'upload_photo' %}", {
+                                    method: 'POST',
+                                    body: formData,
+                                    headers: {
+                                        'X-CSRFToken': '{{ csrf_token }}'
+                                    }
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            document.querySelector('.profile-img').src = data.photo_url;
+                                        } else {
+                                            alert('Error uploading photo');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error:', error);
+                                        alert('Error uploading photo');
+                                    });
+                            }
+                        });
+                    </script>
+                    <!--  section  end-->
+                    <!--  social-wrap  -->
+                    <div class="social-wrap fl-wrap">
+                        <ul>
+                            <li><a href="#" target="_blank"><i class="fa fa-facebook"></i></a></li>
+                            <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                            <li><a href="#" target="_blank"><i class="fa fa-instagram"></i></a></li>
+                            <li><a href="#" target="_blank"><i class="fa fa-pinterest"></i></a></li>
+                            <li><a href="#" target="_blank"><i class="fa fa-tumblr"></i></a></li>
+                        </ul>
+                    </div>
+                    <!--  social-wrap  end-->
+                </div>
+                <!-- content end -->
+                <!--=============== content-footer   ===============-->
+                <div class="height-emulator"></div>
+                <footer class="content-footer">
+                    <div class="footer-inner">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                <div class="footer-box fl-wrap">
+                                    <ul>
+                                        <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                        <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a>
+                                        </li>
+                                        <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                <div class="footer-box fl-wrap">
+                                    <div class="subcribe-form fl-wrap">
+                                        <span>Newsletter</span>
+                                        <form id="subscribe">
+                                            <input class="enteremail" name="email" id="subscribe-email"
+                                                placeholder="email" spellcheck="false" type="text">
+                                            <button type="submit" id="subscribe-button"
+                                                class="subscribe-button">Submit</button>
+                                            <label for="subscribe-email" class="subscribe-message"></label>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3"></div>
+                            <div class="col-md-9">
+                                <div class="fl-wrap policy-box">
+                                    <p> &#169; ElegantDecor 2017. All rights reserved. </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                    </div>
+                </footer>
+                <!-- content-footer end    -->
+            </div>
+            <!-- content-holder end -->
+        </div>
+        <!-- wrapper end -->
+        <!--search-form-holder -->
+        <div class="search-form-holder fixed-search">
+            <div class="search-form-bg"></div>
+            <div class="search-form-wrap">
+                <div class="container">
+                    <form class="searchform" method="get">
+                        <input type="text" autocomplete="off" name="s" placeholder="Type and Enter to Search">
+                    </form>
+                    <div class="close-fixed-search"></div>
+                </div>
+                <div class="dublicated-text"></div>
+            </div>
+        </div>
+        <!--search-form-holder  end-->
+        <!-- Share container  -->
+        <div class="share-wrapper isShare">
+            <div class="share-container" style="padding: 20px;">
+                <ul style="list-style-type: none; padding: 0; margin: 0;">
+                    {% if user_type == 'Customer' %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                    </li>
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                    </li>
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
+                    </li>
+                {% endif %}
+                {% if user_type == 'Designer' %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                    </li>
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
+                    </li>
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                    </li>
+                {% endif %}
+                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                    <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                </li>
+                </ul>
+            </div>
+        </div>
+        <!-- Share container  end-->
+        <!-- footer -->
+        <footer class="main-footer">
+            <div class="fixed-title"><span>Profile</span></div>
+            <div class="footer-social">
+                <ul>
+                    <li><a href="#" target="_blank"><i class="fa fa-facebook"></i></a></li>
+                    <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                    <li><a href="#" target="_blank"><i class="fa fa-instagram"></i></a></li>
+                    <li><a href="#" target="_blank"><i class="fa fa-pinterest"></i></a></li>
+                    <li><a href="#" target="_blank"><i class="fa fa-tumblr"></i></a></li>
+                </ul>
+            </div>
+        </footer>
+        <!-- footer end-->
+    </div>
+    <!-- Main end -->
+    <!--=============== scripts  ===============-->
+    <script type="text/javascript"
+        src="http://maps.google.com/maps/api/js?key=AIzaSyDwJSRi0zFjDemECmFl9JtRj1FY7TiTRRo"></script>
+    <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+    <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+    <script type="text/javascript" src="{% static 'index/js/map.js' %}"></script>
+</body>
+
+</html>

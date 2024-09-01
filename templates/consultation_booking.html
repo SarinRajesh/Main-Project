@@ -1,0 +1,465 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <style>
+            .custom-select {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                font-size: 16px;
+                line-height: 1.5;
+                color: #333;
+                background-color: #fff;
+                background-image: none;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                background-size: 14px;
+            }
+            .custom-select:focus {
+                border-color: #292929;
+                outline: 0;
+                box-shadow: 0 0 0 0.2rem rgba(41, 41, 41, 0.25);
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
+            </div>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                <!-- share button-->  
+                <div class="show-share-wrap">
+                    <div class="show-share"><span>Share</span><img src="{% static 'index/images/share.png' %}" alt=""></div>
+                </div>
+                <!-- share button end-->  		
+                <!-- search button--> 	 
+                <div class="show-search show-fixed-search vissearch"><i class="fa fa-search"></i></div>
+                <!-- search button end --> 
+                <!-- mobile nav --> 
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
+                <div class="nav-holder">
+                    <nav>
+                        <ul>
+                            {% if user_type != 'Designer' and user_type != 'Customer' %}
+                            <li>
+                                <a href="{% url 'index' %}" >Home</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'portfolio' %}"  class="act-link">Portfolio</a>
+                            </li>
+                                    
+                        <li>
+                            <a href="about.html">About</a>
+                            <ul>
+                                <li><a href="about-personal.html">Personal</a></li>
+                                <li><a href="services.html">Services</a></li>
+                            </ul>
+                        </li>
+                            <li>
+                                <a href="contact.html">Contacts</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'shop' %}">Shop</a>
+                                <!--second level end-->
+                                <ul>
+                                    <li><a href="{% url 'cart' %}">Cart</a></li>
+                                </ul>
+                                <!--second level end-->
+                            </li>
+                            <li>
+                                <a href="blog.html">Journal</a>
+                                <ul>
+                                    <li><a href="blog-grid.html">Grid</a></li>
+                                    <li><a href="blog-masonry.html">Masonry</a></li>
+                                    <li><a href="blog-single.html">Post Single</a></li>
+                                    <li><a href="404.html">404</a></li>
+                                </ul>
+                            </li>
+                          
+                            <li>
+                                <a href="{% url 'signin' %}">Signin</a>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a href="{% url 'index' %}" >Home </a>
+                              
+							  
+                            </li>
+                            <li>
+                                <a href="{% url 'portfolio' %}"  class="act-link">Portfolio</a>
+                                <ul>
+                                    <li><a href="{% url 'my_consultations' %}">My Bookings</a></li>
+                                </ul>
+                            </li>
+                            {% if user_type == 'Designer' %}
+                            <li>
+                                <a href="{% url 'add_portfolio' %}">Add Portfolio</a>
+                            </li>
+                            {% endif %}
+                            <li>
+                                <a href="about.html"  >About</a>
+                                <!--second level end-->
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
+                                <!--second level end-->
+                            </li>
+                            <li>
+                                <a href="contact.html">Contacts </a>
+                            </li>
+                            {% if user_type == 'Designer' %}
+                            <li>
+                                <a href="{% url 'consultations' %}">Consultations</a>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a href="{% url 'shop' %}">Shop</a>
+                                <!--second level end-->
+                                <ul>
+                                    <li><a href="{% url 'cart' %}">Cart</a></li>
+                                </ul>
+                                <!--second level end-->
+                            </li>
+                            {% endif %}
+                            <li>
+                            <li>
+                                <a href="blog.html">Journal</a>
+                                <!--second level end-->
+                                <ul>
+                                    <li><a href="blog-grid.html">Grid</a></li>
+                                    <li><a href="blog-masonry.html">Masonry</a></li>
+                                    <li><a href="blog-single.html">Post Single</a></li>
+                                    <li><a href="404.html">404</a></li>
+                                </ul>
+                                <!--second level end-->
+                            </li>
+                            {% if user.is_authenticated %}
+                            <li>
+                                <a href="{% url 'profile' %}" style="color: #f39c12; font-weight: bold; font-size: 1.2em;">{{ user.username }}</a>
+                                <ul>
+                                    <li><a href="{% url 'logout_view' %}">Logout</a></li>
+                                </ul>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a href="{% url 'signin' %}" style="color: #ffffff; font-weight: bold; font-size: 1.2em;">Signin</a>
+                               
+                            </li>
+                            {% endif %}
+                            {% endif %}
+                        </ul>
+                    </li>
+                    </nav>
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header  end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!-- content  end -->  
+                    <!-- content   --> 
+                    <div class="content">
+                        <!-- section --> 
+                        <section class="pr-der-pad">
+                            <!-- container-->  
+                            <div class="container">
+                                <!-- det-wrap-->  
+                                <div class="fl-wrap det-wrap">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="pr-title">
+                                                <div class="swiper-slide">
+                                                    <a href="{{ portfolio.image.url }}" class="gallery-popup popgal" ><i class="fa fa-search"></i></a>
+                                                    <img src="{{ portfolio.image.url }}" alt="{{ portfolio.name }}" style="margin-left: -21vh;margin-top:-6vh;height: 544px;width: 235%;">
+                                                 
+                                                </div>
+                                                <!-- <span>Internet tend to repeat predefined chunks If you are going to use a passage of Lorem Ipsum.</span> -->
+                                            </div>
+                                        </div>
+                                    
+                                        
+                                            <div class="col-md-8"  style="margin-left: 58%;margin-top: -43%;width:47%">
+                                       
+                                                <form id="consultationForm" method="post" action="{% url 'consultation_booking' portfolio.id %}" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                                    {% csrf_token %}
+                                                    <h3 class="bold-title" style="padding-bottom: 14px; color: #333; border-bottom: 2px solid #e0e0e0;">
+                                                        Book Consultation for {{ portfolio.name }}
+                                                    </h3>
+                                                    <p style="margin-top: 20px;">
+                                                        <label for="schedule_date" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Schedule Date:</label>
+                                                        <select name="schedule_date" id="schedule_date" required class="custom-select">
+                                                            <option value="">Select a date and time</option>
+                                                            {% for date in available_dates %}
+                                                                <option value="{{ date.date_time|date:'Y-m-d H:i' }}">
+                                                                    {{ date.date_time|date:'F d, Y' }} at {{ date.date_time|time:'H:i' }}
+                                                                </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </p>
+                                                    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                                                        <p style="width: 30%;">
+                                                            <label for="room_length" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Length (ft):</label>
+                                                            <input type="number" name="room_length" id="room_length" step="0.01" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                        </p>
+                                                        <p style="width: 30%;">
+                                                            <label for="room_width" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Width (ft):</label>
+                                                            <input type="number" name="room_width" id="room_width" step="0.01" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                        </p>
+                                                        <p style="width: 30%;">
+                                                            <label for="room_height" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Height (ft):</label>
+                                                            <input type="number" name="room_height" id="room_height" step="0.01" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                        </p>
+                                                    </div>
+                                                    <p style="margin-top: 20px;">
+                                                        <label for="design_preferences" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Design Preferences:</label>
+                                                        <textarea name="design_preferences" id="design_preferences" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;" placeholder="Describe your style preferences, color schemes, or any specific requirements"></textarea>
+                                                    </p>
+                                                    <p style="margin-top: 20px;">
+                                                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Consultation Fee:</label>
+                                                        <span style="display: inline-block; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">₹5000.00</span>
+                                                    </p>
+                                                    <div class="clearfix"></div>
+                                                    <span class="bold-separator" style="display: block; margin: 20px 0; height: 2px; background-color: #e0e0e0;"></span>
+                                                    <!-- <ul class="pr-list" style="list-style-type: none; padding: 0;">
+                                                        <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Designer:</span> {{ portfolio.designer_id.name }}</li>
+                                                        <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Design:</span> {{ portfolio.name }}</li>
+                                                        <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Category:</span> {{ portfolio.category }}</li>
+                                                       <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Amount:</span> {{ portfolio.amount.amount }}</li>
+                                                    </ul> -->
+                                                    <span class="bold-separator" style="display: block; margin: 20px 0; height: 2px; background-color: #e0e0e0;"></span>
+                                                    <button type="button" id="bookConsultation" class="btn float-btn flat-btn" style="margin-top: 7%;margin-left:-13%; vertical-align: middle;">Submit</button>
+                                               
+                                                </form>
+
+
+                                           
+                                        </div>
+                                        
+                                        <!-- Hidden Consultation Form -->
+                                    
+                                        
+                                    </div>
+                                </div>
+                                
+                                {% if messages %}
+                                                    {% for message in messages %}
+                                                        {% if forloop.last %}
+                                                            <div style="margin-top: 15px;margin-left: 100vh;" class="alert alert-{{ message.tags }}">
+                                                                {{ message }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    {% endif %}
+                            </div>
+                            <!-- container end -->
+                            <div class="partcile-dec" data-parcount="120"></div>
+                        </section>
+                        <!-- section end --> 
+                    </div>
+
+                    
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById('bookConsultation').addEventListener('click', function(event) {
+        event.preventDefault();
+        
+        initializeRazorpay();
+    });
+});
+
+function initializeRazorpay() {
+    var options = {
+        "key": "rzp_test_3ybzcJKABRAGdi", // Replace with your actual Razorpay key
+        "amount": 500000, // Amount in paise (5000 INR)
+        "currency": "INR",
+        "name": "ElegantDecor",
+        "description": "Consultation Booking",
+        "image": "{% static 'index/images/ElegantDecor.gif' %}",
+        "handler": function (response){
+            // On successful payment, create the consultation
+            var form = document.getElementById('consultationForm');
+            var formData = new FormData(form);
+            
+            fetch('{% url "consultation_booking" portfolio_id=portfolio.id %}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    Swal.fire({
+                        title: 'Consultation Booked Successfully!',
+                        text: 'Your consultation has been booked and payment received.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{% url "my_consultations" %}';
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message || 'Failed to book consultation. Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        },
+        "prefill": {
+            "name": "{{ user.name }}",
+            "email": "{{ user.email }}",
+            "contact": "{{ user.phone }}"
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+}
+</script>
+                    <!-- content  end --> 
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+            <!--search-form-holder -->  
+            <div class="search-form-holder fixed-search">
+                <div class="search-form-bg"></div>
+                <div class="search-form-wrap">
+                    <div class="container">
+                        <form class="searchform" method="get"  >
+                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
+                        </form>
+                        <div class="close-fixed-search"></div>
+                    </div>
+                    <div class="dublicated-text"></div>
+                </div>
+            </div>
+            <!--search-form-holder  end-->  
+            <!-- Share container  -->
+            <div class="share-wrapper isShare">
+                <div class="share-container"></div>
+            </div>
+            <!-- Share container  end-->
+            <!-- footer -->
+            <footer class="main-footer">
+                <div class="fixed-title"><span>Portfolio</span></div>
+                <div class="footer-social">
+                    <ul>
+                        <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                        <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                    </ul>
+                </div>
+            </footer>
+            <!-- footer end-->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+    <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+    <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+    
+</body>
+</html>

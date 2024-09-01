@@ -1,601 +1,353 @@
 {% load static %}
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+    </head>
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="apple-touch-icon" sizes="76x76" href="/admin/img/apple-icon.png">
-  <link rel="icon" type="image/png" href="../admin/img/favicon.png">
-  <title>
-    Material Dashboard 2 by Creative Tim
-  </title>
-  <!--     Fonts and icons     -->
-  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
-  <!-- Nucleo Icons -->
-  <link rel="apple-touch-icon" sizes="76x76" href="{% static 'admin/img/apple-icon.png' %}">
-  <link rel="icon" type="image/png" href="{% static 'admin/img/favicon.png' %}">
-  <!-- Font Awesome Icons -->
-  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <!-- Material Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-  <!-- CSS Files -->
-  <link id="pagestyle" href="{% static 'admin/css/material-dashboard.css' %}?v=3.1.0" rel="stylesheet" />
-  <!-- Nepcha Analytics (nepcha.com) -->
-  <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
-  <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
-  <style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 20px;
-    }
-    .container {
-        max-width: 600px;
-        margin: 0 auto;
-        background-color: #fff;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    h2 {
-        color: #333;
-        text-align: center;
-        margin-bottom: 30px;
-    }
-    .form-group {
-        margin-bottom: 20px;
-    }
-    label {
-        display: block;
-        margin-bottom: 5px;
-        color: #666;
-    }
-    input[type="text"],
-    input[type="number"],
-    textarea {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-    }
-    textarea {
-        height: 100px;
-        resize: vertical;
-    }
-    input[type="file"] {
-        border: 1px solid #ddd;
-        padding: 10px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    input[type="submit"] {
-        background-color: #4CAF50;
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        width: 100%;
-        font-size: 16px;
-    }
-    input[type="submit"]:hover {
-        background-color: #45a049;
-    }
-    .error {
-        color: #ff0000;
-        margin-bottom: 15px;
-    }
-</style>
-</head>
-
-<body class="g-sidenav-show  bg-gray-200">
-  <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3   bg-gradient-dark" id="sidenav-main">
-    <div class="sidenav-header">
-      <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-      <a class="navbar-brand m-0" href=" https://demos.creative-tim.com/material-dashboard/pages/dashboard " target="_blank">
-        <img src="{% static 'admin/img/logo-ct.png' %}" class="navbar-brand-img h-100" alt="main_logo">
-        <span class="ms-1 font-weight-bold text-white">Dashboard</span>
-      </a>
-    </div>
-    <hr class="horizontal light mt-0 mb-2">
-    <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
-      <ul class="navbar-nav">
-  
-        <li class="nav-item">
-          <a class="nav-link text-white " href="{% url 'tables' %}">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">table_view</i>
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
             </div>
-            <span class="nav-link-text ms-1">Table</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-white active bg-gradient-primary " href="{% url 'add_product' %}">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">table_view</i>
-            </div>
-            <span class="nav-link-text ms-1">Add products</span>
-          </a>
-        </li>
-    
-       
-        <li class="nav-item mt-3">
-          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Account pages</h6>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-white " href="../pages/profile.html">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">person</i>
-            </div>
-            <span class="nav-link-text ms-1">Profile</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </aside>
-  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
-    <!-- Navbar -->
-    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
-      <div class="container-fluid py-1 px-3">
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
-            <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="javascript:;">Admin</a></li>
-            <li class="breadcrumb-item text-sm text-dark active" aria-current="page">Dashboard</li>
-          </ol>
-          <h6 class="font-weight-bolder mb-0">Add products</h6>
-        </nav>
-        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
-          <div class="ms-md-auto pe-md-3 d-flex align-items-center">
-            <div class="input-group input-group-outline">
-              <label class="form-label">Type here...</label>
-              <input type="text" class="form-control">
-            </div>
-          </div>
-          <ul class="navbar-nav  justify-content-end">
-            <li class="nav-item d-flex align-items-center">
-              <a class="btn btn-outline-primary btn-sm mb-0 me-3" target="_blank" href="">
-                {% if user.is_authenticated %}
-                {{ user.username }}
-                {% endif %}</a>
-            </li>
-            <li class="nav-item d-flex align-items-center">
-                <a class="btn btn-outline-primary btn-sm mb-0 me-3" target="_blank" href="{% url 'logout_view' %}">
-                  Logout</a>
-              </li>
-            <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
-              <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">
-                <div class="sidenav-toggler-inner">
-                  <i class="sidenav-toggler-line"></i>
-                  <i class="sidenav-toggler-line"></i>
-                  <i class="sidenav-toggler-line"></i>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder"href="{% url 'admin_index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                <!-- share button-->  
+                <div class="show-share-wrap">
+                    <div class="show-share">
+                        <span>Admin</span>
+                        <a href="{% url 'logout_view' %}"><img src="{% static 'index/images/logout.png' %}" alt=""></a>
+                    </div>
                 </div>
-              </a>
+                <!-- share button end-->  		
+                <!-- search button--> 	 
+                <div class="show-search show-fixed-search vissearch"> <img src="{% static 'index/images/prof.png' %}" alt="Profile Picture" style="height: 50px; width: 50px;"></div>
+                <!-- search button end --> 
+                <!-- mobile nav --> 
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
+                <div class="nav-holder">
+                
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header  end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!--  content -->
+                    <div class="content">
+                        <!--  section  -->
+                     
+                        <!--  section  end-->
+                        <!--  section  -->
+                        <section >
+                            <div class="container" >
+                              
+                               
+                                <div class="contact-details-wrap fl-wrap" style="margin-top: -5%;">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="small-sec-title">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <!-- contact form -->
+                                            <div class="contact-form-holder fl-wrap">
+                                                <div id="contact-form">
+                                                    <div id="message"></div>
+                                                    <form method="post" action="{% url 'add_product' %}" enctype="multipart/form-data" id="productForm">
+                                                        {% csrf_token %}
+                                                        <input name="designer_id" type="hidden" value="{{ request.user.id }}">
+                                                    
+                                                        <input name="name" type="text" id="name" placeholder="Product Name" required
+                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        
+                                                        <textarea name="description" id="description" placeholder="Product Description" required
+                                                                  style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;"></textarea>
+                                                        
+                                                        <input name="amount" type="number" id="amount" placeholder="Price" required min="0" step="0.01"
+                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        
+                                                        <input name="category" type="text" id="category" placeholder="Product Category" required
+                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        
+                                                        <input name="stock" type="number" id="stock" placeholder="Stock Quantity" required min="0"
+                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        
+                                                        <input name="image" type="file" id="image" required
+                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        
+                                                        <button type="submit" id="submit" style="padding: 10px 20px; border: none; background-color: #000; color: #fff; border-radius: 5px;">
+                                                            <span>Add Product</span>
+                                                        </button>
+                                                    </form>
+                                                    
+                                                    <!-- Include SweetAlert -->
+                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                                                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                                                    <script>
+                                                        $(document).ready(function() {
+                                                            // Handle form submission
+                                                            $('#productForm').on('submit', function(event) {
+                                                                event.preventDefault();  // Prevent default form submission
+                                                    
+                                                                // Validate form fields
+                                                                const name = $('#name').val().trim();
+                                                                const description = $('#description').val().trim();
+                                                                const amount = $('#amount').val().trim();
+                                                                const category = $('#category').val().trim();
+                                                                const stock = $('#stock').val().trim();
+                                                                const image = $('#image').val();
+                                                    
+                                                                // Validate name length
+                                                                if (name.length < 3 || name.length > 20) {
+                                                                    Swal.fire({
+                                                                        icon: 'error',
+                                                                        title: 'Invalid Name',
+                                                                        text: 'Product name must be between 3 and 20 characters long.'
+                                                                    });
+                                                                    return;
+                                                                }
+                                                    
+                                                                if (!name || !description || !amount || !category || !stock || !image) {
+                                                                    Swal.fire({
+                                                                        icon: 'error',
+                                                                        title: 'Oops...',
+                                                                        text: 'Please fill in all required fields.'
+                                                                    });
+                                                                    return;
+                                                                }
+                                                    
+                                                                if (amount <= 0) {
+                                                                    Swal.fire({
+                                                                        icon: 'error',
+                                                                        title: 'Invalid Amount',
+                                                                        text: 'Price must be greater than zero.'
+                                                                    });
+                                                                    return;
+                                                                }
+                                                    
+                                                                if (stock < 0) {
+                                                                    Swal.fire({
+                                                                        icon: 'error',
+                                                                        title: 'Invalid Stock Quantity',
+                                                                        text: 'Stock quantity cannot be negative.'
+                                                                    });
+                                                                    return;
+                                                                }
+                                                    
+                                                                // If validation passes, submit the form
+                                                                const formData = new FormData(this);
+                                                    
+                                                                $.ajax({
+                                                                    url: $(this).attr('action'),
+                                                                    type: 'POST',
+                                                                    data: formData,
+                                                                    processData: false,
+                                                                    contentType: false,
+                                                                    success: function(response) {
+                                                                        Swal.fire({
+                                                                            icon: 'success',
+                                                                            title: 'Success!',
+                                                                            text: 'Product has been added successfully.',
+                                                                            timer: 1500,
+                                                                            showConfirmButton: false
+                                                                        }).then(() => {
+                                                                            window.location.href = window.location.href; // Redirect to the same page
+                                                                        });
+                                                                    },
+                                                                    error: function(xhr, status, error) {
+                                                                        Swal.fire({
+                                                                            icon: 'error',
+                                                                            title: 'Error',
+                                                                            text: 'There was an error submitting the form. Please try again.'
+                                                                        });
+                                                                    }
+                                                                });
+                                                            });
+                                                        });
+                                                    </script>
+                                                    
+                                                    
+                                                </div>
+                                            </div>
+                                            <!-- contact form  end-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--  partcile-dec  -->
+                            <div class="partcile-dec" data-parcount="200"></div>
+                            <!--  partcile-dec  end-->
+                        </section>
+                        <!--  section  end-->
+                        <!--  social-wrap  -->
+                        <div class="social-wrap fl-wrap">
+                            <ul>
+                                <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                            </ul>
+                        </div>
+                        <!--  social-wrap  end-->
+                    </div>
+                    <!-- content end -->
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+            <!--search-form-holder -->
+            <div class="search-form-holder fixed-search">
+                <div class="search-form-bg"></div>
+                <div class="search-form-wrap">
+                    <div class="container">
+                        <form class="searchform" method="get"  >
+                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
+                        </form>
+                        <div class="close-fixed-search"></div>
+                    </div>
+                    <div class="dublicated-text"></div>
+                </div>
+            </div>
+            <!--search-form-holder  end-->
+            <!-- Share container  -->
+            <div class="share-wrapper isShare">
+                <div class="share-container"></div>
+            </div>
+            <!-- Share container  end-->
+<footer class="main-footer" style="width: 15%;    background-color: #000000f2; padding: 20px; height: 100vh; position: fixed;">
+
+    <!-- Admin links moved to the top with inline CSS and white underline border -->
+    <div class="footer-admin-links">
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'users_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Users Table
+                </a>
             </li>
-            <li class="nav-item px-3 d-flex align-items-center">
-              <a href="javascript:;" class="nav-link text-body p-0">
-                <i class="fa fa-cog fixed-plugin-button-nav cursor-pointer"></i>
-              </a>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'designs_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Designs Table
+                </a>
             </li>
-            <li class="nav-item dropdown pe-2 d-flex align-items-center">
-              <a href="javascript:;" class="nav-link text-body p-0" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fa fa-bell cursor-pointer"></i>
-              </a>
-             
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <!-- End Navbar -->
-    <div class="container">
-        <h2>Add Product</h2>
-        {% if error %}
-        <p class="error">{{ error }}</p>
-        {% endif %}
-        <form method="POST" enctype="multipart/form-data" action="{% url 'add_product' %}">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="name">Product Name:</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label for="description">Description:</label>
-                <textarea id="description" name="description" rows="4" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="amount">Amount:</label>
-                <input type="number" id="amount" name="amount" required>
-            </div>
-            <div class="form-group">
-                <label for="category">Category:</label>
-                <input type="text" id="category" name="category" required>
-            </div>
-            <div class="form-group">
-                <label for="image">Product Image:</label>
-                <input type="file" id="image" name="image" required>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Add Product">
-            </div>
-        </form>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'consultations_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Consultations Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'products_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Products Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'add_designer' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Add Designers
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Add Products
+                </a>
+            </li>
+        </ul>
+        
     </div>
 
-      <footer class="footer py-4  ">
-        <div class="container-fluid">
-          <div class="row align-items-center justify-content-lg-between">
-            <div class="col-lg-6 mb-lg-0 mb-4">
-              <div class="copyright text-center text-sm text-muted text-lg-start">
-                © <script>
-                  document.write(new Date().getFullYear())
-                </script>,
-                made with <i class="fa fa-heart"></i> by
-                <a href="https://www.creative-tim.com" class="font-weight-bold" target="_blank">Creative Tim</a>
-                for a better web.
-              </div>
-            </div>
-            <div class="col-lg-6">
-              <ul class="nav nav-footer justify-content-center justify-content-lg-end">
-                <li class="nav-item">
-                  <a href="https://www.creative-tim.com" class="nav-link text-muted" target="_blank">Creative Tim</a>
-                </li>
-                <li class="nav-item">
-                  <a href="https://www.creative-tim.com/presentation" class="nav-link text-muted" target="_blank">About Us</a>
-                </li>
-                <li class="nav-item">
-                  <a href="https://www.creative-tim.com/blog" class="nav-link text-muted" target="_blank">Blog</a>
-                </li>
-                <li class="nav-item">
-                  <a href="https://www.creative-tim.com/license" class="nav-link pe-0 text-muted" target="_blank">License</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
-  </main>
-  <div class="fixed-plugin">
-    <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
-      <i class="material-icons py-2">settings</i>
-    </a>
-    <div class="card shadow-lg">
-      <div class="card-header pb-0 pt-3">
-        <div class="float-start">
-          <h5 class="mt-3 mb-0">Material UI Configurator</h5>
-          <p>See our dashboard options.</p>
-        </div>
-        <div class="float-end mt-4">
-          <button class="btn btn-link text-dark p-0 fixed-plugin-close-button">
-            <i class="material-icons">clear</i>
-          </button>
-        </div>
-        <!-- End Toggle Button -->
-      </div>
-      <hr class="horizontal dark my-1">
-      <div class="card-body pt-sm-3 pt-0">
-        <!-- Sidebar Backgrounds -->
-        <div>
-          <h6 class="mb-0">Sidebar Colors</h6>
-        </div>
-        <a href="javascript:void(0)" class="switch-trigger background-color">
-          <div class="badge-colors my-2 text-start">
-            <span class="badge filter bg-gradient-primary active" data-color="primary" onclick="sidebarColor(this)"></span>
-            <span class="badge filter bg-gradient-dark" data-color="dark" onclick="sidebarColor(this)"></span>
-            <span class="badge filter bg-gradient-info" data-color="info" onclick="sidebarColor(this)"></span>
-            <span class="badge filter bg-gradient-success" data-color="success" onclick="sidebarColor(this)"></span>
-            <span class="badge filter bg-gradient-warning" data-color="warning" onclick="sidebarColor(this)"></span>
-            <span class="badge filter bg-gradient-danger" data-color="danger" onclick="sidebarColor(this)"></span>
-          </div>
-        </a>
-        <!-- Sidenav Type -->
-        <div class="mt-3">
-          <h6 class="mb-0">Sidenav Type</h6>
-          <p class="text-sm">Choose between 2 different sidenav types.</p>
-        </div>
-        <div class="d-flex">
-          <button class="btn bg-gradient-dark px-3 mb-2 active" data-class="bg-gradient-dark" onclick="sidebarType(this)">Dark</button>
-          <button class="btn bg-gradient-dark px-3 mb-2 ms-2" data-class="bg-transparent" onclick="sidebarType(this)">Transparent</button>
-          <button class="btn bg-gradient-dark px-3 mb-2 ms-2" data-class="bg-white" onclick="sidebarType(this)">White</button>
-        </div>
-        <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
-        <!-- Navbar Fixed -->
-        <div class="mt-3 d-flex">
-          <h6 class="mb-0">Navbar Fixed</h6>
-          <div class="form-check form-switch ps-0 ms-auto my-auto">
-            <input class="form-check-input mt-1 ms-auto" type="checkbox" id="navbarFixed" onclick="navbarFixed(this)">
-          </div>
-        </div>
-        <hr class="horizontal dark my-3">
-        <div class="mt-2 d-flex">
-          <h6 class="mb-0">Light / Dark</h6>
-          <div class="form-check form-switch ps-0 ms-auto my-auto">
-            <input class="form-check-input mt-1 ms-auto" type="checkbox" id="dark-version" onclick="darkMode(this)">
-          </div>
-        </div>
-        <hr class="horizontal dark my-sm-4">
-        <a class="btn bg-gradient-info w-100" href="https://www.creative-tim.com/product/material-dashboard-pro">Free Download</a>
-        <a class="btn btn-outline-dark w-100" href="https://www.creative-tim.com/learning-lab/bootstrap/overview/material-dashboard">View documentation</a>
-        <div class="w-100 text-center">
-          <a class="github-button" href="https://github.com/creativetimofficial/material-dashboard" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star creativetimofficial/material-dashboard on GitHub">Star</a>
-          <h6 class="mt-3">Thank you for sharing!</h6>
-          <a href="https://twitter.com/intent/tweet?text=Check%20Material%20UI%20Dashboard%20made%20by%20%40CreativeTim%20%23webdesign%20%23dashboard%20%23bootstrap5&amp;url=https%3A%2F%2Fwww.creative-tim.com%2Fproduct%2Fsoft-ui-dashboard" class="btn btn-dark mb-0 me-2" target="_blank">
-            <i class="fab fa-twitter me-1" aria-hidden="true"></i> Tweet
-          </a>
-          <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.creative-tim.com/product/material-dashboard" class="btn btn-dark mb-0 me-2" target="_blank">
-            <i class="fab fa-facebook-square me-1" aria-hidden="true"></i> Share
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!--   Core JS Files   -->
-  <script src="{% static 'admin/js/core/popper.min.js' %}"></script>
-  <script src="{% static 'admin/js/core/bootstrap.min.js' %}"></script>
-  <script src="{% static 'admin/js/plugins/perfect-scrollbar.min.js' %}"></script>
-  <script src="{% static 'admin/js/plugins/smooth-scrollbar.min.js' %}"></script>
-  
-  <script>
-     var ctx = document.getElementById("chart-bars").getContext("2d");
+</footer>
 
-new Chart(ctx, {
-  type: "bar",
-  data: {
-    labels: ["M", "T", "W", "T", "F", "S", "S"],
-    datasets: [{
-      label: "Sales",
-      tension: 0.4,
-      borderWidth: 0,
-      borderRadius: 4,
-      borderSkipped: false,
-      backgroundColor: "rgba(255, 255, 255, .8)",
-      data: [50, 20, 10, 22, 50, 10, 40],
-      maxBarThickness: 6
-    }, ],
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      }
-    },
-    interaction: {
-      intersect: false,
-      mode: 'index',
-    },
-    scales: {
-      y: {
-        grid: {
-          drawBorder: false,
-          display: true,
-          drawOnChartArea: true,
-          drawTicks: false,
-          borderDash: [5, 5],
-          color: 'rgba(255, 255, 255, .2)'
-        },
-        ticks: {
-          suggestedMin: 0,
-          suggestedMax: 500,
-          beginAtZero: true,
-          padding: 10,
-          font: {
-            size: 14,
-            weight: 300,
-            family: "Roboto",
-            style: 'normal',
-            lineHeight: 2
-          },
-          color: "#fff"
-        },
-      },
-      x: {
-        grid: {
-          drawBorder: false,
-          display: true,
-          drawOnChartArea: true,
-          drawTicks: false,
-          borderDash: [5, 5],
-          color: 'rgba(255, 255, 255, .2)'
-        },
-        ticks: {
-          display: true,
-          color: '#f8f9fa',
-          padding: 10,
-          font: {
-            size: 14,
-            weight: 300,
-            family: "Roboto",
-            style: 'normal',
-            lineHeight: 2
-          },
-        }
-      },
-    },
-  },
-});
-
-
-var ctx2 = document.getElementById("chart-line").getContext("2d");
-
-new Chart(ctx2, {
-  type: "line",
-  data: {
-    labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-    datasets: [{
-      label: "Mobile apps",
-      tension: 0,
-      borderWidth: 0,
-      pointRadius: 5,
-      pointBackgroundColor: "rgba(255, 255, 255, .8)",
-      pointBorderColor: "transparent",
-      borderColor: "rgba(255, 255, 255, .8)",
-      borderColor: "rgba(255, 255, 255, .8)",
-      borderWidth: 4,
-      backgroundColor: "transparent",
-      fill: true,
-      data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
-      maxBarThickness: 6
-
-    }],
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      }
-    },
-    interaction: {
-      intersect: false,
-      mode: 'index',
-    },
-    scales: {
-      y: {
-        grid: {
-          drawBorder: false,
-          display: true,
-          drawOnChartArea: true,
-          drawTicks: false,
-          borderDash: [5, 5],
-          color: 'rgba(255, 255, 255, .2)'
-        },
-        ticks: {
-          display: true,
-          color: '#f8f9fa',
-          padding: 10,
-          font: {
-            size: 14,
-            weight: 300,
-            family: "Roboto",
-            style: 'normal',
-            lineHeight: 2
-          },
-        }
-      },
-      x: {
-        grid: {
-          drawBorder: false,
-          display: false,
-          drawOnChartArea: false,
-          drawTicks: false,
-          borderDash: [5, 5]
-        },
-        ticks: {
-          display: true,
-          color: '#f8f9fa',
-          padding: 10,
-          font: {
-            size: 14,
-            weight: 300,
-            family: "Roboto",
-            style: 'normal',
-            lineHeight: 2
-          },
-        }
-      },
-    },
-  },
-});
-
-var ctx3 = document.getElementById("chart-line-tasks").getContext("2d");
-
-new Chart(ctx3, {
-  type: "line",
-  data: {
-    labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-    datasets: [{
-      label: "Mobile apps",
-      tension: 0,
-      borderWidth: 0,
-      pointRadius: 5,
-      pointBackgroundColor: "rgba(255, 255, 255, .8)",
-      pointBorderColor: "transparent",
-      borderColor: "rgba(255, 255, 255, .8)",
-      borderWidth: 4,
-      backgroundColor: "transparent",
-      fill: true,
-      data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-      maxBarThickness: 6
-
-    }],
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      }
-    },
-    interaction: {
-      intersect: false,
-      mode: 'index',
-    },
-    scales: {
-      y: {
-        grid: {
-          drawBorder: false,
-          display: true,
-          drawOnChartArea: true,
-          drawTicks: false,
-          borderDash: [5, 5],
-          color: 'rgba(255, 255, 255, .2)'
-        },
-        ticks: {
-          display: true,
-          padding: 10,
-          color: '#f8f9fa',
-          font: {
-            size: 14,
-            weight: 300,
-            family: "Roboto",
-            style: 'normal',
-            lineHeight: 2
-          },
-        }
-      },
-      x: {
-        grid: {
-          drawBorder: false,
-          display: false,
-          drawOnChartArea: false,
-          drawTicks: false,
-          borderDash: [5, 5]
-        },
-        ticks: {
-          display: true,
-          color: '#f8f9fa',
-          padding: 10,
-          font: {
-            size: 14,
-            weight: 300,
-            family: "Roboto",
-            style: 'normal',
-            lineHeight: 2
-          },
-        }
-      },
-    },
-  },
-});
-</script>
-<script>
-var win = navigator.platform.indexOf('Win') > -1;
-if (win && document.querySelector('#sidenav-scrollbar')) {
-  var options = {
-    damping: '0.5'
-  }
-  Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-}
-</script>
-<!-- Github buttons -->
-<script async defer src="https://buttons.github.io/buttons.js"></script>
-<!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
-<script src="{% static 'admin/js/material-dashboard.min.js' %}?v=3.1.0"></script>
-</body>
-
+            <!-- footer end-->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+ </body>
 </html>
