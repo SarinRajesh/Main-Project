@@ -1189,14 +1189,10 @@ from django.contrib.auth.decorators import login_required
 import json
 from django.utils import timezone
 from datetime import datetime, time
-# ... existing imports ...
 from django.utils.dateparse import parse_datetime
-
-from django.utils.dateparse import parse_datetime
-from django.utils import timezone
 
 @login_required
-@require_http_methods(["GET", "POST", "DELETE"])
+@require_http_methods(["GET", "POST"])
 def schedule_consultation(request):
     if request.method == 'POST':
         date_time_str = request.POST.get('date_time')
@@ -1206,7 +1202,7 @@ def schedule_consultation(request):
             return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
 
         # Make the datetime timezone-aware
-        date_time = timezone.make_aware(date_time)
+        date_time = timezone.make_aware(date_time, timezone.get_current_timezone())
 
         if date_time < timezone.now():
             return JsonResponse({'status': 'error', 'message': 'Cannot schedule consultations for past dates'})
@@ -1221,24 +1217,6 @@ def schedule_consultation(request):
             return JsonResponse({'status': 'success', 'message': 'Consultation date scheduled successfully'})
         else:
             return JsonResponse({'status': 'error', 'message': 'This date and time is already scheduled'})
-
-    elif request.method == 'DELETE':
-        date_time_str = request.GET.get('date_time')
-        
-        try:
-            date_time = parse_datetime(date_time_str)
-            if date_time is None:
-                raise ValueError("Invalid date-time format")
-            
-            # Ensure the datetime is timezone-aware
-            if timezone.is_naive(date_time):
-                date_time = timezone.make_aware(date_time)
-            
-            consultation_date = ConsultationDate.objects.get(designer=request.user, date_time=date_time)
-            consultation_date.delete()
-            return JsonResponse({'status': 'success', 'message': 'Consultation date removed successfully'})
-        except (ValueError, ConsultationDate.DoesNotExist) as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     else:
         # Handle GET request
@@ -1258,3 +1236,42 @@ def schedule_consultation(request):
             'consultation_dates': json.dumps(consultation_dates_list)
         }
         return render(request, 'schedule_consultation.html', context)
+
+
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
+from .models import ConsultationDate
+from django.utils.dateparse import parse_datetime
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
+# ... existing code ...
+
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
+from .models import ConsultationDate
+from django.utils.dateparse import parse_datetime
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
+# ... existing code ...
+
+@login_required
+@require_POST
+def remove_scheduled_date(request):
+    date_time_str = request.POST.get('date_time')
+    try:
+        date_time = parse_datetime(date_time_str)
+    except ValueError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+
+    if not date_time:
+        return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+
+    consultation_date = get_object_or_404(ConsultationDate, designer=request.user, date_time=date_time)
+
+    if consultation_date.is_booked:
+        return JsonResponse({'status': 'error', 'message': 'Cannot remove a booked consultation date'})
+
+    consultation_date.delete()
+    return JsonResponse({'status': 'success', 'message': 'Consultation date removed successfully'})

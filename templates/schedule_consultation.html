@@ -369,7 +369,6 @@
                     selectMirror: true,
                     select: handleDateSelection,
                     eventClick: handleEventClick,
-                    eventDrop: handleEventDrop,
                     events: {{ consultation_dates|safe }},
                     eventColor: '#292929',
                     eventTextColor: '#fff',
@@ -402,7 +401,7 @@
                     }
                 });
                 calendar.render();
-
+        
                 function handleDateSelection(info) {
                     var date = info.startStr;
                     if (new Date(date) < new Date()) {
@@ -437,15 +436,11 @@
                         }
                     });
                 }
-
+        
                 function handleEventClick(info) {
-                    if (info.event.start < new Date()) {
-                        Swal.fire('Past Date', 'This consultation date is in the past', 'info');
-                        return;
-                    }
                     Swal.fire({
-                        title: 'Remove Consultation Date',
-                        text: `Do you want to remove the consultation on ${info.event.start.toLocaleString()}?`,
+                        title: 'Remove Consultation',
+                        text: `Do you want to remove the consultation on ${info.event.start.toISOString().slice(0, 16).replace('T', ' ')}?`,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',
@@ -456,42 +451,43 @@
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            removeConsultation(info.event.id, calendar);
+                            removeScheduledDate(info.event.id, calendar);
                         }
                     });
                 }
-
-                function handleEventDrop(info) {
-                    if (info.event.start < new Date()) {
-                        info.revert();
-                        Swal.fire('Error', 'Cannot move consultations to past dates', 'error');
-                        return;
-                    }
-                    scheduleConsultation(info.event.start.toISOString(), calendar);
-                }
-
-                function removeConsultation(dateTime, calendar) {
-                    // Convert the dateTime to ISO format
-                    const isoDateTime = new Date(dateTime).toISOString();
-                    
-                    fetch(`{% url "schedule_consultation" %}?date_time=${encodeURIComponent(isoDateTime)}`, {
-                        method: 'DELETE',
+        
+                function scheduleConsultation(dateTime, calendar) {
+                    fetch('{% url "schedule_consultation" %}', {
+                        method: 'POST',
                         headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
                             'X-CSRFToken': '{{ csrf_token }}'
-                        }
+                        },
+                        body: `date_time=${encodeURIComponent(dateTime)}`
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            calendar.getEventById(dateTime).remove();
+                            calendar.addEvent({
+                                id: dateTime,  // Ensure the ID is set to the dateTime
+                                title: 'Consultation',
+                                start: dateTime,
+                                allDay: false,
+                                className: 'custom-event',
+                                extendedProps: {
+                                    isNew: true
+                                }
+                            });
                             Swal.fire({
-                                title: 'Removed!',
+                                title: 'Scheduled!',
                                 text: data.message,
                                 icon: 'success',
                                 customClass: {
                                     container: 'animate__animated animate__fadeIn'
                                 }
                             });
+                            // Force the calendar to re-fetch events
+                            calendar.refetchEvents();
                         } else {
                             Swal.fire({
                                 title: 'Error',
@@ -504,34 +500,33 @@
                         }
                     });
                 }
-
-                function scheduleConsultation(dateTime, calendar) {
-                    fetch('{% url "schedule_consultation" %}', {
+        
+                function removeScheduledDate(dateTime, calendar) {
+                    fetch('{% url "remove_scheduled_date" %}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                             'X-CSRFToken': '{{ csrf_token }}'
                         },
-                        body: `date_time=${dateTime}`
+                        body: `date_time=${encodeURIComponent(dateTime)}`
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            calendar.addEvent({
-                                id: dateTime,
-                                title: 'Consultation',
-                                start: dateTime,
-                                allDay: false,
-                                className: 'custom-event'
-                            });
+                            var event = calendar.getEventById(dateTime);
+                            if (event) {
+                                event.remove();
+                            }
                             Swal.fire({
-                                title: 'Scheduled!',
+                                title: 'Removed!',
                                 text: data.message,
                                 icon: 'success',
                                 customClass: {
                                     container: 'animate__animated animate__fadeIn'
                                 }
                             });
+                            // Force the calendar to re-fetch events
+                            calendar.refetchEvents();
                         } else {
                             Swal.fire({
                                 title: 'Error',
