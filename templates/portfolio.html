@@ -149,10 +149,11 @@
                                 <label for="category-filter">Filter by Category:</label>
                                 <select id="category-filter" name="category" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px;">
                                     <option value="all" {% if request.GET.category == "all" %}selected{% endif %}>All Categories</option>
-                                    <option value="bedroom" {% if request.GET.category == "bedroom" %}selected{% endif %}>Bedroom</option>
-                                    <option value="kitchen" {% if request.GET.category == "kitchen" %}selected{% endif %}>Kitchen</option>
-                                    <option value="dining_room" {% if request.GET.category == "dining_room" %}selected{% endif %}>Dining Room</option>
-                                    <option value="bathroom" {% if request.GET.category == "bathroom" %}selected{% endif %}>Bathroom</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.value }}" {% if request.GET.category == category.value %}selected{% endif %}>
+                                            {{ category.display }}
+                                        </option>
+                                    {% endfor %}
                                 </select>
                             
                                 {% if user_type != 'Designer' %}

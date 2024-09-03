@@ -46,6 +46,8 @@ urlpatterns = [
     path('my_orders/', views.orders, name='my_orders'),
     path('schedule-consultation/', views.schedule_consultation, name='schedule_consultation'),
  path('remove_scheduled_date/', views.remove_scheduled_date, name='remove_scheduled_date'),  # New URL pattern
+ path('send_chat_message/', views.send_chat_message, name='send_chat_message'),
+    path('get_chat_messages/', views.get_chat_messages, name='get_chat_messages'),
 
 ]
 

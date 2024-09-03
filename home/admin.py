@@ -1,9 +1,8 @@
 
 from django.contrib import admin
-from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate
+from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage
 
 # ... (keep existing admin classes) ...
-
 class UsersAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'phone', 'email', 'address', 'home_town', 'district', 'state', 'pincode', 'username', 'status', 'user_type_id', 'deactivation_reason')
     search_fields = ('name', 'email', 'username')
@@ -67,7 +66,45 @@ class ConsultationDateAdmin(admin.ModelAdmin):
     search_fields = ('designer__username', 'date_time')
     date_hierarchy = 'date_time'
 
+class ChatMessageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'sender', 'receiver', 'design', 'content', 'timestamp', 'is_read')
+    list_filter = ('is_read', 'timestamp', 'design')
+    search_fields = ('sender__username', 'receiver__username', 'content', 'design__name')
+    date_hierarchy = 'timestamp'
+    readonly_fields = ('timestamp',)
+
+    fieldsets = (
+        ('Message Details', {
+            'fields': ('sender', 'receiver', 'design', 'content', 'is_read')
+        }),
+        ('Timestamp', {
+            'fields': ('timestamp',)
+        }),
+    )
+
+from django.contrib import admin
+from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage, Review
+
+# ... (keep existing admin classes) ...
+
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('id', 'product', 'user', 'content_preview','rating', 'created_at')
+    list_filter = ('product', 'created_at')
+    search_fields = ('product__name', 'user__username', 'content')
+    date_hierarchy = 'created_at'
+    readonly_fields = ('created_at',)
+
+    def content_preview(self, obj):
+        return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
+    content_preview.short_description = 'Content Preview'
+
 # ... (keep existing admin registrations) ...
+
+admin.site.register(Review, ReviewAdmin)
+
+# ... (keep other existing admin registrations) ...
+
+admin.site.register(ChatMessage, ChatMessageAdmin)
 
 admin.site.register(ConsultationDate, ConsultationDateAdmin)
 admin.site.register(Cart, CartAdmin)

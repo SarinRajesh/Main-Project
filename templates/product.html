@@ -4,7 +4,7 @@
     <head>
         <!--=============== basic  ===============-->
         <meta charset="UTF-8">
-        <title>BElegantDecor</title>
+        <title>ElegantDecor</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta name="robots" content="index, follow"/>
         <meta name="keywords" content=""/>
@@ -182,8 +182,25 @@
                                                 <h3>{{ product.category }}</h3>
                                                 <div class="pr-opt fl-wrap">
                                                     <div class="product-item-price"><span></span>Rs. {{ product.amount.amount }}</div>
+                                                    <div class="product-rating">
+                                                        <span>({{ review_count }} customer reviews)</span>
+                                                        <ul>
+                                                            {% for i in "12345"|make_list %}
+                                                                {% if forloop.counter <= avg_rating|add:0 %}
+                                                                    <li><i class="fa fa-star"></i></li>
+                                                                {% else %}
+                                                                    <li><i class="fa fa-star-o"></i></li>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </ul>
+                                                        <span>({{ avg_rating }})</span>
+                                                    </div>
                                                 </div>
                                                 <div id="tabs-container">
+                                                    <ul class="tabs-menu">
+                                                        <li class="current"><a href="#tab-1">Description</a></li>
+                                                        <li><a href="#tab-2">Reviews ({{ review_count }})</a></li>
+                                                    </ul>
                                                     <div class="tab">
                                                         <div id="tab-1" class="tab-content">
                                                             <!-- <ul class="product-opt-list fl-wrap">
@@ -193,12 +210,87 @@
                                                             </ul> -->
                                                             <p>{{ product.description }}</p>
                                                         </div>
-                                                        <div id="tab-2" class="tab-content">
-                                                          
-                                                        </div>
+                                                      <!-- ... existing code ... -->
+
+<div id="tab-2" class="tab-content">
+    <div id="comments">
+        <h6 id="comments-title">Reviews <span>({{ review_count }})</span></h6>
+
+        <ul class="commentlist clearafix" style="list-style-type: none; padding: 0;">
+            {% for review in reviews %}
+            <li class="comment" style="width: 100%; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+                <div class="comment-body" style="display: flex; align-items: flex-start;">
+                    <div class="comment-author" style="margin-right: 15px;">
+                        {% if review.user.photo %}
+                            <img alt='' src='{{ review.user.photo.url }}' width="50" height="50" style="border-radius: 50%;">
+                        {% else %}
+                            <img alt='' src='{% static "index/images/default-avatar.jpg" %}' width="50" height="50" style="border-radius: 50%;">
+                        {% endif %}
+                    </div>
+                    <div class="comment-content" style="flex-grow: 1;">
+                        <cite class="fn" style="font-weight: bold;"><a href="#">{{ review.user.username }}</a></cite>
+                        <div class="comment-meta">
+                            <h6 style="margin: 5px 0; color: #888;">
+                                <a href="#">{{ review.created_at|date:"F d, Y \a\t H:i a" }}</a>
+                                <span class="rating">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="fa fa-star"></i>
+                                        {% else %}
+                                            <i class="fa fa-star-o"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                            </h6>
+                        </div>
+                        <p style="margin-top: 10px;">{{ review.content }}</p>
+                    </div>
+                </div>
+            </li>
+            {% empty %}
+            <li style="width: 100%;">No reviews yet. Be the first to review this product!</li>
+            {% endfor %}
+        </ul>
+        <div class="clearfix"></div>
+        {% if user.is_authenticated %}
+        <div id="respond" class="clearafix">
+            <h6 id="reply-title">Leave A Review</h6>
+            <div class="comment-reply-form clearfix">
+                <form action="{% url 'product' product.id %}" method="post" id="reviewform" class="form-horizontal" name="reviewform">
+                    {% csrf_token %}
+                    <div class="rating-input">
+                        <label>Your Rating:</label>
+                        <div class="star-rating" style="font-size: 0; display: inline-block;">
+                            <i class="fa fa-star-o" data-rating="1" style="font-size: 24px; cursor: pointer; color: #ddd; transition: color 0.2s ease;"></i>
+                            <i class="fa fa-star-o" data-rating="2" style="font-size: 24px; cursor: pointer; color: #ddd; transition: color 0.2s ease;"></i>
+                            <i class="fa fa-star-o" data-rating="3" style="font-size: 24px; cursor: pointer; color: #ddd; transition: color 0.2s ease;"></i>
+                            <i class="fa fa-star-o" data-rating="4" style="font-size: 24px; cursor: pointer; color: #ddd; transition: color 0.2s ease;"></i>
+                            <i class="fa fa-star-o" data-rating="5" style="font-size: 24px; cursor: pointer; color: #ddd; transition: color 0.2s ease;"></i>
+                            <input type="hidden" name="rating" id="rating-value" value="0" required>
+                        </div>
+                    </div>
+                    <div class="comment-form-comment control-group">
+                        <div class="controls">
+                            <textarea id="review" name="review" cols="50" rows="8" aria-required="true" placeholder="Your review here.." required></textarea>
+                        </div>
+                    </div>
+                    <div class="form-submit">
+                        <div class="controls">
+                            <button class="transition button" type="submit">Post Review</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <p>Please <a href="{% url 'signin' %}">sign in</a> to leave a review.</p>
+        {% endif %}
+    </div>
+</div>
+
                                                     </div>
-                                                 </div>
-                                            <!-- content-holder end -->
+                                                </div>
+
                                             <div class="quantity fl-wrap">
                                                 {% if user.is_authenticated %}
                                                 {% if product.stock > 0 %}
@@ -226,6 +318,35 @@
                             </div>
            
 
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const starRating = document.querySelector('.star-rating');
+                                    const stars = starRating.querySelectorAll('i');
+                                    const ratingInput = document.getElementById('rating-value');
+                                
+                                    function setRating(rating) {
+                                        ratingInput.value = rating;
+                                        stars.forEach((star, index) => {
+                                            if (index < rating) {
+                                                star.classList.remove('fa-star-o');
+                                                star.classList.add('fa-star');
+                                                star.style.color = '#ffd700';
+                                            } else {
+                                                star.classList.remove('fa-star');
+                                                star.classList.add('fa-star-o');
+                                                star.style.color = '#ddd';
+                                            }
+                                        });
+                                    }
+                                
+                                    stars.forEach(star => {
+                                        star.addEventListener('click', function() {
+                                            const rating = this.getAttribute('data-rating');
+                                            setRating(rating);
+                                        });
+                                    });
+                                });
+                                </script>
                                 <!-- product container end -->
                                 <!-- products -->
                                 <div class="products fl-wrap single-prd-list">

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -7,20 +7,821 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.hashers import make_password
-from .models import UserType, Consultation, Users, Design, Amount, Product, Cart, Feedback, Order, Payment_Type
+from .models import UserType, Consultation, Users, Design, Amount, Product, Cart, Review, Order, Payment_Type, ConsultationDate
 from .decorators import nocache
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from allauth.socialaccount.models import SocialAccount
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 import random
-from django.utils.dateparse import parse_datetime
-from decimal import Decimal
-from django.views.decorators.http import require_POST
+from django.utils.dateparse import parse_datetime, parse_date
+from decimal import Decimal, InvalidOperation
+from django.views.decorators.http import require_POST, require_http_methods
 from django.utils import timezone
 from django.middleware.csrf import get_token
 from django.db.models import Sum
 from django.db import transaction
+from django.core.exceptions import ValidationError
+from allauth.account.adapter import DefaultAccountAdapter
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+import json
+import re
+from datetime import datetime, time
+from django.views.decorators.cache import never_cache
+
+
+class CustomTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return str(user.pk) + str(timestamp)
+
+token_generator = CustomTokenGenerator()
+
+@nocache
+def index(request):
+    context = {}
+    if request.user.is_authenticated:
+        user = request.user
+        user_type = user.user_type_id.user_type if user.user_type_id else None
+        context = {'user': user, 'user_type': user_type}
+    return render(request, 'index.html', context)
+
+
+def signin(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if user.status == 'active':  # Check if user is active
+                login(request, user)  # Log in the user
+                return custom_login_redirect(request)  # Redirect to the appropriate page
+            else:
+                # Store message in session under a custom key
+                request.session['custom_error_message'] = "User account is inactive."
+                return redirect('signin')  # Redirect to sign-in page
+        else:
+            # Store message in session under a custom key
+            request.session['custom_error_message'] = "Invalid username or password."
+            return redirect('signin')  # Redirect to sign-in page
+    
+    return render(request, 'signin.html')
+
+
+def custom_login_redirect(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect('signin')
+
+    if user.status != 'active':  # Check if user is active
+        logout(request)  # Log out inactive users
+        # Store message in session under a custom key
+        request.session['custom_error_message'] = "User account is inactive."
+        return redirect('signin')  # Redirect to sign-in page
+
+    if user.user_type_id and user.user_type_id.user_type == 'Admin':
+        return redirect('admin_index')
+    else:
+        return redirect('index')
+
+
+
+def generate_otp():
+    return random.randint(100000, 999999)
+
+class CustomAccountAdapter(DefaultAccountAdapter):
+    def save_user(self, request, user, form, commit=True):
+        user = super().save_user(request, user, form, commit=False)
+        user.user_type_id = UserType.objects.get(user_type='Customer')
+        if commit:
+            user.save()
+        return user
+
+class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
+    def save_user(self, request, sociallogin, form=None):
+        user = super().save_user(request, sociallogin, form)
+        user.user_type_id = UserType.objects.get(user_type='Customer')
+        user.save()
+        return user
+
+def signup(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Store user data in session
+        request.session['user_data'] = {
+            'name': name,
+            'phone': phone,
+            'email': email,
+            'username': username,
+            'password': password,
+        }
+        
+        otp = generate_otp()
+        request.session['otp'] = otp
+
+        # Send OTP to user's email
+        send_mail(
+            'Your OTP for signing up',
+            f'Your OTP is {otp}',
+            'your-email@gmail.com',  # Replace with your actual email
+            [email],
+            fail_silently=False,
+        )
+
+        messages.success(request, "Check your email for the OTP.")
+        return redirect('verify_otp')
+        
+    return render(request, 'signup.html')
+
+def verify_otp(request):
+    if request.method == 'POST':
+        otp = request.POST.get('otp')
+        session_otp = request.session.get('otp')
+
+        if otp == str(session_otp):
+            user_data = request.session.get('user_data')
+            if user_data:
+                try:
+                    # Create a new user with the provided data
+                    user = Users.objects.create(
+                        name=user_data['name'],
+                        phone=user_data['phone'],
+                        email=user_data['email'],
+                        username=user_data['username'],
+                        password=make_password(user_data['password']),  # Hash the password
+                        user_type_id=UserType.objects.get(user_type='Customer')  # Set default user type to Customer
+                    )
+                    user.save()
+
+                    # Log the user in
+                    backend = 'django.contrib.auth.backends.ModelBackend'  # Specify the backend
+                    user = authenticate(username=user_data['username'], password=user_data['password'], backend=backend)
+                    if user is not None:
+                        login(request, user)
+                    
+                    # Clear user data from session
+                    request.session.pop('user_data', None)
+
+                    return redirect('index')
+                except Exception as e:
+                    messages.error(request, f"Error creating account: {str(e)}")
+            else:
+                messages.error(request, "User data not found in session. Please sign up again.")
+                return redirect('signup')
+        else:
+            messages.error(request, "Invalid OTP. Please try again.")
+
+    return render(request, 'verify_otp.html')
+
+
+
+@nocache
+@login_required
+def profile(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    return render(request, 'profile.html', {'user': user, 'user_type': user_type})
+
+@login_required
+def edit_profile(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+
+    if request.method == 'POST':
+        # Update user profile fields
+        user.name = request.POST.get('name')
+        user.phone = request.POST.get('phone')
+        user.username = request.POST.get('username')
+        user.email = request.POST.get('email')
+        user.address = request.POST.get('address')
+        user.home_town = request.POST.get('home_town')
+        user.district = request.POST.get('district')
+        user.state = request.POST.get('state')
+        user.pincode = request.POST.get('pincode')
+
+        # Handle photo upload if present
+        if 'photo' in request.FILES:
+            user.photo = request.FILES['photo']
+
+        try:
+            user.save()
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('profile')
+        except Exception as e:
+            messages.error(request, f'Error updating profile: {str(e)}')
+            return redirect('edit_profile')
+
+    context = {
+        'user': user,
+        'user_type': user_type
+    }
+    return render(request, 'edit_profile.html', context)
+
+
+
+@login_required
+@csrf_exempt
+def upload_photo(request):
+    if request.method == 'POST':
+        photo = request.FILES.get('photo')
+        if photo:
+            user = request.user
+            user.photo = photo
+            user.save()
+            return JsonResponse({'success': True, 'photo_url': user.photo.url})
+    return JsonResponse({'success': False})
+
+
+def check_email(request):
+    email = request.GET.get('email', None)
+    data = {
+        'is_taken': Users.objects.filter(email=email).exists()
+    }
+    return JsonResponse(data)
+
+def check_username(request):
+    username = request.GET.get('username', None)
+    data = {
+        'is_taken': Users.objects.filter(username=username).exists()
+    }
+    return JsonResponse(data)
+
+def request_password_reset(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = Users.objects.get(email=email)
+            
+            # Generate a password reset token and send it to the user's email
+            token = token_generator.make_token(user)
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            reset_url = reverse('reset_password_confirm', kwargs={'uidb64': uidb64, 'token': token})
+            reset_url = request.build_absolute_uri(reset_url)
+            
+            send_mail(
+                'Password Reset Request',
+                f'Click the following link to reset your password: {reset_url}',
+                'your-email@gmail.com',  # Replace with your actual email
+                [email],
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Password reset email has been sent. Check your email to proceed.')
+            return redirect('request_password_reset')
+        
+        except Users.DoesNotExist:
+            messages.error(request, 'User does not exist.')
+            return redirect('request_password_reset')
+
+    return render(request, 'password_reset/request_password_reset.html')
+
+def reset_password_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = Users.objects.get(pk=uid)
+        
+        if token_generator.check_token(user, token):
+            if request.method == 'POST':
+                new_password = request.POST.get('new_password')
+                confirm_password = request.POST.get('confirm_password')
+                
+                if new_password == confirm_password:
+                    user.password = make_password(new_password)  # Hash the password
+                    user.save()
+                    messages.success(request, 'Password reset successful. You can now sign in with your new password.')
+                    return redirect('signin')
+                else:
+                    messages.error(request, 'Passwords do not match. Please try again.')
+            return render(request, 'password_reset/reset_password_confirm.html', {'uidb64': uidb64, 'token': token})
+        else:
+            messages.error(request, 'Invalid password reset link.')
+            return redirect('signin')
+    
+    except (TypeError, ValueError, OverflowError, Users.DoesNotExist):
+        user = None
+    
+    return redirect('signin')
+
+def logout_view(request):
+    logout(request)
+    return redirect('signin')
+
+
+
+@login_required
+@nocache
+def add_product(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        amount_value = request.POST.get('amount')
+        image = request.FILES.get('image')
+        category = request.POST.get('category')
+        stock = request.POST.get('stock')
+
+        amount = Amount(amount=amount_value)
+        amount.save()
+
+        product = Product(
+            name=name,
+            description=description,
+            amount=amount,
+            category=category,
+            image=image,
+            stock=stock  # Add the quantity field
+        )
+        product.save()
+
+        return redirect('add_product')
+
+    return render(request, 'admin_page/add_product.html')
+
+@login_required
+@nocache
+def add_portfolio(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+
+    # Check if user details are complete
+    user_details_complete = all([
+        user.name,
+        user.email,
+        user.phone,
+        user.address,
+        user.home_town,
+        user.district,
+        user.state,
+        user.pincode
+    ])
+
+    if request.method == 'POST':
+        if not user_details_complete:
+            messages.error(request, 'Please complete your profile before adding a portfolio.')
+            return redirect('profile')
+
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        amount_value = request.POST.get('amount')
+        image = request.FILES.get('image')
+        category = request.POST.get('category')
+        sqft = request.POST.get('sqft', 0)
+
+        amount = Amount(amount=amount_value)
+        amount.save()
+
+        portfolio = Design(
+            designer_id=request.user,
+            name=name,
+            description=description,
+            amount=amount,
+            image=image,
+            category=category,
+            sqft=sqft
+        )
+        portfolio.save()
+
+        messages.success(request, 'Portfolio added successfully.')
+        return redirect('portfolio')
+
+    context = {
+        'user_type': user_type,
+        'user_details_complete': user_details_complete
+    }
+    return render(request, 'add_portfolio.html', context)
+
+
+@nocache
+def portfolio(request):
+    category = request.GET.get('category', 'all')
+    sqft_range = request.GET.get('sqft_range', 'all')
+
+    if request.user.is_authenticated and request.user.user_type_id.user_type == 'Designer':
+        # For designers, show only their designs
+        portfolios = Design.objects.filter(designer_id=request.user)
+    else:
+        # For other users, show all designs
+        portfolios = Design.objects.all()
+        designer = request.GET.get('designer', 'all')
+        if designer != 'all':
+            portfolios = portfolios.filter(designer_id__username=designer)
+
+    if category != 'all':
+        portfolios = portfolios.filter(category__iexact=category)
+
+    if sqft_range != 'all':
+        if sqft_range == '0-500':
+            portfolios = portfolios.filter(sqft__lte=500)
+        elif sqft_range == '501-1000':
+            portfolios = portfolios.filter(sqft__gt=500, sqft__lte=1000)
+        elif sqft_range == '1001-1500':
+            portfolios = portfolios.filter(sqft__gt=1000, sqft__lte=1500)
+        elif sqft_range == '1501+':
+            portfolios = portfolios.filter(sqft__gt=1500)
+
+    all_designers = Users.objects.filter(user_type_id__user_type='Designer').values_list('username', flat=True).distinct()
+
+class CustomTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return str(user.pk) + str(timestamp)
+
+token_generator = CustomTokenGenerator()
+
+@nocache
+def index(request):
+    context = {}
+    if request.user.is_authenticated:
+        user = request.user
+        user_type = user.user_type_id.user_type if user.user_type_id else None
+        context = {'user': user, 'user_type': user_type}
+    return render(request, 'index.html', context)
+
+
+def signin(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if user.status == 'active':  # Check if user is active
+                login(request, user)  # Log in the user
+                return custom_login_redirect(request)  # Redirect to the appropriate page
+            else:
+                # Store message in session under a custom key
+                request.session['custom_error_message'] = "User account is inactive."
+                return redirect('signin')  # Redirect to sign-in page
+        else:
+            # Store message in session under a custom key
+            request.session['custom_error_message'] = "Invalid username or password."
+            return redirect('signin')  # Redirect to sign-in page
+    
+    return render(request, 'signin.html')
+
+
+def custom_login_redirect(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect('signin')
+
+    if user.status != 'active':  # Check if user is active
+        logout(request)  # Log out inactive users
+        # Store message in session under a custom key
+        request.session['custom_error_message'] = "User account is inactive."
+        return redirect('signin')  # Redirect to sign-in page
+
+    if user.user_type_id and user.user_type_id.user_type == 'Admin':
+        return redirect('admin_index')
+    else:
+        return redirect('index')
+
+
+
+def generate_otp():
+    return random.randint(100000, 999999)
+
+class CustomAccountAdapter(DefaultAccountAdapter):
+    def save_user(self, request, user, form, commit=True):
+        user = super().save_user(request, user, form, commit=False)
+        user.user_type_id = UserType.objects.get(user_type='Customer')
+        if commit:
+            user.save()
+        return user
+
+class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
+    def save_user(self, request, sociallogin, form=None):
+        user = super().save_user(request, sociallogin, form)
+        user.user_type_id = UserType.objects.get(user_type='Customer')
+        user.save()
+        return user
+
+def signup(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Store user data in session
+        request.session['user_data'] = {
+            'name': name,
+            'phone': phone,
+            'email': email,
+            'username': username,
+            'password': password,
+        }
+        
+        otp = generate_otp()
+        request.session['otp'] = otp
+
+        # Send OTP to user's email
+        send_mail(
+            'Your OTP for signing up',
+            f'Your OTP is {otp}',
+            'your-email@gmail.com',  # Replace with your actual email
+            [email],
+            fail_silently=False,
+        )
+
+        messages.success(request, "Check your email for the OTP.")
+        return redirect('verify_otp')
+        
+    return render(request, 'signup.html')
+
+def verify_otp(request):
+    if request.method == 'POST':
+        otp = request.POST.get('otp')
+        session_otp = request.session.get('otp')
+
+        if otp == str(session_otp):
+            user_data = request.session.get('user_data')
+            if user_data:
+                try:
+                    # Create a new user with the provided data
+                    user = Users.objects.create(
+                        name=user_data['name'],
+                        phone=user_data['phone'],
+                        email=user_data['email'],
+                        username=user_data['username'],
+                        password=make_password(user_data['password']),  # Hash the password
+                        user_type_id=UserType.objects.get(user_type='Customer')  # Set default user type to Customer
+                    )
+                    user.save()
+
+                    # Log the user in
+                    backend = 'django.contrib.auth.backends.ModelBackend'  # Specify the backend
+                    user = authenticate(username=user_data['username'], password=user_data['password'], backend=backend)
+                    if user is not None:
+                        login(request, user)
+                    
+                    # Clear user data from session
+                    request.session.pop('user_data', None)
+
+                    return redirect('index')
+                except Exception as e:
+                    messages.error(request, f"Error creating account: {str(e)}")
+            else:
+                messages.error(request, "User data not found in session. Please sign up again.")
+                return redirect('signup')
+        else:
+            messages.error(request, "Invalid OTP. Please try again.")
+
+    return render(request, 'verify_otp.html')
+
+
+
+@nocache
+@login_required
+def profile(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    return render(request, 'profile.html', {'user': user, 'user_type': user_type})
+
+@login_required
+def edit_profile(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+
+    if request.method == 'POST':
+        # Update user profile fields
+        user.name = request.POST.get('name')
+        user.phone = request.POST.get('phone')
+        user.username = request.POST.get('username')
+        user.email = request.POST.get('email')
+        user.address = request.POST.get('address')
+        user.home_town = request.POST.get('home_town')
+        user.district = request.POST.get('district')
+        user.state = request.POST.get('state')
+        user.pincode = request.POST.get('pincode')
+
+        # Handle photo upload if present
+        if 'photo' in request.FILES:
+            user.photo = request.FILES['photo']
+
+        try:
+            user.save()
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('profile')
+        except Exception as e:
+            messages.error(request, f'Error updating profile: {str(e)}')
+            return redirect('edit_profile')
+
+    context = {
+        'user': user,
+        'user_type': user_type
+    }
+    return render(request, 'edit_profile.html', context)
+
+
+
+@login_required
+@csrf_exempt
+def upload_photo(request):
+    if request.method == 'POST':
+        photo = request.FILES.get('photo')
+        if photo:
+            user = request.user
+            user.photo = photo
+            user.save()
+            return JsonResponse({'success': True, 'photo_url': user.photo.url})
+    return JsonResponse({'success': False})
+
+
+def check_email(request):
+    email = request.GET.get('email', None)
+    data = {
+        'is_taken': Users.objects.filter(email=email).exists()
+    }
+    return JsonResponse(data)
+
+def check_username(request):
+    username = request.GET.get('username', None)
+    data = {
+        'is_taken': Users.objects.filter(username=username).exists()
+    }
+    return JsonResponse(data)
+
+def request_password_reset(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = Users.objects.get(email=email)
+            
+            # Generate a password reset token and send it to the user's email
+            token = token_generator.make_token(user)
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            reset_url = reverse('reset_password_confirm', kwargs={'uidb64': uidb64, 'token': token})
+            reset_url = request.build_absolute_uri(reset_url)
+            
+            send_mail(
+                'Password Reset Request',
+                f'Click the following link to reset your password: {reset_url}',
+                'your-email@gmail.com',  # Replace with your actual email
+                [email],
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Password reset email has been sent. Check your email to proceed.')
+            return redirect('request_password_reset')
+        
+        except Users.DoesNotExist:
+            messages.error(request, 'User does not exist.')
+            return redirect('request_password_reset')
+
+    return render(request, 'password_reset/request_password_reset.html')
+
+def reset_password_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = Users.objects.get(pk=uid)
+        
+        if token_generator.check_token(user, token):
+            if request.method == 'POST':
+                new_password = request.POST.get('new_password')
+                confirm_password = request.POST.get('confirm_password')
+                
+                if new_password == confirm_password:
+                    user.password = make_password(new_password)  # Hash the password
+                    user.save()
+                    messages.success(request, 'Password reset successful. You can now sign in with your new password.')
+                    return redirect('signin')
+                else:
+                    messages.error(request, 'Passwords do not match. Please try again.')
+            return render(request, 'password_reset/reset_password_confirm.html', {'uidb64': uidb64, 'token': token})
+        else:
+            messages.error(request, 'Invalid password reset link.')
+            return redirect('signin')
+    
+    except (TypeError, ValueError, OverflowError, Users.DoesNotExist):
+        user = None
+    
+    return redirect('signin')
+
+def logout_view(request):
+    logout(request)
+    return redirect('signin')
+
+
+
+@login_required
+@nocache
+def add_product(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        amount_value = request.POST.get('amount')
+        image = request.FILES.get('image')
+        category = request.POST.get('category')
+        stock = request.POST.get('stock')
+
+        amount = Amount(amount=amount_value)
+        amount.save()
+
+        product = Product(
+            name=name,
+            description=description,
+            amount=amount,
+            category=category,
+            image=image,
+            stock=stock  # Add the quantity field
+        )
+        product.save()
+
+        return redirect('add_product')
+
+    return render(request, 'admin_page/add_product.html')
+
+@login_required
+@nocache
+def add_portfolio(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+
+    # Check if user details are complete
+    user_details_complete = all([
+        user.name,
+        user.email,
+        user.phone,
+        user.address,
+        user.home_town,
+        user.district,
+        user.state,
+        user.pincode
+    ])
+
+    if request.method == 'POST':
+        if not user_details_complete:
+            messages.error(request, 'Please complete your profile before adding a portfolio.')
+            return redirect('profile')
+
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        amount_value = request.POST.get('amount')
+        image = request.FILES.get('image')
+        category = request.POST.get('category')
+        sqft = request.POST.get('sqft', 0)
+
+        amount = Amount(amount=amount_value)
+        amount.save()
+
+        portfolio = Design(
+            designer_id=request.user,
+            name=name,
+            description=description,
+            amount=amount,
+            image=image,
+            category=category,
+            sqft=sqft
+        )
+        portfolio.save()
+
+        messages.success(request, 'Portfolio added successfully.')
+        return redirect('portfolio')
+
+    context = {
+        'user_type': user_type,
+        'user_details_complete': user_details_complete
+    }
+    return render(request, 'add_portfolio.html', context)
+
+
+@nocache
+def portfolio(request):
+    category = request.GET.get('category', 'all')
+    sqft_range = request.GET.get('sqft_range', 'all')
+
+    if request.user.is_authenticated and request.user.user_type_id.user_type == 'Designer':
+        # For designers, show only their designs
+        portfolios = Design.objects.filter(designer_id=request.user)
+    else:
+        # For other users, show all designs
+        portfolios = Design.objects.all()
+        designer = request.GET.get('designer', 'all')
+        if designer != 'all':
+            portfolios = portfolios.filter(designer_id__username=designer)
+
+    if category != 'all':
+        portfolios = portfolios.filter(category__iexact=category)
+
+    if sqft_range != 'all':
+        if sqft_range == '0-500':
+            portfolios = portfolios.filter(sqft__lte=500)
+        elif sqft_range == '501-1000':
+            portfolios = portfolios.filter(sqft__gt=500, sqft__lte=1000)
+        elif sqft_range == '1001-1500':
+            portfolios = portfolios.filter(sqft__gt=1000, sqft__lte=1500)
+        elif sqft_range == '1501+':
+            portfolios = portfolios.filter(sqft__gt=1500)
+
+    all_designers = Users.objects.filter(user_type_id__user_type='Designer').values_list('username', flat=True).distinct()
+
 
 
 
@@ -88,10 +889,6 @@ def custom_login_redirect(request):
 def generate_otp():
     return random.randint(100000, 999999)
 
-from allauth.account.adapter import DefaultAccountAdapter
-from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from .models import UserType, Users
-from django.contrib.auth.hashers import make_password
 
 class CustomAccountAdapter(DefaultAccountAdapter):
     def save_user(self, request, user, form, commit=True):
@@ -432,12 +1229,20 @@ def portfolio(request):
             portfolios = portfolios.filter(sqft__gt=1500)
 
     all_designers = Users.objects.filter(user_type_id__user_type='Designer').values_list('username', flat=True).distinct()
+    
+    # Fetch all unique categories from the Design model
     all_categories = Design.objects.values_list('category', flat=True).distinct()
+
+    # Format categories
+    def format_category(category):
+        return category.replace('_', ' ').title()
+
+    formatted_categories = [{'value': cat, 'display': format_category(cat)} for cat in all_categories]
 
     context = {
         'portfolios': portfolios,
         'designers': all_designers,
-        'categories': all_categories,
+        'categories': formatted_categories,
         'no_results': portfolios.count() == 0,
         'selected_category': category,
         'selected_sqft_range': sqft_range,
@@ -497,6 +1302,7 @@ def shop(request):
 from django.shortcuts import render, get_object_or_404
 
 
+@login_required
 @nocache
 def portfolio_details(request, portfolio_id):
     portfolio = get_object_or_404(Design.objects.select_related('designer_id'), id=portfolio_id)
@@ -504,53 +1310,123 @@ def portfolio_details(request, portfolio_id):
     # Replace underscores with spaces in the category
     portfolio.category_display = portfolio.category.replace("_", " ")
     
-    context = {'portfolio': portfolio}
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
 
-    if request.user.is_authenticated:
-        user = request.user
-        user_type = user.user_type_id.user_type if user.user_type_id else None
-        context['user_type'] = user_type
+    # Check if user details are complete
+    user_details_complete = all([
+        user.address,
+        user.home_town,
+        user.district,
+        user.state,
+        user.pincode
+    ])
 
-        # Check if user details are complete
-        user_details_complete = all([
-            user.address,
-            user.home_town,
-            user.district,
-            user.state,
-            user.pincode
-        ])
-        context['user_details_complete'] = user_details_complete
+    if request.method == 'POST':
+        # Check if the request is to reject a consultation
+        if 'reject' in request.POST:
+            # Delete the consultation entry if it exists
+            Consultation.objects.filter(
+                design_id=portfolio_id,
+                customer_id=user,
+                designer_id=portfolio.designer_id
+            ).delete()
 
-        if request.method == 'POST':
-            # Check if the request is to reject a consultation
-            if 'reject' in request.POST:
-                # Delete the consultation entry if it exists
-                Consultation.objects.filter(
-                    design_id=portfolio_id,
-                    customer_id=user,
-                    designer_id=portfolio.designer_id
-                ).delete()
+            messages.success(request, 'Consultation request Cancelled.')
+            return redirect('portfolio_details', portfolio_id=portfolio_id)
 
-                messages.success(request, 'Consultation request Cancelled.')
-                return redirect('portfolio_details', portfolio_id=portfolio_id)
-
-        # Check for existing consultation status
-        consultation_status = Consultation.objects.filter(
-            design_id=portfolio_id,
-            customer_id=user,
-            designer_id=portfolio.designer_id
-        ).values_list('consultation_status', flat=True).first()
-        
-        context['consultation_status'] = consultation_status
-
+    # Check for existing consultation status
+    consultation_status = Consultation.objects.filter(
+        design_id=portfolio_id,
+        customer_id=user,
+        designer_id=portfolio.designer_id
+    ).values_list('consultation_status', flat=True).first()
+    
+    context = {
+        'portfolio': portfolio,
+        'user_type': user_type,
+        'consultation_status': consultation_status,
+        'user_details_complete': user_details_complete,
+        'is_designer': user == portfolio.designer_id,
+    }
     return render(request, 'portfolio_details.html', context)
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from .models import ChatMessage, Design, Users
 
-from django.utils import timezone
-from datetime import datetime, time
 
-from django.utils import timezone
-from django.utils.dateparse import parse_datetime
+@login_required
+@require_POST
+def send_chat_message(request):
+    data = json.loads(request.body)
+    content = data.get('content')
+    design_id = data.get('design_id')
+
+    if content and design_id:
+        design = Design.objects.get(id=design_id)
+        sender = request.user
+        
+        # Determine the receiver based on the sender's user type
+        if sender == design.designer_id:
+            # If the sender is the designer, find the customer who initiated the consultation
+            consultation = Consultation.objects.filter(design_id=design, designer_id=sender).first()
+            receiver = consultation.customer_id if consultation else None
+        else:
+            # If the sender is not the designer (i.e., a customer), set the receiver to the designer
+            receiver = design.designer_id
+
+        message = ChatMessage.objects.create(
+            sender=sender,
+            receiver=receiver,
+            design=design,
+            content=content
+        )
+        return JsonResponse({'status': 'success', 'message_id': message.id})
+    return JsonResponse({'status': 'error', 'message': 'Invalid data'})
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.db import models
+from .models import Design, ChatMessage, Users
+import json
+
+@login_required
+def get_chat_messages(request):
+    design_id = request.GET.get('design_id')
+    last_message_id = request.GET.get('last_message_id')
+    
+    if design_id:
+        design = Design.objects.get(id=design_id)
+        
+        # Get messages newer than the last_message_id
+        messages = ChatMessage.objects.filter(design=design, id__gt=last_message_id).order_by('timestamp')
+        
+        # Mark messages as read if the user is the receiver
+        messages.filter(receiver=request.user, is_read=False).update(is_read=True)
+        
+        messages_data = [
+            {
+                'id': message.id,
+                'sender_username': message.sender.username,
+                'content': message.content,
+                'timestamp': message.timestamp.isoformat(),
+                'is_sender': message.sender == request.user,
+                'is_designer': message.sender == design.designer_id
+            }
+            for message in messages
+        ]
+        return JsonResponse({
+            'status': 'success', 
+            'messages': messages_data,
+            'designer_username': design.designer_id.username,
+            'current_user': request.user.username
+        })
+    return JsonResponse({'status': 'error', 'message': 'Invalid design_id'})
+
 
 @login_required
 @csrf_exempt
@@ -620,12 +1496,41 @@ def consultation_booking(request, portfolio_id):
 
 from decimal import Decimal, InvalidOperation
 from django.core.exceptions import ValidationError
+from django.db.models import Avg
 
 @nocache
 def product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:3]
+    
+    if request.method == 'POST' and request.user.is_authenticated:
+        review_content = request.POST.get('review')
+        rating = request.POST.get('rating')  # Add this line to get the rating
+        if review_content and rating:
+            Review.objects.create(
+                product=product,
+                user=request.user,
+                content=review_content,
+                rating=int(rating)  # Add this line to save the rating
+            )
+            messages.success(request, "Your review has been posted successfully.")
+            return redirect('product', product_id=product.id)
+        else:
+            messages.error(request, "Review content and rating cannot be empty.")
+    
+    # Fetch reviews and count after potential new review creation
+    reviews = Review.objects.filter(product=product).order_by('-created_at')
+    review_count = reviews.count()
+    
+    # Calculate average rating
+    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    
     context = {
         'product': product,
+        'related_products': related_products,
+        'reviews': reviews,
+        'review_count': review_count,
+        'avg_rating': round(avg_rating, 1),  # Round to 1 decimal place
         'product_amount_paise': int(product.amount.amount * 100),  # Convert to paise
         'csrf_token': get_token(request),  # Add CSRF token to context
     }
@@ -682,13 +1587,6 @@ def product(request, product_id):
     return render(request, 'product.html', context)
 
 
-
-from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.decorators.http import require_POST
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_protect
 
 @login_required
 @never_cache
@@ -853,11 +1751,6 @@ def my_consultations(request):
     return render(request, 'my_consultations.html', context)
 
 
-import re
-from django.contrib.auth.hashers import make_password
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Users, UserType
 
 @login_required
 def add_designer(request):
@@ -983,13 +1876,7 @@ def consultations_table(request):
     }
     return render(request, 'admin_page/consultations_table.html', context)
 
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.views.decorators.cache import never_cache as nocache
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from django.views.decorators.http import require_http_methods
-from .models import Product
+
 
 @nocache
 @login_required
@@ -1032,35 +1919,7 @@ def admin_index(request):
     
     return render(request, 'admin_page/admin_index.html')
 
-# ... existing imports ...
-from django.views.decorators.http import require_POST
-from .models import Order, Payment_Type, Amount
-from django.utils import timezone
 
-# ... existing code ...
-
-from django.views.decorators.http import require_POST
-from .models import Order, Payment_Type, Amount
-from django.utils import timezone
-
-from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import Order, Payment_Type, Amount, Product
-from django.utils import timezone
-
-from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import Order, Payment_Type, Amount, Product, Cart
-from django.utils import timezone
-from django.db import transaction
-from django.db import transaction
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from .models import Order, Payment_Type, Amount, Product, Cart
-from django.utils import timezone
 
 @login_required
 @require_POST
@@ -1180,16 +2039,6 @@ def orders(request):
     return render(request, 'my_orders.html', context)
 
 
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from .models import ConsultationDate
-from django.utils.dateparse import parse_date
-from django.contrib.auth.decorators import login_required
-import json
-from django.utils import timezone
-from datetime import datetime, time
-from django.utils.dateparse import parse_datetime
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -1238,23 +2087,6 @@ def schedule_consultation(request):
         return render(request, 'schedule_consultation.html', context)
 
 
-from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404
-from .models import ConsultationDate
-from django.utils.dateparse import parse_datetime
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-
-# ... existing code ...
-
-from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404
-from .models import ConsultationDate
-from django.utils.dateparse import parse_datetime
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-
-# ... existing code ...
 
 @login_required
 @require_POST

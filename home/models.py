@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class UserType(models.Model):
     user_type = models.CharField(max_length=100, unique=True)
@@ -122,3 +123,34 @@ class ConsultationDate(models.Model):
 
     def __str__(self):
         return f"{self.designer.username} - {self.date_time}"
+    
+from django.db import models
+from django.contrib.auth.models import User
+
+class ChatMessage(models.Model):
+    sender = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='received_messages', null=True, blank=True)
+    design = models.ForeignKey(Design, on_delete=models.CASCADE, related_name='chat_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"{self.sender.username} to {self.receiver.username if self.receiver else 'Unknown'}: {self.content[:50]}"
+    
+
+
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    content = models.TextField()
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.user.username} for {self.product.name}"
