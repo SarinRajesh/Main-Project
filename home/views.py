@@ -2107,3 +2107,11 @@ def remove_scheduled_date(request):
 
     consultation_date.delete()
     return JsonResponse({'status': 'success', 'message': 'Consultation date removed successfully'})
+
+
+def image_processing(request):
+    context = {
+        'user': request.user,
+        'user_type': request.user.user_type_id.user_type if request.user.is_authenticated and request.user.user_type_id else None,
+    }
+    return render(request, 'image_processing.html', context)

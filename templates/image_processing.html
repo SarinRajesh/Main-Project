@@ -1,0 +1,348 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    </head>
+
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
+            </div>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                {% if user.is_authenticated %}
+                            
+                <div class="show-share-wrap">
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
+                </div>
+                {% else %}
+                {% endif %}
+                <!-- share button end-->  		
+                <!-- search button--> 	 
+                <!-- search button end --> 
+                <!-- mobile nav --> 
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
+                <div class="nav-holder">
+                    <nav>
+                        <ul>   
+                            {% if user_type != 'Designer' and user_type != 'Customer' %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %} class="act-link"">Designs</a>
+                                </li>
+                                        
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
+                            </li>
+                                <li>
+                                    <a href="contact.html">Contacts</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'shop' %}">Shop</a>
+                                    <!--second level end-->
+                                    <ul>
+                                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                                    </ul>
+                                    <!--second level end-->
+                                </li>
+                                <li>
+                                    <a href="blog.html">Journal</a>
+                                    <ul>
+                                        <li><a href="blog-grid.html">Grid</a></li>
+                                        <li><a href="blog-masonry.html">Masonry</a></li>
+                                        <li><a href="blog-single.html">Post Single</a></li>
+                                        <li><a href="404.html">404</a></li>
+                                    </ul>
+                                </li>
+                             
+                                <li>
+                                    <a href="{% url 'signin' %}">Signin</a>
+                                </li>
+                                {% else %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}" class="act-link">Designs</a>
+                                </li>
+                            
+                                
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="contact.html">Contacts</a>
+                            </li>
+                            {% if user_type != 'Designer' %}
+                            <li>
+                                <a href="{% url 'shop' %}">Shop</a>
+                                <!--second level end-->
+                                <ul>
+                                    <li><a href="{% url 'cart' %}">Cart</a></li>
+                                </ul>
+                                <!--second level end-->
+                            </li>
+                            {% endif %}
+                            <li>
+                                <a href="blog.html">Journal</a>
+                                <ul>
+                                    <li><a href="blog-grid.html">Grid</a></li>
+                                    <li><a href="blog-masonry.html">Masonry</a></li>
+                                    <li><a href="blog-single.html">Post Single</a></li>
+                                    <li><a href="404.html">404</a></li>
+                                </ul>
+                            </li>
+                            
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header  end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!-- content-holder  -->
+                    <div class="content">
+                        <!-- section --> 
+                        <section class="pr-der-pad">
+                            <!-- container-->  
+                            <div class="container">
+                                <!-- det-wrap-->  
+                                <div class="fl-wrap det-wrap">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="pr-title" style="background-color: #292929; padding: 30px; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);">
+                                                <h2 style="color: #f39c12; margin-bottom: 20px; font-size: 28px;">Image Processing</h2>
+                                                <div style="position: relative; overflow: hidden; margin-bottom: 20px;">
+                                                    <input type="file" id="file-upload" style="position: absolute; left: -9999px;" accept="image/*">
+                                                    <label for="file-upload" style="display: inline-block; padding: 12px 24px; background-color: #f39c12; color: white; cursor: pointer; border-radius: 5px; transition: all 0.3s ease; font-size: 16px; text-align: center; width: 100%;">
+                                                        <i class="fas fa-cloud-upload-alt" style="margin-right: 10px;"></i> Choose an image
+                                                    </label>
+                                                </div>
+                                                <div id="file-upload-filename" style="margin-top: 10px; font-style: italic; color: #888;"></div>
+                                                <div style="margin-top: 20px; background-color: #1c1c1c; padding: 20px; border-radius: 5px;">
+                                                    <img id="image-preview" src="#" alt="Image preview" style="display: none; max-width: 100%; height: auto; border-radius: 5px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div style="background-color: #292929; padding: 30px; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);">
+                                                <h3 style="color: #f39c12; margin-bottom: 20px; font-size: 24px;">Recommended Products</h3>
+                                                <div id="product-list" class="row" style="margin-top: 20px;">
+                                                    <!-- Product items will be dynamically added here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                               
+                            </div>
+                            <!-- container end -->
+                            <div class="partcile-dec" data-parcount="120"></div>
+                        </section>
+                        <!-- section end --> 
+                    </div>
+                    <!-- content  end --> 
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+            <!--search-form-holder -->  
+            <div class="search-form-holder fixed-search">
+                <div class="search-form-bg"></div>
+                <div class="search-form-wrap">
+                    <div class="container">
+                        <form class="searchform" method="get"  >
+                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
+                        </form>
+                        <div class="close-fixed-search"></div>
+                    </div>
+                    <div class="dublicated-text"></div>
+                </div>
+            </div>
+            <!--search-form-holder  end-->  
+            <!-- Share container  -->
+            <div class="share-wrapper isShare">
+                <div class="share-container" style="padding: 20px;">
+                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                        {% if user_type == 'Customer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
+                        </li>
+                    {% endif %}
+                    {% if user_type == 'Designer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                        </li>
+                    {% endif %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                    </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Share container  end-->
+            <!-- footer -->
+            <footer class="main-footer">
+                <div class="fixed-title"><span>Designs</span></div>
+                <div class="footer-social">
+                    <ul>
+                        <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                        <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                    </ul>
+                </div>
+            </footer>
+            <!-- footer end-->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+    <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+    <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+    
+    <script>
+        $(document).ready(function() {
+            $('#file-upload').change(function() {
+                var filename = $(this).val().split('\\').pop();
+                $('#file-upload-filename').text(filename);
+                
+                // Preview the image
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#image-preview').attr('src', e.target.result).show();
+                }
+                reader.readAsDataURL(this.files[0]);
+                
+                // TODO: Add AJAX call to process the image and get product recommendations
+                // For now, we'll just add some dummy products
+                var dummyProducts = [
+                    {name: "Product 1", image: "{% static 'index/images/product1.jpg' %}", price: "$19.99"},
+                    {name: "Product 2", image: "{% static 'index/images/product2.jpg' %}", price: "$29.99"},
+                    {name: "Product 3", image: "{% static 'index/images/product3.jpg' %}", price: "$39.99"},
+                ];
+                
+                var productList = $('#product-list');
+                productList.empty();
+                dummyProducts.forEach(function(product) {
+                    productList.append(`
+                        <div class="col-md-4" style="margin-bottom: 20px;">
+                            <div style="background-color: #1c1c1c; padding: 15px; border-radius: 5px; text-align: center;">
+                                <img src="${product.image}" alt="${product.name}" style="max-width: 100%; border-radius: 5px; margin-bottom: 10px;">
+                                <h4 style="color: #f39c12; margin-bottom: 5px; font-size: 18px;">${product.name}</h4>
+                                <p style="color: #888; font-size: 16px;">${product.price}</p>
+                            </div>
+                        </div>
+                    `);
+                });
+            });
+        });
+    </script>
+    
+    <!-- Chat Icon -->
+   
+</body>
+</html>

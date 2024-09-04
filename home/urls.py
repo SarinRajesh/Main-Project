@@ -49,6 +49,7 @@ urlpatterns = [
  path('send_chat_message/', views.send_chat_message, name='send_chat_message'),
     path('get_chat_messages/', views.get_chat_messages, name='get_chat_messages'),
 
+    path('image-processing/', views.image_processing, name='image_processing'),
 ]
 
 # Serve media files during development
