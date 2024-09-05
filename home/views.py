@@ -7,7 +7,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.hashers import make_password
-from .models import UserType, Consultation, Users, Design, Amount, Product, Cart, Review, Order, Payment_Type, ConsultationDate
+from .models import UserType, Consultation, Users, Design, Amount, Product, Cart, Review, Order, Payment_Type, ConsultationDate,Category
 from .decorators import nocache
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -1123,11 +1123,14 @@ def add_product(request):
         description = request.POST.get('description')
         amount_value = request.POST.get('amount')
         image = request.FILES.get('image')
-        category = request.POST.get('category')
+        category_name = request.POST.get('category')
         stock = request.POST.get('stock')
+        color = request.POST.get('color')  # Get the color value from the form
 
         amount = Amount(amount=amount_value)
         amount.save()
+
+        category, created = Category.objects.get_or_create(name=category_name)
 
         product = Product(
             name=name,
@@ -1135,13 +1138,15 @@ def add_product(request):
             amount=amount,
             category=category,
             image=image,
-            stock=stock  # Add the quantity field
+            stock=stock,
+            color=color  # Add the color field to the Product model
         )
         product.save()
 
         return redirect('add_product')
 
-    return render(request, 'admin_page/add_product.html')
+    categories = Category.objects.all()
+    return render(request, 'admin_page/add_product.html', {'categories': categories})
 
 @login_required
 @nocache
@@ -2460,6 +2465,10 @@ def get_color_name(rgb_color):
 
 def recommend_products_by_color(request):
     context = {}
+    if request.user.is_authenticated:
+        user_type = request.user.user_type_id.user_type if request.user.user_type_id else None
+        context['user_type'] = user_type
+
     if request.method == 'POST' and 'image' in request.FILES:
         image = request.FILES['image']
         
@@ -2491,18 +2500,18 @@ def recommend_products_by_color(request):
             
             recommended_products = Product.objects.filter(color_query)
             
-            context = {
+            context.update({
                 'detected_color': detected_color,
                 'recommended_products': recommended_products,
                 'products_count': recommended_products.count(),
                 'form_submitted': True
-            }
+            })
         except Exception as e:
             print(f"Error processing image: {str(e)}")
-            context = {
+            context.update({
                 'error': str(e),
                 'form_submitted': True
-            }
+            })
         finally:
             # Clean up the temporary file
             if os.path.exists(file_path):

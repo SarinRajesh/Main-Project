@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage
+from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage, Category
 
 # ... (keep existing admin classes) ...
 class UsersAdmin(admin.ModelAdmin):
@@ -31,7 +31,10 @@ class ConsultationAdmin(admin.ModelAdmin):
             'fields': ('feedback', 'design_preferences')
         }),
     )
-
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+    
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'description', 'amount', 'category', 'image','stock','color')
     search_fields = ('name', 'category')
@@ -101,9 +104,7 @@ class ReviewAdmin(admin.ModelAdmin):
 # ... (keep existing admin registrations) ...
 
 admin.site.register(Review, ReviewAdmin)
-
-# ... (keep other existing admin registrations) ...
-
+admin.site.register(Category, CategoryAdmin)
 admin.site.register(ChatMessage, ChatMessageAdmin)
 
 admin.site.register(ConsultationDate, ConsultationDateAdmin)

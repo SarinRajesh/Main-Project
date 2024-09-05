@@ -288,8 +288,8 @@
                         var productDescription = $(this).data('description');
                         var productAmount = $(this).data('amount');
                         var productStock = $(this).data('stock');
-                        var productColor = $(this).data('color');  // Add this line
-            
+                        var productColor = $(this).data('color');
+
                         Swal.fire({
                             title: '<h2 style="font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px;">Edit Product</h2>',
                             html:
@@ -297,7 +297,15 @@
                                 '<textarea id="swal-input2" class="swal2-input" rows="3" placeholder="Description" style="width: 100%; padding: 10px; height:38%; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' + productDescription + '</textarea>' +
                                 '<input id="swal-input3" type="number" class="swal2-input" value="' + productAmount + '" placeholder="Price" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' +
                                 '<input id="swal-input4" type="number" class="swal2-input" value="' + productStock + '" placeholder="Stock" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' +
-                                '<input id="swal-input5" class="swal2-input" value="' + productColor + '" placeholder="Color" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">',
+                                '<div style="margin-bottom: 20px; background-color: #f8f9fa; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' +
+                                '<label for="color" style="display: block; font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333;">Choose Product Color:</label>' +
+                                '<div id="color-options" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;"></div>' +
+                                '<div style="display: flex; align-items: center; background-color: white; border-radius: 25px; padding: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">' +
+                                '<input type="text" id="color-input" name="color" value="' + productColor + '" placeholder="Enter color (e.g., #FF0000)" required style="flex-grow: 1; padding: 10px 15px; border: none; border-radius: 20px 0 0 20px; font-size: 16px; outline: none;">' +
+                                '<div id="color-preview" style="width: 40px; height: 40px; border-radius: 50%; margin: 0 10px;"></div>' +
+                                '</div>' +
+                                '<input type="color" id="custom-color" style="display: none;">' +
+                                '</div>',
                             focusConfirm: false,
                             confirmButtonText: 'Save',
                             confirmButtonColor: '#6c63ff',
@@ -307,14 +315,75 @@
                             },
                             willOpen: () => {
                                 const confirmButton = Swal.getConfirmButton();
-                                confirmButton.style.backgroundColor = 'black'; // Background color
-                                confirmButton.style.color = '#fff'; // Text color
-                                confirmButton.style.border = 'none'; // Remove border
-                                confirmButton.style.padding = '10px 20px'; // Padding
-                                confirmButton.style.borderRadius = '5px'; // Rounded corners
-                                confirmButton.style.fontSize = '16px'; // Font size
-                                confirmButton.style.cursor = 'pointer'; // Pointer cursor on hover
-                                confirmButton.style.transition = 'background-color 0.3s ease'; // Smooth transition
+                                confirmButton.style.backgroundColor = 'black';
+                                confirmButton.style.color = '#fff';
+                                confirmButton.style.border = 'none';
+                                confirmButton.style.padding = '10px 20px';
+                                confirmButton.style.borderRadius = '5px';
+                                confirmButton.style.fontSize = '16px';
+                                confirmButton.style.cursor = 'pointer';
+                                confirmButton.style.transition = 'background-color 0.3s ease';
+
+                                // Add color options
+                                const colorOptions = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFFFFF', '#000000'];
+                                const colorOptionsContainer = document.getElementById('color-options');
+                                colorOptions.forEach(color => {
+                                    const colorOption = document.createElement('div');
+                                    colorOption.className = 'color-option';
+                                    colorOption.style.width = '50px';
+                                    colorOption.style.height = '50px';
+                                    colorOption.style.borderRadius = '50%';
+                                    colorOption.style.cursor = 'pointer';
+                                    colorOption.style.border = '3px solid transparent';
+                                    colorOption.style.transition = 'all 0.3s';
+                                    colorOption.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                                    colorOption.style.backgroundColor = color;
+                                    colorOption.dataset.color = color;
+                                    colorOption.title = color;
+                                    colorOptionsContainer.appendChild(colorOption);
+                                });
+
+                                // Add custom color option
+                                const customColorOption = document.createElement('div');
+                                customColorOption.className = 'color-option custom';
+                                customColorOption.style.width = '50px';
+                                customColorOption.style.height = '50px';
+                                customColorOption.style.borderRadius = '50%';
+                                customColorOption.style.cursor = 'pointer';
+                                customColorOption.style.border = '3px solid transparent';
+                                customColorOption.style.transition = 'all 0.3s';
+                                customColorOption.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                                customColorOption.style.backgroundImage = 'url("{% static "images/color-wheel.png" %}")';
+                                customColorOption.style.backgroundSize = 'cover';
+                                customColorOption.dataset.color = 'custom';
+                                customColorOption.title = 'Custom Color';
+                                colorOptionsContainer.appendChild(customColorOption);
+
+                                // Set initial color
+                                document.getElementById('color-preview').style.backgroundColor = productColor;
+
+                                // Add event listeners
+                                document.querySelectorAll('.color-option').forEach(option => {
+                                    option.addEventListener('click', function() {
+                                        document.querySelectorAll('.color-option').forEach(opt => opt.style.border = '3px solid transparent');
+                                        this.style.border = '3px solid #333';
+                                        if (this.dataset.color === 'custom') {
+                                            document.getElementById('custom-color').click();
+                                        } else {
+                                            document.getElementById('color-input').value = this.dataset.color;
+                                            document.getElementById('color-preview').style.backgroundColor = this.dataset.color;
+                                        }
+                                    });
+                                });
+
+                                document.getElementById('custom-color').addEventListener('input', function() {
+                                    document.getElementById('color-input').value = this.value;
+                                    document.getElementById('color-preview').style.backgroundColor = this.value;
+                                });
+
+                                document.getElementById('color-input').addEventListener('input', function() {
+                                    document.getElementById('color-preview').style.backgroundColor = this.value;
+                                });
                             },
                             preConfirm: () => {
                                 return {
@@ -322,7 +391,7 @@
                                     description: document.getElementById('swal-input2').value,
                                     amount: document.getElementById('swal-input3').value,
                                     stock: document.getElementById('swal-input4').value,
-                                    color: document.getElementById('swal-input5').value  // Add this line
+                                    color: document.getElementById('color-input').value
                                 }
                             }
                         }).then((result) => {
@@ -337,13 +406,12 @@
                                         'description': result.value.description,
                                         'amount': result.value.amount,
                                         'stock': result.value.stock,
-                                        'color': result.value.color,  // Add this line
+                                        'color': result.value.color,
                                         'csrfmiddlewaretoken': '{{ csrf_token }}'
                                     },
                                     success: function(response) {
-                                        // Reload the page or update the table row
                                         if(response.status === 'success'){
-                                            location.reload(); // Reload the page to see the changes
+                                            location.reload();
                                         } else {
                                             Swal.fire('Error', 'There was an error updating the product.', 'error');
                                         }

@@ -96,14 +96,39 @@
                                                         <input name="amount" type="number" id="amount" placeholder="Price" required min="0" step="0.01"
                                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
                                                         
-                                                        <input name="category" type="text" id="category" placeholder="Product Category" required
-                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        <select name="category" id="category" required
+                                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                            <option value="">Select Category</option>
+                                                            {% for category in categories %}
+                                                                <option value="{{ category.name }}">{{ category.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
                                                         
                                                         <input name="stock" type="number" id="stock" placeholder="Stock Quantity" required min="0"
                                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
                                                         
                                                         <input name="image" type="file" id="image" required
                                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        
+                                                        <div style="margin-bottom: 20px; background-color: #f8f9fa; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                                            <label for="color" style="display: block; font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333;">Choose Product Color:</label>
+                                                            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #FF0000;" data-color="#FF0000" title="Red"></div>
+                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #00FF00;" data-color="#00FF00" title="Green"></div>
+                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #0000FF;" data-color="#0000FF" title="Blue"></div>
+                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #FFFF00;" data-color="#FFFF00" title="Yellow"></div>
+                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #FF00FF;" data-color="#FF00FF" title="Magenta"></div>
+                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #00FFFF;" data-color="#00FFFF" title="Cyan"></div>
+                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #FFFFFF;" data-color="#FFFFFF" title="White"></div>
+                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #000000;" data-color="#000000" title="Black"></div>
+                                                                <div class="color-option custom" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-image: url('{% static 'images/color-wheel.png' %}'); background-size: cover;" data-color="custom" title="Custom Color"></div>
+                                                            </div>
+                                                            <div style="display: flex; align-items: center; background-color: white; border-radius: 25px; padding: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                                <input type="text" id="color-input" name="color" placeholder="Enter color (e.g., #FF0000)" required style="flex-grow: 1; padding: 10px 15px; border: none; border-radius: 20px 0 0 20px; font-size: 16px; outline: none;">
+                                                                <div id="color-preview" style="width: 40px; height: 40px; border-radius: 50%; margin: 0 10px;"></div>
+                                                            </div>
+                                                            <input type="color" id="custom-color" style="display: none;">
+                                                        </div>
                                                         
                                                         <button type="submit" id="submit" style="padding: 10px 20px; border: none; background-color: #000; color: #fff; border-radius: 5px;">
                                                             <span>Add Product</span>
@@ -126,6 +151,7 @@
                                                                 const category = $('#category').val().trim();
                                                                 const stock = $('#stock').val().trim();
                                                                 const image = $('#image').val();
+                                                                const color = $('#color-input').val().trim();
                                                     
                                                                 // Validate name length
                                                                 if (name.length < 3 || name.length > 20) {
@@ -137,7 +163,7 @@
                                                                     return;
                                                                 }
                                                     
-                                                                if (!name || !description || !amount || !category || !stock || !image) {
+                                                                if (!name || !description || !amount || !category || !stock || !image || !color) {
                                                                     Swal.fire({
                                                                         icon: 'error',
                                                                         title: 'Oops...',
@@ -196,6 +222,44 @@
                                                         });
                                                     </script>
                                                     
+                                                    <script>
+                                                        document.addEventListener('DOMContentLoaded', function() {
+                                                            const colorOptions = document.querySelectorAll('.color-option');
+                                                            const colorInput = document.getElementById('color-input');
+                                                            const colorPreview = document.getElementById('color-preview');
+                                                            const customColorInput = document.getElementById('custom-color');
+
+                                                            colorOptions.forEach(option => {
+                                                                option.addEventListener('click', function() {
+                                                                    colorOptions.forEach(opt => opt.style.border = '3px solid transparent');
+                                                                    this.style.border = '3px solid #333';
+                                                                    if (this.dataset.color === 'custom') {
+                                                                        customColorInput.click();
+                                                                    } else {
+                                                                        colorInput.value = this.dataset.color;
+                                                                        colorPreview.style.backgroundColor = this.dataset.color;
+                                                                    }
+                                                                });
+                                                                option.addEventListener('mouseover', function() {
+                                                                    this.style.transform = 'scale(1.1)';
+                                                                    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                                                                });
+                                                                option.addEventListener('mouseout', function() {
+                                                                    this.style.transform = 'scale(1)';
+                                                                    this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                                                                });
+                                                            });
+
+                                                            customColorInput.addEventListener('input', function() {
+                                                                colorInput.value = this.value;
+                                                                colorPreview.style.backgroundColor = this.value;
+                                                            });
+
+                                                            colorInput.addEventListener('input', function() {
+                                                                colorPreview.style.backgroundColor = this.value;
+                                                            });
+                                                        });
+                                                    </script>
                                                     
                                                 </div>
                                             </div>

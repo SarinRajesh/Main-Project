@@ -33,34 +33,109 @@
             <!--================= header ================-->
             <header class="main-header">
                 <!-- logo -->
-                <a class="logo-holder" href="{% url 'index' %}"><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
                 {% if user.is_authenticated %}
+                            
                 <div class="show-share-wrap">
                     <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
                 </div>
+                {% else %}
                 {% endif %}
-                <!-- mobile nav -->
+                <!-- mobile nav --> 
                 <div class="nav-button-wrap">
                     <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
                 </div>
-                <!-- mobile nav end-->
-                <!--  navigation -->
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
                 <div class="nav-holder">
                     <nav>
-                        <ul>
-                            <li><a href="{% url 'index' %}">Home</a></li>
-                            <li><a href="{% url 'portfolio' %}">Designs</a></li>
-                            <li><a href="{% url 'shop' %}">Shop</a></li>
-                            {% if not user.is_authenticated %}
-                            <li><a href="{% url 'signin' %}">Signin</a></li>
+                        <ul>   
+                            {% if user_type != 'Designer' and user_type != 'Customer' %}
+                                <li>
+                                    <a href="{% url 'index' %}">Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
+                                </li>
+                                        
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
+                            </li>
+                                <li>
+                                    <a href="contact.html">Contacts</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'shop' %}">Shop</a>
+                                    <!--second level end-->
+                                    <ul>
+                                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                                    </ul>
+                                    <!--second level end-->
+                                </li>
+                                <li>
+                                    <a href="blog.html">Journal</a>
+                                    <ul>
+                                        <li><a href="blog-grid.html">Grid</a></li>
+                                        <li><a href="blog-masonry.html">Masonry</a></li>
+                                        <li><a href="blog-single.html">Post Single</a></li>
+                                        <li><a href="404.html">404</a></li>
+                                    </ul>
+                                </li>
+                             
+                                <li>
+                                    <a href="{% url 'signin' %}">Signin</a>
+                                </li>
+                                {% else %}
+                                <li>
+                                    <a href="{% url 'index' %}" >Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
+                                </li>
+                            
+                                
+                            <li>
+                                <a href="about.html">About</a>
+                                <ul>
+                                    <li><a href="about-personal.html">Personal</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="contact.html">Contacts</a>
+                            </li>
+                            {% if user_type != 'Designer' %}
+                            <li>
+                                <a href="{% url 'shop' %}">Shop</a>
+                                <!--second level end-->
+                                <ul>
+                                    <li><a href="{% url 'cart' %}">Cart</a></li>
+                                </ul>
+                                <!--second level end-->
+                            </li>
+                            {% endif %}
+                            <li>
+                                <a href="blog.html">Journal</a>
+                                <ul>
+                                    <li><a href="blog-grid.html">Grid</a></li>
+                                    <li><a href="blog-masonry.html">Masonry</a></li>
+                                    <li><a href="blog-single.html">Post Single</a></li>
+                                    <li><a href="404.html">404</a></li>
+                                </ul>
+                            </li>
+                            
                             {% endif %}
                         </ul>
                     </nav>
+                    
                 </div>
                 <!-- navigation  end -->
             </header>
-            <!-- header end -->
             <!--=============== wrapper ===============-->
             <div id="wrapper">
                 <!-- content-holder  -->
@@ -69,56 +144,56 @@
                     <div class="content">
                         <section>
                             <div class="container">
-                                <div class="product-container fl-wrap">
-                                    <h2>Color Detection and Product Recommendation</h2>
+                                <div class="product-container fl-wrap" style="text-align: center;">
+                                    <h2 style="margin-bottom: 30px; font-size: 28px; color: #333;">Color Detection and Product Recommendation</h2>
 
-                                    <form method="post" enctype="multipart/form-data" class="custom-form">
+                                    <form method="post" enctype="multipart/form-data" class="custom-form" style="max-width: 600px; margin: 0 auto;">
                                         {% csrf_token %}
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <input type="file" name="image" accept="image/*" required>
+                                        <div class="row" style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div class="col-md-6" style="flex: 1;">
+                                                <input type="file" name="image" accept="image/*" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
                                             </div>
-                                            <div class="col-md-6">
-                                                <button type="submit" class="btn float-btn flat-btn">Upload and Detect Color</button>
+                                            <div class="col-md-6" style="flex: 1; text-align: right;">
+                                                <button type="submit" class="btn float-btn flat-btn" style="padding: 10px 20px; background-color: #f39c12; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Upload and Detect Color</button>
                                             </div>
                                         </div>
                                     </form>
 
                                     {% if form_submitted %}
                                         {% if error %}
-                                            <p class="error-message">Error: {{ error }}</p>
+                                            <p class="error-message" style="color: #e74c3c; margin-top: 20px;">Error: {{ error }}</p>
                                         {% else %}
-                                            <div class="detection-results">
-                                                <h3>Color Detection Results</h3>
-                                                <p>Detected Color: 
+                                            <div class="detection-results" style="margin-top: 30px; text-align: left;">
+                                                <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Color Detection Results</h3>
+                                                <p style="font-size: 18px; margin-bottom: 10px;">Detected Color: 
                                                     {% if detected_color|slice:":3" == "rgb" %}
                                                         {{ detected_color }} 
-                                                        <span class="color-sample" style="background-color: {{ detected_color }};"></span>
+                                                        <span class="color-sample" style="display: inline-block; width: 20px; height: 20px; margin-left: 10px; vertical-align: middle; background-color: {{ detected_color }};"></span>
                                                     {% else %}
                                                         {{ detected_color }}
                                                     {% endif %}
                                                 </p>
                                                 {% if recommended_products %}
-                                                    <p>Number of Recommended Products: {{ products_count }}</p>
-                                                    <h3>Recommended Products (Same Color):</h3>
-                                                    <div class="products fl-wrap">
+                                                    <p style="font-size: 18px; margin-bottom: 20px;">Number of Recommended Products: {{ products_count }}</p>
+                                                    <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Recommended Products (Same Color):</h3>
+                                                    <div class="products fl-wrap" style="display: flex; flex-wrap: wrap; justify-content: space-between;">
                                                         {% for product in recommended_products %}
-                                                            <div class="product-cat-mains">
+                                                            <div class="product-cat-mains" style="width: calc(33.33% - 20px); margin-bottom: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
                                                                 <div class="product-cat-img fl-wrap">
-                                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                                                                    <a href="{% url 'product' product.id %}">View</a>
+                                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: auto;">
+                                                                    <a href="{% url 'product' product.id %}" style="display: inline-block; margin-top: 10px; padding: 5px 10px; background-color: #f39c12; color: #fff; text-decoration: none; border-radius: 4px;">View</a>
                                                                 </div>
-                                                                <div class="product-cat-title">
-                                                                    <h4><a href="{% url 'product' product.id %}">{{ product.name }}</a></h4>
-                                                                    <div class="product-cats"><a href="#">{{ product.category }}</a></div>
-                                                                    <span class="product-price">Rs. {{ product.amount.amount }}</span>
-                                                                    <span class="color-sample" style="background-color: {{ product.color }};"></span>
+                                                                <div class="product-cat-title" style="padding: 15px;">
+                                                                    <h4 style="margin-bottom: 10px;"><a href="{% url 'product' product.id %}" style="color: #333; text-decoration: none;">{{ product.name }}</a></h4>
+                                                                    <div class="product-cats" style="margin-bottom: 5px;"><a href="#" style="color: #666;">{{ product.category }}</a></div>
+                                                                    <span class="product-price" style="display: block; font-weight: bold; color: #f39c12;">Rs. {{ product.amount.amount }}</span>
+                                                                    <span class="color-sample" style="display: inline-block; width: 20px; height: 20px; margin-top: 5px; background-color: {{ product.color }};"></span>
                                                                 </div>
                                                             </div>
                                                         {% endfor %}
                                                     </div>
                                                 {% else %}
-                                                    <p>No products recommended for the current photo.</p>
+                                                    <p style="font-size: 18px; color: #666;">No products recommended for the current photo.</p>
                                                 {% endif %}
                                             </div>
                                         {% endif %}
@@ -128,13 +203,12 @@
                         </section>
                     </div>
                     <!-- content end -->
-                    <!--=============== content-footer   ===============-->
                     <div class="height-emulator"></div>
                     <footer class="content-footer">
                         <div class="footer-inner">
                             <div class="row">
                                 <div class="col-md-3">
-                                    <a class="footer-logo" href="{% url 'index' %}"><img src="{% static 'index/images/logo.png' %}" alt=""></a>
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
@@ -164,7 +238,7 @@
                                 <div class="col-md-3"></div>
                                 <div class="col-md-9">
                                     <div class="fl-wrap policy-box">
-                                        <p> &#169; ElegantDecor 2023. All rights reserved.</p>
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
                                     </div>
                                 </div>
                             </div>
@@ -176,11 +250,74 @@
                 <!-- content-holder end -->
             </div>
             <!-- wrapper end -->
+            <!--search-form-holder -->  
+            <div class="search-form-holder fixed-search">
+                <div class="search-form-bg"></div>
+                <div class="search-form-wrap">
+                    <div class="container">
+                        <form class="searchform" method="get"  >
+                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
+                        </form>
+                        <div class="close-fixed-search"></div>
+                    </div>
+                    <div class="dublicated-text"></div>
+                </div>
+            </div>
+            <!--search-form-holder  end-->  
+            <!-- Share container  -->
+            <div class="share-wrapper isShare">
+                <div class="share-container" style="padding: 20px;">
+                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                        {% if user_type == 'Customer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
+                        </li>
+                    {% endif %}
+                    {% if user_type == 'Designer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                        </li>
+                    {% endif %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                    </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Share container  end-->
+            <!-- footer -->
+            <footer class="main-footer">
+                <div class="fixed-title"><span>Digital Image Processing</span></div>
+                <div class="footer-social">
+                    <ul>
+                        <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                        <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                    </ul>
+                </div>
+            </footer>
+            <!-- footer end-->
         </div>
         <!-- Main end -->
-        <!--=============== scripts  ===============-->
-        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
-        <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+ <!--=============== scripts  ===============-->
+ <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+ <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+ <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
+
     </body>
 </html>
