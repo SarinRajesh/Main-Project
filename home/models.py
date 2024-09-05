@@ -71,6 +71,7 @@ class Product(models.Model):
     category = models.CharField(max_length=100)
     image = models.ImageField(upload_to='product_images/')
     stock = models.PositiveIntegerField(default=0)  
+    color = models.CharField(max_length=7, null=True, blank=True)  # Store color as hex code, e.g., "#FF0000"
 
     def __str__(self):
         return self.name

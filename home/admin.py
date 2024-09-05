@@ -33,7 +33,7 @@ class ConsultationAdmin(admin.ModelAdmin):
     )
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'description', 'amount', 'category', 'image','stock')
+    list_display = ('id', 'name', 'description', 'amount', 'category', 'image','stock','color')
     search_fields = ('name', 'category')
 
 class DesignAdmin(admin.ModelAdmin):

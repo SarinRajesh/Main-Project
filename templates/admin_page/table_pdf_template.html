@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }} Table</title>
+    <style>
+        @page {
+            size: landscape;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 3px;
+            text-align: left;
+            word-wrap: break-word;
+            max-width: 100px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ title }} Table</h1>
+    <table>
+        <thead>
+            <tr>
+                {% for header in headers %}
+                    <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+                <tr>
+                    {% for value in item %}
+                        <td>{{ value|truncatechars:50 }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

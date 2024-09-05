@@ -48,8 +48,10 @@ urlpatterns = [
  path('remove_scheduled_date/', views.remove_scheduled_date, name='remove_scheduled_date'),  # New URL pattern
  path('send_chat_message/', views.send_chat_message, name='send_chat_message'),
     path('get_chat_messages/', views.get_chat_messages, name='get_chat_messages'),
+path('admin_page/designs-table/', views.designs_table, name='designs_table'),
+path('admin_page/orders-table/', views.orders_table, name='orders_table'),
 
-    path('image-processing/', views.image_processing, name='image_processing'),
+   path('recommend-products/', views.recommend_products_by_color, name='recommend_products_by_color'),
 ]
 
 # Serve media files during development

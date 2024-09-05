@@ -1813,71 +1813,349 @@ def add_designer(request):
 @nocache
 @login_required
 def users_table(request):
-    # Separate users into customers and designers
     customers = Users.objects.filter(user_type_id__user_type='Customer')
     designers = Users.objects.filter(user_type_id__user_type='Designer')
 
-    if request.method == 'POST':
-        user_id = request.POST.get('user_id')
-        reason = request.POST.get('reason', '')  # Get the reason from the request
-        user = get_object_or_404(Users, id=user_id)
-        
-        # Toggle the status and save the reason if deactivating
-        if user.status == 'active':
-            user.status = 'inactive'
-            user.deactivation_reason = reason  # Save the reason for deactivation
-            
-            # Send email to user about deactivation
-            send_mail(
-                'Account Deactivation Notice',
-                f'Your account has been deactivated. Reason: {reason}',
-                'your-email@gmail.com',  # Replace with your actual email
-                [user.email],
-                fail_silently=False,
-            )
-        else:
-            user.status = 'active'
-            user.deactivation_reason = ''  # Clear the reason if activating
-            
-            # Send email to user about activation
-            send_mail(
-                'Account Activation Notice',
-                'Your account has been activated successfully.',
-                'your-email@gmail.com',  # Replace with your actual email
-                [user.email],
-                fail_silently=False,
-            )
+    if 'download' in request.GET:
+        user_type = request.GET.get('user_type', '')
+        if user_type not in ['customer', 'designer']:
+            return HttpResponse('Invalid user type')
 
-        user.save()
-        messages.success(request, f'User {"activated" if user.status == "active" else "deactivated"} successfully.')
+        if request.GET['download'] == 'pdf':
+            return download_pdf(request, 'users', user_type)
+        elif request.GET['download'] == 'excel':
+            return download_excel(request, 'users', user_type)
 
     return render(request, 'admin_page/users_table.html', {
         'customers': customers,
         'designers': designers,
     })
 
-
 @nocache
 @login_required
 def designs_table(request):
     designs = Design.objects.select_related('designer_id', 'amount').all()
+    
+    if 'download' in request.GET:
+        if request.GET['download'] == 'pdf':
+            return download_pdf(request, 'designs')
+        elif request.GET['download'] == 'excel':
+            return download_excel(request, 'designs')
+    
     context = {
         'designs': designs,
     }
     return render(request, 'admin_page/designs_table.html', context)
+
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from openpyxl import Workbook
+from io import BytesIO
+
+def download_pdf(request, data_type, user_type=None):
+    template_path = 'admin_page/table_pdf_template.html'
+    
+    if data_type == 'users':
+        if user_type == 'customer':
+            filename = 'customers_table.pdf'
+            title = 'Customers'
+            users = Users.objects.filter(user_type_id__user_type='Customer')
+        elif user_type == 'designer':
+            filename = 'designers_table.pdf'
+            title = 'Designers'
+            users = Users.objects.filter(user_type_id__user_type='Designer')
+        else:  # all users
+            filename = 'all_users_table.pdf'
+            title = 'All Users'
+            users = Users.objects.exclude(user_type_id__user_type='Admin')
+
+        headers = ['Name', 'Email', 'Phone', 'Address', 'Home Town', 'District', 'State', 'Pincode', 'Status', 'User Type']
+        items = [
+            [
+                user.name,
+                user.email,
+                user.phone,
+                user.address,
+                user.home_town,
+                user.district,
+                user.state,
+                user.pincode,
+                user.status,
+                user.user_type_id.user_type if user.user_type_id else 'N/A'
+            ] for user in users
+        ]
+    elif data_type == 'designs':
+        filename = 'designs_table.pdf'
+        title = 'Designs'
+        headers = ['Name', 'Description', 'Designer', 'Amount', 'Category', 'Square Feet']
+        designs = Design.objects.select_related('designer_id', 'amount').all()
+        items = [
+            [
+                design.name,
+                design.description[:50] + ('...' if len(design.description) > 50 else ''),
+                design.designer_id.name,
+                str(design.amount.amount),
+                design.category,
+                str(design.sqft)
+            ] for design in designs
+        ]
+    elif data_type == 'consultations':
+        filename = 'consultations_table.pdf'
+        title = 'Consultations'
+        headers = ['Customer', 'Designer', 'Design', 'Status', 'Scheduled Date', 'Payment Type', 'Payment Status', 'Amount']
+        consultations = Consultation.objects.select_related('customer_id', 'designer_id', 'design_id', 'payment_type', 'amount').all()
+        items = [
+            [
+                consultation.customer_id.name,
+                consultation.designer_id.name,
+                consultation.design_id.name,
+                consultation.consultation_status,
+                str(consultation.schedule_date_time),
+                consultation.payment_type.payment_type,
+                consultation.payment_status,
+                str(consultation.amount.amount)
+            ] for consultation in consultations
+        ]
+    elif data_type == 'products':
+        filename = 'products_table.pdf'
+        title = 'Products'
+        headers = ['Name', 'Description', 'Amount', 'Stock', 'Category']
+        products = Product.objects.select_related('amount').all()
+        items = [
+            [
+                product.name,
+                product.description[:50] + ('...' if len(product.description) > 50 else ''),
+                str(product.amount.amount),
+                str(product.stock),
+                product.category
+            ] for product in products
+        ]
+    elif data_type == 'orders':
+        filename = 'orders_table.pdf'
+        title = 'Orders'
+        headers = ['Order ID', 'User', 'Product', 'Quantity', 'Amount', 'Order Date', 'Order Status', 'Payment Type', 'Payment Status']
+        orders = Order.objects.select_related('user', 'product', 'amount', 'payment_type').all()
+        items = [
+            [
+                str(order.id),
+                order.user.username,
+                order.product.name,
+                str(order.quantity),
+                str(order.amount.amount),
+                order.order_date.strftime('%Y-%m-%d %H:%M'),
+                order.order_status,
+                order.payment_type.payment_type,
+                order.payment_status
+            ] for order in orders
+        ]
+    elif data_type == 'products':
+        filename = 'products_table.pdf'
+        title = 'Products'
+        headers = ['Name', 'Description', 'Amount', 'Stock', 'Category']
+        products = Product.objects.select_related('amount').all()
+        items = [
+            [
+                product.name,
+                product.description[:50] + ('...' if len(product.description) > 50 else ''),
+                str(product.amount.amount),
+                str(product.stock),
+                product.category
+            ] for product in products
+        ]
+    else:
+        return HttpResponse('Invalid data type')
+
+    context = {
+        'title': title,
+        'headers': headers,
+        'items': items,
+    }
+    # Create a Django response object, and specify content_type as pdf
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    # find the template and render it.
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # create a pdf
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    # if error then show some funny view
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+
+def download_excel(request, data_type, user_type=None):
+    workbook = Workbook()
+    worksheet = workbook.active
+
+    if data_type == 'users':
+        if user_type == 'customer':
+            worksheet.title = 'Customers'
+            filename = 'customers_table.xlsx'
+            data = Users.objects.filter(user_type_id__user_type='Customer')
+        else:  # designer
+            worksheet.title = 'Designers'
+            filename = 'designers_table.xlsx'
+            data = Users.objects.filter(user_type_id__user_type='Designer')
+
+        headers = ['Name', 'Email', 'Phone', 'Address', 'Home Town', 'District', 'State', 'Pincode', 'Status']
+    elif data_type == 'designs':
+        worksheet.title = 'Designs'
+        headers = ['Name', 'Description', 'Designer', 'Amount', 'Category', 'Square Feet']
+        data = Design.objects.select_related('designer_id', 'amount').all()
+        filename = 'designs_table.xlsx'
+    elif data_type == 'consultations':
+        worksheet.title = 'Consultations'
+        headers = ['Customer', 'Designer', 'Design', 'Status', 'Scheduled Date', 'Payment Type', 'Payment Status', 'Amount']
+        data = Consultation.objects.select_related('customer_id', 'designer_id', 'design_id').all()
+        filename = 'consultations_table.xlsx'
+    elif data_type == 'products':
+        filename = 'products_table.xlsx'
+        worksheet.title = 'Products'
+        headers = ['Name', 'Description', 'Amount', 'Stock', 'Category']
+        worksheet.append(headers)
+        
+        products = Product.objects.select_related('amount').all()
+        for product in products:
+            worksheet.append([
+                product.name,
+                product.description[:50] + ('...' if len(product.description) > 50 else ''),
+                str(product.amount.amount),
+                str(product.stock),
+                product.category
+            ])
+        
+        # Create a BytesIO buffer for the Excel file
+        buffer = BytesIO()
+        workbook.save(buffer)
+        buffer.seek(0)
+
+        # Create the HttpResponse object with Excel mime type
+        response = HttpResponse(buffer.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+
+        return response
+    elif data_type == 'orders':
+        filename = 'orders_table.xlsx'
+        worksheet.title = 'Orders'
+        headers = ['Order ID', 'User', 'Product', 'Quantity', 'Amount', 'Order Date', 'Order Status', 'Payment Type', 'Payment Status']
+        worksheet.append(headers)
+        
+        orders = Order.objects.select_related('user', 'product', 'amount', 'payment_type').all()
+        for order in orders:
+            worksheet.append([
+                str(order.id),
+                order.user.username,
+                order.product.name,
+                str(order.quantity),
+                str(order.amount.amount),
+                order.order_date.strftime('%Y-%m-%d %H:%M'),
+                order.order_status,
+                order.payment_type.payment_type,
+                order.payment_status
+            ])
+        
+        # Create a BytesIO buffer for the Excel file
+        buffer = BytesIO()
+        workbook.save(buffer)
+        buffer.seek(0)
+
+        # Create the HttpResponse object with Excel mime type
+        response = HttpResponse(buffer.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+
+        return response
+    else:
+        return HttpResponse('Invalid data type')
+
+    # Add headers
+    for col_num, header in enumerate(headers, 1):
+        cell = worksheet.cell(row=1, column=col_num)
+        cell.value = header
+
+    # Add data
+    for row_num, item in enumerate(data, 2):
+        if data_type == 'users':
+            row = [
+                item.name,
+                item.email,
+                item.phone,
+                item.address,
+                item.home_town,
+                item.district,
+                item.state,
+                item.pincode,
+                item.status,
+            ]
+        elif data_type == 'designs':
+            row = [
+                item.name,
+                item.description[:50] + '...' if len(item.description) > 50 else item.description,
+                item.designer_id.name,
+                str(item.amount.amount),
+                item.category,
+                str(item.sqft)
+            ]
+        elif data_type == 'consultations':
+            row = [
+                item.customer_id.name,
+                item.designer_id.name,
+                item.design_id.name,
+                item.consultation_status,
+                str(item.schedule_date_time),
+                item.payment_type.payment_type,
+                item.payment_status,
+                str(item.amount.amount)
+            ]
+        for col_num, cell_value in enumerate(row, 1):
+            cell = worksheet.cell(row=row_num, column=col_num)
+            cell.value = cell_value
+
+    # Create a BytesIO buffer for the Excel file
+    buffer = BytesIO()
+    workbook.save(buffer)
+    buffer.seek(0)
+
+    # Create the HttpResponse object with Excel mime type
+    response = HttpResponse(buffer.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+
+    return response
 
     
 @nocache
 @login_required
 def consultations_table(request):
     consultations = Consultation.objects.select_related('customer_id', 'designer_id', 'design_id').all()
+    
+    if 'download' in request.GET:
+        if request.GET['download'] == 'pdf':
+            return download_pdf(request, 'consultations')
+        elif request.GET['download'] == 'excel':
+            return download_excel(request, 'consultations')
+    
     context = {
         'consultations': consultations
     }
     return render(request, 'admin_page/consultations_table.html', context)
 
+@nocache
+@login_required
+def orders_table(request):
+    if 'download' in request.GET:
+        if request.GET['download'] == 'pdf':
+            return download_pdf(request, 'orders')
+        elif request.GET['download'] == 'excel':
+            return download_excel(request, 'orders')
 
-
+    orders = Order.objects.all().select_related('user', 'product', 'amount', 'payment_type')
+    context = {
+        'orders': orders
+    }
+    return render(request, 'admin_page/orders_table.html', context)
 @nocache
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -1892,19 +2170,22 @@ def products_table(request):
         
         # Handle product update
         product_id = request.POST.get('id')
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        amount = request.POST.get('amount')
-        stock = request.POST.get('stock')
-
         product = get_object_or_404(Product, id=product_id)
-        product.name = name
-        product.description = description
-        product.amount.amount = amount
-        product.stock = stock
+        product.name = request.POST.get('name')
+        product.description = request.POST.get('description')
+        product.amount.amount = request.POST.get('amount')
+        product.stock = request.POST.get('stock')
+        product.color = request.POST.get('color')  # Add this line
+        product.amount.save()
         product.save()
-
         return JsonResponse({'status': 'success'})
+
+    # For GET requests, handle downloads and render the table
+    if 'download' in request.GET:
+        if request.GET['download'] == 'pdf':
+            return download_pdf(request, 'products')
+        elif request.GET['download'] == 'excel':
+            return download_excel(request, 'products')
 
     # For GET requests, render the table
     products = Product.objects.select_related('amount').all()
@@ -2109,9 +2390,127 @@ def remove_scheduled_date(request):
     return JsonResponse({'status': 'success', 'message': 'Consultation date removed successfully'})
 
 
-def image_processing(request):
-    context = {
-        'user': request.user,
-        'user_type': request.user.user_type_id.user_type if request.user.is_authenticated and request.user.user_type_id else None,
-    }
-    return render(request, 'image_processing.html', context)
+import cv2
+import numpy as np
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
+from django.conf import settings
+from django.db.models import Q
+
+def detect_color(image_path):
+    # Check if the file exists
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"The file {image_path} does not exist.")
+
+    # Print file information for debugging
+    print(f"Attempting to load image from: {image_path}")
+    print(f"File size: {os.path.getsize(image_path)} bytes")
+
+    # Load the image using OpenCV
+    image = cv2.imread(image_path)
+    
+    # Check if the image is loaded properly
+    if image is None:
+        raise ValueError(f"Failed to load image from {image_path}. The file may not be a valid image format.")
+    
+    # Print image shape for debugging
+    print(f"Loaded image shape: {image.shape}")
+
+    # Resize image for faster processing
+    image = cv2.resize(image, (300, 300))
+    # Convert image from BGR to RGB
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # Reshape image to be a list of pixels
+    pixels = np.float32(image.reshape(-1, 3))
+
+    # Use k-means clustering to find the dominant color
+    n_colors = 1
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.1)
+    _, labels, palette = cv2.kmeans(pixels, n_colors, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+
+    # Convert the dominant color to a tuple
+    dominant_color = palette[0].astype(int)
+    # Convert to a readable color format (e.g., RGB to "red", "green", etc.)
+    color_name = get_color_name(dominant_color)
+    return color_name
+
+def get_color_name(rgb_color):
+    r, g, b = rgb_color
+    # Define thresholds
+    white_threshold = 200
+    black_threshold = 50
+    color_threshold = 30
+
+    if r > white_threshold and g > white_threshold and b > white_threshold:
+        return "white"
+    elif r < black_threshold and g < black_threshold and b < black_threshold:
+        return "black"
+    elif r > g + color_threshold and r > b + color_threshold:
+        return "red"
+    elif g > r + color_threshold and g > b + color_threshold:
+        return "green"
+    elif b > r + color_threshold and b > g + color_threshold:
+        return "blue"
+    elif abs(r - g) <= color_threshold and b < r - color_threshold and r > 100:
+        return "yellow"
+    else:
+        # If no clear color is detected, return the RGB values
+        return f"rgb({r},{g},{b})"
+
+def recommend_products_by_color(request):
+    context = {}
+    if request.method == 'POST' and 'image' in request.FILES:
+        image = request.FILES['image']
+        
+        # Print debugging information
+        print(f"Received image: {image.name}, size: {image.size} bytes")
+        
+        # Save the file and get the path
+        file_name = default_storage.save(image.name, ContentFile(image.read()))
+        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+        
+        print(f"Saved file path: {file_path}")
+        print(f"File exists: {os.path.exists(file_path)}")
+        
+        try:
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"The file {file_path} does not exist after saving.")
+            
+            detected_color = detect_color(file_path)
+            print(f"Detected color: {detected_color}")
+            
+            # Filter products based on the detected color
+            if detected_color.startswith("rgb"):
+                # For RGB values, we'll search for products with similar colors
+                r, g, b = map(int, detected_color[4:-1].split(','))
+                color_query = Q(color__icontains=f"rgb({r},{g},{b})")
+            else:
+                # For named colors, search in color, name, and description
+                color_query = Q(color__iexact=detected_color)
+            
+            recommended_products = Product.objects.filter(color_query)
+            
+            context = {
+                'detected_color': detected_color,
+                'recommended_products': recommended_products,
+                'products_count': recommended_products.count(),
+                'form_submitted': True
+            }
+        except Exception as e:
+            print(f"Error processing image: {str(e)}")
+            context = {
+                'error': str(e),
+                'form_submitted': True
+            }
+        finally:
+            # Clean up the temporary file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"Temporary file removed: {file_path}")
+            else:
+                print(f"No file to remove at: {file_path}")
+    else:
+        context['form_submitted'] = False
+    
+    return render(request, 'recommend_products.html', context)

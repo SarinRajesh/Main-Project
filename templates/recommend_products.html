@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Color Detection and Product Recommendation</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/shop.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+    </head>
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
+            </div>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder" href="{% url 'index' %}"><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                {% if user.is_authenticated %}
+                <div class="show-share-wrap">
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
+                </div>
+                {% endif %}
+                <!-- mobile nav -->
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end-->
+                <!--  navigation -->
+                <div class="nav-holder">
+                    <nav>
+                        <ul>
+                            <li><a href="{% url 'index' %}">Home</a></li>
+                            <li><a href="{% url 'portfolio' %}">Designs</a></li>
+                            <li><a href="{% url 'shop' %}">Shop</a></li>
+                            {% if not user.is_authenticated %}
+                            <li><a href="{% url 'signin' %}">Signin</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!--  content -->
+                    <div class="content">
+                        <section>
+                            <div class="container">
+                                <div class="product-container fl-wrap">
+                                    <h2>Color Detection and Product Recommendation</h2>
+
+                                    <form method="post" enctype="multipart/form-data" class="custom-form">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <input type="file" name="image" accept="image/*" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <button type="submit" class="btn float-btn flat-btn">Upload and Detect Color</button>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    {% if form_submitted %}
+                                        {% if error %}
+                                            <p class="error-message">Error: {{ error }}</p>
+                                        {% else %}
+                                            <div class="detection-results">
+                                                <h3>Color Detection Results</h3>
+                                                <p>Detected Color: 
+                                                    {% if detected_color|slice:":3" == "rgb" %}
+                                                        {{ detected_color }} 
+                                                        <span class="color-sample" style="background-color: {{ detected_color }};"></span>
+                                                    {% else %}
+                                                        {{ detected_color }}
+                                                    {% endif %}
+                                                </p>
+                                                {% if recommended_products %}
+                                                    <p>Number of Recommended Products: {{ products_count }}</p>
+                                                    <h3>Recommended Products (Same Color):</h3>
+                                                    <div class="products fl-wrap">
+                                                        {% for product in recommended_products %}
+                                                            <div class="product-cat-mains">
+                                                                <div class="product-cat-img fl-wrap">
+                                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                                                    <a href="{% url 'product' product.id %}">View</a>
+                                                                </div>
+                                                                <div class="product-cat-title">
+                                                                    <h4><a href="{% url 'product' product.id %}">{{ product.name }}</a></h4>
+                                                                    <div class="product-cats"><a href="#">{{ product.category }}</a></div>
+                                                                    <span class="product-price">Rs. {{ product.amount.amount }}</span>
+                                                                    <span class="color-sample" style="background-color: {{ product.color }};"></span>
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                    <p>No products recommended for the current photo.</p>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <!-- content end -->
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="{% url 'index' %}"><img src="{% static 'index/images/logo.png' %}" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor 2023. All rights reserved.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+        <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+    </body>
+</html>
