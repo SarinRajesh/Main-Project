@@ -64,17 +64,12 @@ class Consultation(models.Model):
     def __str__(self):
         return f'Consultation {self.id}'
 
-class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     amount = models.ForeignKey(Amount, on_delete=models.CASCADE)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)  # Changed to ForeignKey
+    category = models.CharField(max_length=100)  # Changed to CharField
     image = models.ImageField(upload_to='product_images/')
     stock = models.PositiveIntegerField(default=0)  
     color = models.CharField(max_length=7, null=True, blank=True)
