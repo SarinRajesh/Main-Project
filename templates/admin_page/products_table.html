@@ -87,6 +87,7 @@
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Description</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Amount</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Stock</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Category</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Color</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Image</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 8px;">Action</th>
@@ -100,9 +101,10 @@
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ product.amount.amount }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ product.stock }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ product.color }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ product.category }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;"><img src="{{ product.image.url }}" alt="Product Image" style="width: 50px; height: 50px;"></td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">
-                                                                <button class="edit-button" data-id="{{ product.id }}" data-name="{{ product.name }}" data-description="{{ product.description }}" data-amount="{{ product.amount.amount }}" data-stock="{{ product.stock }}" data-color="{{ product.color }}" style="background-color: black; color: white; padding: 8px 16px; border-radius: 4px; margin-right: 8px;">Edit</button>
+                                                                <button class="edit-button" data-id="{{ product.id }}" data-name="{{ product.name }}" data-description="{{ product.description }}" data-amount="{{ product.amount.amount }}" data-stock="{{ product.stock }}" data-color="{{ product.color }}" data-category="{{ product.category }}" style="background-color: black; color: white; padding: 8px 16px; border-radius: 4px; margin-right: 8px;">Edit</button>
                                                                 <button class="delete-button" data-id="{{ product.id }}" style="background-color: red; color: white; padding: 8px 16px; border-radius: 4px;border:none">Delete</button>
                                                             </td>
                                                         </tr>
@@ -289,6 +291,7 @@
                         var productAmount = $(this).data('amount');
                         var productStock = $(this).data('stock');
                         var productColor = $(this).data('color');
+                        var productCategory = $(this).data('category');
 
                         Swal.fire({
                             title: '<h2 style="font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px;">Edit Product</h2>',
@@ -297,6 +300,13 @@
                                 '<textarea id="swal-input2" class="swal2-input" rows="3" placeholder="Description" style="width: 100%; padding: 10px; height:38%; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' + productDescription + '</textarea>' +
                                 '<input id="swal-input3" type="number" class="swal2-input" value="' + productAmount + '" placeholder="Price" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' +
                                 '<input id="swal-input4" type="number" class="swal2-input" value="' + productStock + '" placeholder="Stock" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' +
+                                '<select id="swal-input5" class="swal2-input" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">' +
+                                '<option value="">Select Category</option>' +
+                                '<option value="Lighting"' + (productCategory === "Lighting" ? " selected" : "") + '>Lighting</option>' +
+                                '<option value="Fan"' + (productCategory === "Fan" ? " selected" : "") + '>Fan</option>' +
+                                '<option value="Furniture"' + (productCategory === "Furniture" ? " selected" : "") + '>Furniture</option>' +
+                                '<option value="Home decor"' + (productCategory === "Home decor" ? " selected" : "") + '>Home decor</option>' +
+                                '</select>' +
                                 '<div style="margin-bottom: 20px; background-color: #f8f9fa; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' +
                                 '<label for="color" style="display: block; font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333;">Choose Product Color:</label>' +
                                 '<div id="color-options" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;"></div>' +
@@ -391,6 +401,7 @@
                                     description: document.getElementById('swal-input2').value,
                                     amount: document.getElementById('swal-input3').value,
                                     stock: document.getElementById('swal-input4').value,
+                                    category: document.getElementById('swal-input5').value,
                                     color: document.getElementById('color-input').value
                                 }
                             }
@@ -406,6 +417,7 @@
                                         'description': result.value.description,
                                         'amount': result.value.amount,
                                         'stock': result.value.stock,
+                                        'category': result.value.category,
                                         'color': result.value.color,
                                         'csrfmiddlewaretoken': '{{ csrf_token }}'
                                     },

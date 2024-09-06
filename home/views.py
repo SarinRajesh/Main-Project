@@ -1130,22 +1130,21 @@ def add_product(request):
         amount = Amount(amount=amount_value)
         amount.save()
 
-        category, created = Category.objects.get_or_create(name=category_name)
-
         product = Product(
             name=name,
             description=description,
             amount=amount,
-            category=category,
+            category=category_name,  # Use category_name directly
             image=image,
             stock=stock,
-            color=color  # Add the color field to the Product model
+            color=color
         )
         product.save()
 
         return redirect('add_product')
 
-    categories = Category.objects.all()
+    # Get unique categories from existing products
+    categories = Product.objects.values_list('category', flat=True).distinct()
     return render(request, 'admin_page/add_product.html', {'categories': categories})
 
 @login_required
@@ -2180,9 +2179,10 @@ def products_table(request):
         product.description = request.POST.get('description')
         product.amount.amount = request.POST.get('amount')
         product.stock = request.POST.get('stock')
-        product.color = request.POST.get('color')  # Add this line
-        product.amount.save()
+        product.category = request.POST.get('category')  # Make sure this line is present
+        product.color = request.POST.get('color')
         product.save()
+        product.amount.save()
         return JsonResponse({'status': 'success'})
 
     # For GET requests, handle downloads and render the table

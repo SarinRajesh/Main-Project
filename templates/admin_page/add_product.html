@@ -87,11 +87,17 @@
                                                         {% csrf_token %}
                                                         <input name="designer_id" type="hidden" value="{{ request.user.id }}">
                                                     
-                                                        <input name="name" type="text" id="name" placeholder="Product Name" required
-                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        <div style="position: relative; margin-bottom: 20px;">
+                                                            <input name="name" type="text" id="name" placeholder="Product Name" required
+                                                                   style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+                                                            <div id="nameValidation" style="color: red; font-size: 12px; margin-top: 5px;"></div>
+                                                        </div>
                                                         
-                                                        <textarea name="description" id="description" placeholder="Product Description" required
-                                                                  style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;"></textarea>
+                                                        <div style="position: relative; margin-bottom: 20px;">
+                                                            <textarea name="description" id="description" placeholder="Product Description" required
+                                                                      style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;"></textarea>
+                                                            <div id="descriptionValidation" style="color: red; font-size: 12px; margin-top: 5px;"></div>
+                                                        </div>
                                                         
                                                         <input name="amount" type="number" id="amount" placeholder="Price" required min="0" step="0.01"
                                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
@@ -99,11 +105,10 @@
                                                                <select name="category" id="category" required
                                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
                                                            <option value="">Select Category</option>
-                                                           <option value="Dining room">Dining room</option>
-                                                           <option value="Living room">Living room</option>
-                                                           <option value="Bedroom">Bedroom</option>
-                                                           <option value="Bathroom">Bathroom</option>
-                                                           <option value="Kitchen">Kitchen</option>
+                                                           <option value="Lighting">Lighting</option>
+                                                           <option value="Fan">Fan</option>
+                                                           <option value="Furniture">Furniture</option>
+                                                           <option value="Home decor">Home decor</option>
                                                        </select>
                                                         
                                                         <input name="stock" type="number" id="stock" placeholder="Stock Quantity" required min="0"
@@ -142,84 +147,96 @@
                                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                                     <script>
                                                         $(document).ready(function() {
+                                                            const nameInput = $('#name');
+                                                            const descriptionInput = $('#description');
+                                                            const submitButton = $('#submit');
+                                                            let nameValid = false;
+                                                            let descriptionValid = false;
+
+                                                            function validateName() {
+                                                                const name = nameInput.val().trim();
+                                                                const nameValidation = $('#nameValidation');
+                                                                
+                                                                if (name.length === 0) {
+                                                                    nameValidation.text('Name is required');
+                                                                    nameValid = false;
+                                                                } else if (name.length < 3) {
+                                                                    nameValidation.text('Name must be at least 3 characters long');
+                                                                    nameValid = false;
+                                                                } else if (/\d/.test(name)) {
+                                                                    nameValidation.text('Name cannot contain numbers');
+                                                                    nameValid = false;
+                                                                } else if (name[0] === ' ' || /\s{2,}/.test(name)) {
+                                                                    nameValidation.text('Name cannot start with a space or have more than one consecutive space');
+                                                                    nameValid = false;
+                                                                } else {
+                                                                    nameValidation.text('');
+                                                                    nameValid = true;
+                                                                }
+                                                                updateSubmitButton();
+                                                            }
+
+                                                            function validateDescription() {
+                                                                const description = descriptionInput.val().trim();
+                                                                const descriptionValidation = $('#descriptionValidation');
+                                                                
+                                                                if (description.length === 0) {
+                                                                    descriptionValidation.text('Description is required');
+                                                                    descriptionValid = false;
+                                                                } else if (description[0] === ' ' || /\s{2,}/.test(description)) {
+                                                                    descriptionValidation.text('Description cannot start with a space or have more than one consecutive space');
+                                                                    descriptionValid = false;
+                                                                } else {
+                                                                    descriptionValidation.text('');
+                                                                    descriptionValid = true;
+                                                                }
+                                                                updateSubmitButton();
+                                                            }
+
+                                                            function updateSubmitButton() {
+                                                                submitButton.prop('disabled', !(nameValid && descriptionValid));
+                                                            }
+
+                                                            nameInput.on('keyup', validateName);
+                                                            descriptionInput.on('keyup', validateDescription);
+
                                                             // Handle form submission
                                                             $('#productForm').on('submit', function(event) {
                                                                 event.preventDefault();  // Prevent default form submission
                                                     
-                                                                // Validate form fields
-                                                                const name = $('#name').val().trim();
-                                                                const description = $('#description').val().trim();
-                                                                const amount = $('#amount').val().trim();
-                                                                const category = $('#category').val().trim();
-                                                                const stock = $('#stock').val().trim();
-                                                                const image = $('#image').val();
-                                                                const color = $('#color-input').val().trim();
+                                                                // Perform final validation before submission
+                                                                validateName();
+                                                                validateDescription();
                                                     
-                                                                // Validate name length
-                                                                if (name.length < 3 || name.length > 20) {
-                                                                    Swal.fire({
-                                                                        icon: 'error',
-                                                                        title: 'Invalid Name',
-                                                                        text: 'Product name must be between 3 and 20 characters long.'
+                                                                if (nameValid && descriptionValid) {
+                                                                    const formData = new FormData(this);
+                                                        
+                                                                    $.ajax({
+                                                                        url: $(this).attr('action'),
+                                                                        type: 'POST',
+                                                                        data: formData,
+                                                                        processData: false,
+                                                                        contentType: false,
+                                                                        success: function(response) {
+                                                                            Swal.fire({
+                                                                                icon: 'success',
+                                                                                title: 'Success!',
+                                                                                text: 'Product has been added successfully.',
+                                                                                timer: 1500,
+                                                                                showConfirmButton: false
+                                                                            }).then(() => {
+                                                                                window.location.href = window.location.href; // Redirect to the same page
+                                                                            });
+                                                                        },
+                                                                        error: function(xhr, status, error) {
+                                                                            Swal.fire({
+                                                                                icon: 'error',
+                                                                                title: 'Error',
+                                                                                text: 'There was an error submitting the form. Please try again.'
+                                                                            });
+                                                                        }
                                                                     });
-                                                                    return;
                                                                 }
-                                                    
-                                                                if (!name || !description || !amount || !category || !stock || !image || !color) {
-                                                                    Swal.fire({
-                                                                        icon: 'error',
-                                                                        title: 'Oops...',
-                                                                        text: 'Please fill in all required fields.'
-                                                                    });
-                                                                    return;
-                                                                }
-                                                    
-                                                                if (amount <= 0) {
-                                                                    Swal.fire({
-                                                                        icon: 'error',
-                                                                        title: 'Invalid Amount',
-                                                                        text: 'Price must be greater than zero.'
-                                                                    });
-                                                                    return;
-                                                                }
-                                                    
-                                                                if (stock < 0) {
-                                                                    Swal.fire({
-                                                                        icon: 'error',
-                                                                        title: 'Invalid Stock Quantity',
-                                                                        text: 'Stock quantity cannot be negative.'
-                                                                    });
-                                                                    return;
-                                                                }
-                                                    
-                                                                // If validation passes, submit the form
-                                                                const formData = new FormData(this);
-                                                    
-                                                                $.ajax({
-                                                                    url: $(this).attr('action'),
-                                                                    type: 'POST',
-                                                                    data: formData,
-                                                                    processData: false,
-                                                                    contentType: false,
-                                                                    success: function(response) {
-                                                                        Swal.fire({
-                                                                            icon: 'success',
-                                                                            title: 'Success!',
-                                                                            text: 'Product has been added successfully.',
-                                                                            timer: 1500,
-                                                                            showConfirmButton: false
-                                                                        }).then(() => {
-                                                                            window.location.href = window.location.href; // Redirect to the same page
-                                                                        });
-                                                                    },
-                                                                    error: function(xhr, status, error) {
-                                                                        Swal.fire({
-                                                                            icon: 'error',
-                                                                            title: 'Error',
-                                                                            text: 'There was an error submitting the form. Please try again.'
-                                                                        });
-                                                                    }
-                                                                });
                                                             });
                                                         });
                                                     </script>
