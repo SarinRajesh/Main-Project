@@ -277,7 +277,7 @@
                                                    
                                                 <p style="margin-top: 20px;">
                                                     <label for="address" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Address:</label>
-                                                    <input type="text" id="address" required name="address" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                    <input type="text" id="address" required name="address" value="{{ user.address }}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
                                                     <span id="addressError" style="position: absolute;margin-top: 8%;margin-left: -35%;"  class="error"></span>
                                                 </p>
                                                     <p style="margin-top: 20px;">
@@ -623,6 +623,9 @@
                     </li>
                 {% endif %}
                 {% if user_type == 'Designer' %}
+                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                    <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                </li>
                     <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                         <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
                     </li>

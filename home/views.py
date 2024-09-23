@@ -2252,6 +2252,10 @@ def create_order_from_product(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 @login_required
 @require_POST
 def create_order_from_cart(request):
@@ -2270,7 +2274,10 @@ def create_order_from_cart(request):
                 
                 # Check if there's enough stock
                 if product.stock < quantity:
-                    return JsonResponse({'status': 'error', 'message': f'Not enough stock for {product.name}'}, status=400)
+                    if quantity == 1:
+                        return JsonResponse({'status': 'error', 'message': f'Not enough stock for {product.name}, only {product.stock} available.'}, status=400)
+                    else:
+                        continue  # Skip this item if quantity is greater than available stock
                 
                 # Create or get the Amount instance
                 amount_value = product.amount.amount * quantity
@@ -2306,7 +2313,8 @@ def create_order_from_cart(request):
                 'order_ids': [order.id for order in orders_created]
             })
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        logger.error(f"Error processing order: {e}")  # Log the error for debugging
+        return JsonResponse({'status': 'error', 'message': 'An error occurred while processing your order. Please try again later.'}, status=500)
 
 @nocache
 @login_required

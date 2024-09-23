@@ -176,7 +176,8 @@
                                                         <input name="image" type="file" id="image" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
                                                         <select name="category" id="category" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
                                                             <option value="" disabled selected>Select Category</option>
-                                                            <option value="living_room">Living Room</option>
+                                                            <option value="living_room">Living Room</option>                                                   
+                                                            <option value="workspace">Workspace</option>
                                                             <option value="bedroom">Bedroom</option>
                                                             <option value="kitchen">Kitchen</option>
                                                             <option value="dining_room">Dining Room</option>
@@ -291,6 +292,9 @@
                         </li>
                     {% endif %}
                     {% if user_type == 'Designer' %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                    </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                             <a href="{% url 'add_portfolio' %}" style="color: #000; background-color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;">Add Designs</a>
                         </li>

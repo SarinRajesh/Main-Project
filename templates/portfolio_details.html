@@ -190,6 +190,7 @@
                                                         <select name="category" id="category" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
                                                             <option value="" disabled {% if not portfolio.category %}selected{% endif %}>Select Category</option>
                                                             <option value="living_room" {% if portfolio.category == 'living_room' %}selected{% endif %}>Living Room</option>
+                                                            <option value="workspace" {% if portfolio.category == 'workspace' %}selected{% endif %}>Workspace</option>
                                                             <option value="bedroom" {% if portfolio.category == 'bedroom' %}selected{% endif %}>Bedroom</option>
                                                             <option value="kitchen" {% if portfolio.category == 'kitchen' %}selected{% endif %}>Kitchen</option>
                                                             <option value="dining_room" {% if portfolio.category == 'dining_room' %}selected{% endif %}>Dining Room</option>
@@ -390,6 +391,9 @@
                         </li>
                     {% endif %}
                     {% if user_type == 'Designer' %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                    </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                             <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
                         </li>
