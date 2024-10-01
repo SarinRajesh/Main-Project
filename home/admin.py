@@ -49,7 +49,7 @@ class CartAdmin(admin.ModelAdmin):
     search_fields = ('user_id__username', 'user_id__email', 'product_id__name')
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'product', 'quantity', 'amount', 'order_date', 'order_status', 'payment_type', 'payment_status')
+    list_display = ('id', 'user', 'product', 'quantity', 'amount', 'order_date', 'order_status', 'payment_type', 'payment_status','delivery_date')
     search_fields = ('user__username', 'user__email', 'product__name', 'order_status', 'payment_status')
     list_filter = ('order_status', 'payment_status', 'payment_type')
 

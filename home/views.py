@@ -1501,11 +1501,19 @@ def consultation_booking(request, portfolio_id):
 from decimal import Decimal, InvalidOperation
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
+from django.utils import timezone
+from datetime import timedelta
 
 @nocache
 def product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:3]
+    
+    # Calculate delivery date (7 days from today)
+    delivery_date = timezone.now().date() + timedelta(days=7)
+    
+    # Format the delivery date
+    formatted_delivery_date = delivery_date.strftime("%A, %B %d, %Y")
     
     if request.method == 'POST' and request.user.is_authenticated:
         review_content = request.POST.get('review')
@@ -1537,7 +1545,10 @@ def product(request, product_id):
         'avg_rating': round(avg_rating, 1),  # Round to 1 decimal place
         'product_amount_paise': int(product.amount.amount * 100),  # Convert to paise
         'csrf_token': get_token(request),  # Add CSRF token to context
+        'delivery_date': formatted_delivery_date,  # Add this line
     }
+
+    print(f"Debug - Delivery Date: {formatted_delivery_date}")  # Add this debug print
 
     if request.user.is_authenticated:
         user = request.user
@@ -1662,6 +1673,205 @@ def remove_from_cart(request, item_id):
 def clear_cart(request):
     Cart.objects.filter(user_id=request.user).delete()
     return JsonResponse({'status': 'success'})
+
+
+@login_required
+@require_POST
+def create_order_from_product(request):
+    try:
+        with transaction.atomic():
+            product_id = request.POST.get('product_id')
+            quantity = int(request.POST.get('quantity', 1))
+            
+            product = Product.objects.get(id=product_id)
+            
+            # Check if there's enough stock
+            if product.stock < quantity:
+                return JsonResponse({'status': 'error', 'message': f'Not enough stock for {product.name}'}, status=400)
+            
+            # Create or get the Amount instance
+            amount_value = product.amount.amount * quantity
+            amount, _ = Amount.objects.get_or_create(amount=amount_value)
+            
+            # Get or create the Payment_Type instance
+            payment_type, _ = Payment_Type.objects.get_or_create(payment_type='online')
+            
+            # Create the order
+            order = Order.objects.create(
+                user=request.user,
+                product=product,
+                quantity=quantity,
+                amount=amount,
+                order_date=timezone.now(),
+                order_status='Pending',
+                delivery_date=timezone.now() + timedelta(days=7),
+                payment_type=payment_type,
+                payment_status='Paid'
+            )
+            
+            # Update product stock
+            product.stock -= quantity
+            product.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Order created successfully.',
+                'order_id': order.id
+            })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+@login_required
+@require_POST
+def create_order_from_cart(request):
+    try:
+        with transaction.atomic():
+            cart_items = Cart.objects.filter(user_id=request.user)
+            
+            if not cart_items.exists():
+                return JsonResponse({'status': 'error', 'message': 'Your cart is empty'}, status=400)
+            
+            orders_created = []
+            
+            for cart_item in cart_items:
+                product = cart_item.product_id
+                quantity = cart_item.quantity
+                
+                # Check if there's enough stock
+                if product.stock < quantity:
+                    if quantity == 1:
+                        return JsonResponse({'status': 'error', 'message': f'Not enough stock for {product.name}, only {product.stock} available.'}, status=400)
+                    else:
+                        continue  # Skip this item if quantity is greater than available stock
+                
+                # Create or get the Amount instance
+                amount_value = product.amount.amount * quantity
+                amount, _ = Amount.objects.get_or_create(amount=amount_value)
+                
+                # Get or create the Payment_Type instance
+                payment_type, _ = Payment_Type.objects.get_or_create(payment_type='online')
+                
+                # Create the order
+                order = Order.objects.create(
+                    user=request.user,
+                    product=product,
+                    quantity=quantity,
+                    amount=amount,
+                    order_date=timezone.now(),
+                    order_status='Pending',
+                    delivery_date=timezone.now() + timedelta(days=7),
+                    payment_type=payment_type,
+                    payment_status='Paid'
+                )
+                
+                orders_created.append(order)
+                
+                # Update product stock
+                product.stock -= quantity
+                product.save()
+                
+                # Remove item from cart
+                cart_item.delete()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Successfully created {len(orders_created)} orders.',
+                'order_ids': [order.id for order in orders_created]
+            })
+    except Exception as e:
+        logger.error(f"Error processing order: {e}")  # Log the error for debugging
+        return JsonResponse({'status': 'error', 'message': 'An error occurred while processing your order. Please try again later.'}, status=500)
+
+@nocache
+@login_required
+def orders(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    # Fetch orders for the current user
+    orders = Order.objects.filter(user=user).select_related('product', 'amount').order_by('-order_date')
+    
+    context = {
+        'orders': orders,
+        'user_type': user_type,
+        'user': user
+    }
+    return render(request, 'my_orders.html', context)
+
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def schedule_consultation(request):
+    if request.method == 'POST':
+        date_time_str = request.POST.get('date_time')
+        date_time = parse_datetime(date_time_str)
+
+        if not date_time:
+            return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+
+        # Make the datetime timezone-aware
+        date_time = timezone.make_aware(date_time, timezone.get_current_timezone())
+
+        if date_time < timezone.now():
+            return JsonResponse({'status': 'error', 'message': 'Cannot schedule consultations for past dates'})
+
+        consultation_date, created = ConsultationDate.objects.get_or_create(
+            designer=request.user,
+            date_time=date_time,
+            defaults={'is_booked': False}
+        )
+
+        if created:
+            return JsonResponse({'status': 'success', 'message': 'Consultation date scheduled successfully'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'This date and time is already scheduled'})
+
+    else:
+        # Handle GET request
+        consultation_dates = ConsultationDate.objects.filter(designer=request.user).values('date_time', 'is_booked')
+        consultation_dates_list = [
+            {
+                'id': date['date_time'].isoformat(),
+                'title': 'Consultation',
+                'start': date['date_time'].isoformat(),
+                'allDay': False,
+                'className': 'past-date' if date['date_time'] < timezone.now() else '',
+                'editable': date['date_time'] >= timezone.now() and not date['is_booked']
+            } for date in consultation_dates
+        ]
+        
+        context = {
+            'consultation_dates': json.dumps(consultation_dates_list)
+        }
+        return render(request, 'schedule_consultation.html', context)
+
+
+
+@login_required
+@require_POST
+def remove_scheduled_date(request):
+    date_time_str = request.POST.get('date_time')
+    try:
+        date_time = parse_datetime(date_time_str)
+    except ValueError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+
+    if not date_time:
+        return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+
+    consultation_date = get_object_or_404(ConsultationDate, designer=request.user, date_time=date_time)
+
+    if consultation_date.is_booked:
+        return JsonResponse({'status': 'error', 'message': 'Cannot remove a booked consultation date'})
+
+    consultation_date.delete()
+    return JsonResponse({'status': 'success', 'message': 'Consultation date removed successfully'})
+
 
 @nocache
 @login_required
@@ -2149,13 +2359,29 @@ def consultations_table(request):
 @nocache
 @login_required
 def orders_table(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        action = request.POST.get('action')
+        
+        order = get_object_or_404(Order, id=order_id)
+        if action == 'approve':
+            order.order_status = 'Completed'
+            message = f'Order #{order_id} has been approved and marked as completed.'
+        elif action == 'cancel':
+            order.order_status = 'Cancelled'
+            message = f'Order #{order_id} has been cancelled.'
+        
+        order.save()
+        messages.success(request, message)
+        return redirect('orders_table')
+
     if 'download' in request.GET:
         if request.GET['download'] == 'pdf':
             return download_pdf(request, 'orders')
         elif request.GET['download'] == 'excel':
             return download_excel(request, 'orders')
 
-    orders = Order.objects.all().select_related('user', 'product', 'amount', 'payment_type')
+    orders = Order.objects.all().select_related('user', 'product', 'amount', 'payment_type').order_by('-order_date')
     context = {
         'orders': orders
     }
@@ -2206,116 +2432,6 @@ def admin_index(request):
     return render(request, 'admin_page/admin_index.html')
 
 
-
-@login_required
-@require_POST
-def create_order_from_product(request):
-    try:
-        with transaction.atomic():
-            product_id = request.POST.get('product_id')
-            quantity = int(request.POST.get('quantity', 1))
-            
-            product = Product.objects.get(id=product_id)
-            
-            # Check if there's enough stock
-            if product.stock < quantity:
-                return JsonResponse({'status': 'error', 'message': f'Not enough stock for {product.name}'}, status=400)
-            
-            # Create or get the Amount instance
-            amount_value = product.amount.amount * quantity
-            amount, _ = Amount.objects.get_or_create(amount=amount_value)
-            
-            # Get or create the Payment_Type instance
-            payment_type, _ = Payment_Type.objects.get_or_create(payment_type='online')
-            
-            # Create the order
-            order = Order.objects.create(
-                user=request.user,
-                product=product,
-                quantity=quantity,
-                amount=amount,
-                order_date=timezone.now(),
-                order_status='Completed',
-                payment_type=payment_type,
-                payment_status='Paid'
-            )
-            
-            # Update product stock
-            product.stock -= quantity
-            product.save()
-            
-            return JsonResponse({
-                'status': 'success',
-                'message': 'Order created successfully.',
-                'order_id': order.id
-            })
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-import logging
-
-logger = logging.getLogger(__name__)
-
-@login_required
-@require_POST
-def create_order_from_cart(request):
-    try:
-        with transaction.atomic():
-            cart_items = Cart.objects.filter(user_id=request.user)
-            
-            if not cart_items.exists():
-                return JsonResponse({'status': 'error', 'message': 'Your cart is empty'}, status=400)
-            
-            orders_created = []
-            
-            for cart_item in cart_items:
-                product = cart_item.product_id
-                quantity = cart_item.quantity
-                
-                # Check if there's enough stock
-                if product.stock < quantity:
-                    if quantity == 1:
-                        return JsonResponse({'status': 'error', 'message': f'Not enough stock for {product.name}, only {product.stock} available.'}, status=400)
-                    else:
-                        continue  # Skip this item if quantity is greater than available stock
-                
-                # Create or get the Amount instance
-                amount_value = product.amount.amount * quantity
-                amount, _ = Amount.objects.get_or_create(amount=amount_value)
-                
-                # Get or create the Payment_Type instance
-                payment_type, _ = Payment_Type.objects.get_or_create(payment_type='online')
-                
-                # Create the order
-                order = Order.objects.create(
-                    user=request.user,
-                    product=product,
-                    quantity=quantity,
-                    amount=amount,
-                    order_date=timezone.now(),
-                    order_status='Completed',
-                    payment_type=payment_type,
-                    payment_status='Paid'
-                )
-                
-                orders_created.append(order)
-                
-                # Update product stock
-                product.stock -= quantity
-                product.save()
-                
-                # Remove item from cart
-                cart_item.delete()
-            
-            return JsonResponse({
-                'status': 'success',
-                'message': f'Successfully created {len(orders_created)} orders.',
-                'order_ids': [order.id for order in orders_created]
-            })
-    except Exception as e:
-        logger.error(f"Error processing order: {e}")  # Log the error for debugging
-        return JsonResponse({'status': 'error', 'message': 'An error occurred while processing your order. Please try again later.'}, status=500)
-
 @nocache
 @login_required
 def orders(request):
@@ -2323,7 +2439,9 @@ def orders(request):
     user_type = user.user_type_id.user_type if user.user_type_id else None
     
     # Fetch orders for the current user
-    orders = Order.objects.filter(user=user).select_related('product', 'amount').order_by('-order_date')
+    orders = Order.objects.filter(user=user).select_related(
+        'product', 'amount', 'payment_type', 'user'
+    ).order_by('-order_date')
     
     context = {
         'orders': orders,
@@ -2333,52 +2451,36 @@ def orders(request):
     return render(request, 'my_orders.html', context)
 
 
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from io import BytesIO
 
 @login_required
-@require_http_methods(["GET", "POST"])
-def schedule_consultation(request):
-    if request.method == 'POST':
-        date_time_str = request.POST.get('date_time')
-        date_time = parse_datetime(date_time_str)
+def download_receipt(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    if order.order_status != 'Completed':
+        messages.error(request, "Receipt is only available for completed orders.")
+        return redirect('my_orders')
 
-        if not date_time:
-            return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+    # Render the receipt HTML
+    template = get_template('receipt.html')
+    context = {'order': order}
+    html = template.render(context)
 
-        # Make the datetime timezone-aware
-        date_time = timezone.make_aware(date_time, timezone.get_current_timezone())
+    # Create a PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    
+    if not pdf.err:
+        # Generate response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="receipt_order_{order.id}.pdf"'
+        response.write(result.getvalue())
+        return response
 
-        if date_time < timezone.now():
-            return JsonResponse({'status': 'error', 'message': 'Cannot schedule consultations for past dates'})
-
-        consultation_date, created = ConsultationDate.objects.get_or_create(
-            designer=request.user,
-            date_time=date_time,
-            defaults={'is_booked': False}
-        )
-
-        if created:
-            return JsonResponse({'status': 'success', 'message': 'Consultation date scheduled successfully'})
-        else:
-            return JsonResponse({'status': 'error', 'message': 'This date and time is already scheduled'})
-
-    else:
-        # Handle GET request
-        consultation_dates = ConsultationDate.objects.filter(designer=request.user).values('date_time', 'is_booked')
-        consultation_dates_list = [
-            {
-                'id': date['date_time'].isoformat(),
-                'title': 'Consultation',
-                'start': date['date_time'].isoformat(),
-                'allDay': False,
-                'className': 'past-date' if date['date_time'] < timezone.now() else '',
-                'editable': date['date_time'] >= timezone.now() and not date['is_booked']
-            } for date in consultation_dates
-        ]
-        
-        context = {
-            'consultation_dates': json.dumps(consultation_dates_list)
-        }
-        return render(request, 'schedule_consultation.html', context)
+    return HttpResponse('Error generating PDF', status=400)
 
 
 
@@ -2402,7 +2504,6 @@ def remove_scheduled_date(request):
     consultation_date.delete()
     return JsonResponse({'status': 'success', 'message': 'Consultation date removed successfully'})
 
-
 import cv2
 import numpy as np
 from django.core.files.storage import default_storage
@@ -2410,15 +2511,20 @@ from django.core.files.base import ContentFile
 import os
 from django.conf import settings
 from django.db.models import Q
+import pandas as pd
+from sklearn.neighbors import KNeighborsClassifier
+
+# Load the dataset and train the KNN model
+data = pd.read_csv(os.path.join(settings.BASE_DIR, 'data/colors.csv'))
+X = data[['R', 'G', 'B']]
+y = data['ColorName1']  # Use ColorName1 for the color names
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X, y)
 
 def detect_color(image_path):
     # Check if the file exists
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"The file {image_path} does not exist.")
-
-    # Print file information for debugging
-    print(f"Attempting to load image from: {image_path}")
-    print(f"File size: {os.path.getsize(image_path)} bytes")
 
     # Load the image using OpenCV
     image = cv2.imread(image_path)
@@ -2427,9 +2533,6 @@ def detect_color(image_path):
     if image is None:
         raise ValueError(f"Failed to load image from {image_path}. The file may not be a valid image format.")
     
-    # Print image shape for debugging
-    print(f"Loaded image shape: {image.shape}")
-
     # Resize image for faster processing
     image = cv2.resize(image, (300, 300))
     # Convert image from BGR to RGB
@@ -2444,32 +2547,10 @@ def detect_color(image_path):
 
     # Convert the dominant color to a tuple
     dominant_color = palette[0].astype(int)
-    # Convert to a readable color format (e.g., RGB to "red", "green", etc.)
-    color_name = get_color_name(dominant_color)
-    return color_name
-
-def get_color_name(rgb_color):
-    r, g, b = rgb_color
-    # Define thresholds
-    white_threshold = 200
-    black_threshold = 50
-    color_threshold = 30
-
-    if r > white_threshold and g > white_threshold and b > white_threshold:
-        return "white"
-    elif r < black_threshold and g < black_threshold and b < black_threshold:
-        return "black"
-    elif r > g + color_threshold and r > b + color_threshold:
-        return "red"
-    elif g > r + color_threshold and g > b + color_threshold:
-        return "green"
-    elif b > r + color_threshold and b > g + color_threshold:
-        return "blue"
-    elif abs(r - g) <= color_threshold and b < r - color_threshold and r > 100:
-        return "yellow"
-    else:
-        # If no clear color is detected, return the RGB values
-        return f"rgb({r},{g},{b})"
+    
+    # Predict the closest color using the KNN model
+    detected_color = knn.predict([dominant_color])[0]
+    return detected_color
 
 def recommend_products_by_color(request):
     context = {}
@@ -2480,53 +2561,32 @@ def recommend_products_by_color(request):
     if request.method == 'POST' and 'image' in request.FILES:
         image = request.FILES['image']
         
-        # Print debugging information
-        print(f"Received image: {image.name}, size: {image.size} bytes")
-        
         # Save the file and get the path
-        file_name = default_storage.save(image.name, ContentFile(image.read()))
+        file_name = default_storage.save(f'uploads/{image.name}', ContentFile(image.read()))
         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-        
-        print(f"Saved file path: {file_path}")
-        print(f"File exists: {os.path.exists(file_path)}")
         
         try:
             if not os.path.exists(file_path):
                 raise FileNotFoundError(f"The file {file_path} does not exist after saving.")
             
             detected_color = detect_color(file_path)
-            print(f"Detected color: {detected_color}")
             
             # Filter products based on the detected color
-            if detected_color.startswith("rgb"):
-                # For RGB values, we'll search for products with similar colors
-                r, g, b = map(int, detected_color[4:-1].split(','))
-                color_query = Q(color__icontains=f"rgb({r},{g},{b})")
-            else:
-                # For named colors, search in color, name, and description
-                color_query = Q(color__iexact=detected_color)
-            
+            color_query = Q(color__iexact=detected_color)
             recommended_products = Product.objects.filter(color_query)
             
             context.update({
                 'detected_color': detected_color,
                 'recommended_products': recommended_products,
                 'products_count': recommended_products.count(),
-                'form_submitted': True
+                'form_submitted': True,
+                'image_url': default_storage.url(file_name)  # Use this instead of file_name
             })
         except Exception as e:
-            print(f"Error processing image: {str(e)}")
             context.update({
                 'error': str(e),
                 'form_submitted': True
             })
-        finally:
-            # Clean up the temporary file
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                print(f"Temporary file removed: {file_path}")
-            else:
-                print(f"No file to remove at: {file_path}")
     else:
         context['form_submitted'] = False
     

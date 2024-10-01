@@ -97,6 +97,9 @@
                                 <li>
                                     <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
                                 </li>
+                                <li>
+                                    <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
+                                </li>
                             
                                 
                             <li>
@@ -142,63 +145,66 @@
                 <div class="content-holder">
                     <!--  content -->
                     <div class="content">
-                        <section>
-                            <div class="container">
-                                <div class="product-container fl-wrap" style="text-align: center;">
-                                    <h2 style="margin-bottom: 30px; font-size: 28px; color: #333;">Color Detection and Product Recommendation</h2>
+                        <section class="color-detection-section" style="padding: 50px 0; background-color: #f9f9f9;">
+                            <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 15px;">
+                                <h2 style="text-align: center; margin-bottom: 30px; font-size: 32px; color: #333;">Color Detection and Product Recommendation</h2>
 
-                                    <form method="post" enctype="multipart/form-data" class="custom-form" style="max-width: 600px; margin: 0 auto;">
+                                <div class="upload-form-container" style="max-width: 600px; margin: 0 auto 40px; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                    <form method="post" enctype="multipart/form-data" class="custom-form" style="display: flex; flex-direction: column;">
                                         {% csrf_token %}
-                                        <div class="row" style="display: flex; justify-content: space-between; align-items: center;">
-                                            <div class="col-md-6" style="flex: 1;">
-                                                <input type="file" name="image" accept="image/*" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                                            </div>
-                                            <div class="col-md-6" style="flex: 1; text-align: right;">
-                                                <button type="submit" class="btn float-btn flat-btn" style="padding: 10px 20px; background-color: #f39c12; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Upload and Detect Color</button>
-                                            </div>
-                                        </div>
-                                    </form>
+                                        <input type="file" name="image" accept="image/*" required style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                                        <button type="submit" class="btn float-btn flat-btn" 
+                                            style="padding: 12px 20px; background-color: #000000; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: all 0.3s ease;"
+                                            onmouseover="this.style.backgroundColor='#000000'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';"
+                                            onmouseout="this.style.backgroundColor='#000000'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                            Upload and Detect Color
+                                        </button>  </form>
+                                </div>
 
-                                    {% if form_submitted %}
-                                        {% if error %}
-                                            <p class="error-message" style="color: #e74c3c; margin-top: 20px;">Error: {{ error }}</p>
-                                        {% else %}
-                                            <div class="detection-results" style="margin-top: 30px; text-align: left;">
-                                                <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Color Detection Results</h3>
-                                                <p style="font-size: 18px; margin-bottom: 10px;">Detected Color: 
-                                                    {% if detected_color|slice:":3" == "rgb" %}
-                                                        {{ detected_color }} 
-                                                        <span class="color-sample" style="display: inline-block; width: 20px; height: 20px; margin-left: 10px; vertical-align: middle; background-color: {{ detected_color }};"></span>
-                                                    {% else %}
-                                                        {{ detected_color }}
-                                                    {% endif %}
-                                                </p>
+                                {% if form_submitted %}
+                                {% if error %}
+                                    <p class="error-message" style="color: #e74c3c; text-align: center; font-size: 18px; margin-top: 20px;">Error: {{ error }}</p>
+                                {% else %}
+                                    <div class="detection-results" style="background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 40px;">
+                                        <div class="result-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+                                            <div class="uploaded-image" style="text-align: center;">
+                                                <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Uploaded Image</h3>
+                                                <img src="{{ image_url }}" alt="Uploaded Image" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                            </div>
+                                            <div class="color-info-and-products" style="display: flex; flex-direction: column;">
+                                                <div class="color-info" style="margin-bottom: 20px;">
+                                                    <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Detected Color</h3>
+                                                    <div class="color-display" style="display: flex; align-items: center; margin-bottom: 20px;">
+                                                        <span style="font-size: 18px; color: #333; margin-left: 225px;">{{ detected_color }}</span>
+                                                    </div>
+                                                </div>
                                                 {% if recommended_products %}
-                                                    <p style="font-size: 18px; margin-bottom: 20px;">Number of Recommended Products: {{ products_count }}</p>
-                                                    <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Recommended Products (Same Color):</h3>
-                                                    <div class="products fl-wrap" style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-                                                        {% for product in recommended_products %}
-                                                            <div class="product-cat-mains" style="width: calc(33.33% - 20px); margin-bottom: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
-                                                                <div class="product-cat-img fl-wrap">
-                                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: auto;">
-                                                                    <a href="{% url 'product' product.id %}" style="display: inline-block; margin-top: 10px; padding: 5px 10px; background-color: #f39c12; color: #fff; text-decoration: none; border-radius: 4px;">View</a>
+                                                    <div class="recommended-products">
+                                                        <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Recommended Products ({{ products_count }})</h3>
+                                                        <div class="products-list" style="max-height: 400px; overflow-y: auto;">
+                                                            {% for product in recommended_products %}
+                                                                <div class="product-card" style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 8px;">
+                                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px;">
+                                                                    <div class="product-info" style="flex-grow: 1;">
+                                                                        <h4 style="margin-bottom: 5px; font-size: 16px;"><a href="{% url 'product' product.id %}" style="color: #333; text-decoration: none;">{{ product.name }}</a></h4>
+                                                                        <p style="color: #666; margin-bottom: 5px; font-size: 14px;">{{ product.category }}</p>
+                                                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                                            <span class="product-price" style="font-weight: bold; color: #0188b1; font-size: 14px;">Rs. {{ product.amount.amount }}</span>
+                                                                            <a href="{% url 'product' product.id %}" class="view-button" style="font-size: 12px; padding: 5px 10px; background-color: #000000; color: #fff; text-decoration: none; border-radius: 4px; transition: background-color 0.3s ease;">View</a>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                <div class="product-cat-title" style="padding: 15px;">
-                                                                    <h4 style="margin-bottom: 10px;"><a href="{% url 'product' product.id %}" style="color: #333; text-decoration: none;">{{ product.name }}</a></h4>
-                                                                    <div class="product-cats" style="margin-bottom: 5px;"><a href="#" style="color: #666;">{{ product.category }}</a></div>
-                                                                    <span class="product-price" style="display: block; font-weight: bold; color: #f39c12;">Rs. {{ product.amount.amount }}</span>
-                                                                    <span class="color-sample" style="display: inline-block; width: 20px; height: 20px; margin-top: 5px; background-color: {{ product.color }};"></span>
-                                                                </div>
-                                                            </div>
-                                                        {% endfor %}
+                                                            {% endfor %}
+                                                        </div>
                                                     </div>
                                                 {% else %}
                                                     <p style="font-size: 18px; color: #666;">No products recommended for the current photo.</p>
                                                 {% endif %}
                                             </div>
-                                        {% endif %}
-                                    {% endif %}
-                                </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% endif %}
                             </div>
                         </section>
                     </div>

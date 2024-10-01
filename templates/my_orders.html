@@ -106,6 +106,9 @@
                                     <a href="{% url 'portfolio' %}">Designs</a>
                                 </li>
                             
+                                <li>
+                                    <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
+                                </li>
                                 
                             <li>
                                 <a href="about.html">About</a>
@@ -202,6 +205,11 @@
                                                         </div>
                                                         <div class="col-md-6">
                                                             <p><b>Payment Type: </b>{{ order.payment_type.payment_type }}</p>
+                                                            {% if order.order_status == 'Completed' %}
+                                                            <a href="{% url 'download_receipt' order.id %}" class="btn btn-success btn-sm">
+                                                                <i class="fa fa-download"></i> Download Receipt
+                                                            </a>
+                                                            {% endif %}
                                                         </div>
                                                     </div>
                                                 </div>

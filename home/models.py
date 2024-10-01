@@ -110,7 +110,7 @@ class Order(models.Model):
     order_status = models.CharField(max_length=100)
     payment_type = models.ForeignKey(Payment_Type, on_delete=models.CASCADE,default=0)
     payment_status = models.CharField(max_length=100)
-
+    delivery_date = models.DateTimeField(null=True, blank=True)
     def __str__(self):
         return f'Order {self.id}'
     

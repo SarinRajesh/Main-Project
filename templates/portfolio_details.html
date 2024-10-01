@@ -101,7 +101,12 @@
                                 <li>
                                     <a href="{% url 'portfolio' %}" class="act-link">Designs</a>
                                 </li>
-                            
+                                {% if user_type != 'Designer' %}
+                                <li>
+                                   <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
+                               </li>
+                               
+                           {% endif %}
                                 
                             <li>
                                 <a href="about.html">About</a>

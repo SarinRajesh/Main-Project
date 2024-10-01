@@ -110,7 +110,9 @@
                                 <li>
                                     <a href="{% url 'portfolio' %}">Designs</a>
                                 </li>
-                            
+                                <li>
+                                    <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
+                                </li>
                                 
                             <li>
                                 <a href="about.html">About</a>
@@ -179,7 +181,8 @@
                                             <div class="product-text fl-wrap">
                                                 <a href="{% url 'shop' %}" class="btn float-btn flat-btn" style="margin-left:70%">Back to Shop</a>
                                                 <h2>{{ product.name }}</h2>
-                                                <h3>{{ product.category }}</h3>
+                                                <h3>Category: {{ product.category }}</h3>
+                                                <h3>Color: {{ product.color }}</h3>
                                                 <div class="pr-opt fl-wrap">
                                                     <div class="product-item-price"><span></span>Rs. {{ product.amount.amount }}</div>
                                                     <div class="product-rating">
@@ -195,6 +198,13 @@
                                                         </ul>
                                                         <span>({{ avg_rating }})</span>
                                                     </div>
+                                                </div>
+                                                <!-- Add this new section for the delivery date -->
+                                                <div class="delivery-info fl-wrap" style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                                    <i class="fa fa-truck" style="font-size: 24px; color: #4CAF50; margin-right: 10px;"></i>
+                                                    <span style="font-size: 16px; color: #333;">
+                                                        Estimated Delivery: <strong style="color: #4CAF50;">{{ delivery_date }}</strong>
+                                                    </span>
                                                 </div>
                                                 <div id="tabs-container">
                                                     <ul class="tabs-menu">

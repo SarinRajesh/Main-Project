@@ -103,7 +103,10 @@
                     <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order Date</th>
                     <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order Status</th>
                     <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Payment Type</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 8px;">Payment Status</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 1px;">Payment Status</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 1px;">Delivery Date</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 1px;">Actions</th>
+                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 1px;"></th>
                 </tr>
             </thead>
             <tbody>
@@ -118,6 +121,28 @@
                     <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_status }}</td>
                     <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_type.payment_type }}</td>
                     <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_status }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_date|date:"Y-m-d H:i" }}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                        {% if order.order_status == 'Pending' %}
+                            <form method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="order_id" value="{{ order.id }}">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; margin-right: 5px;">
+                                    Approve
+                                </button>
+                            </form></td>
+                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                            <form method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="order_id" value="{{ order.id }}">
+                                <input type="hidden" name="action" value="cancel">
+                                <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
+                                    Cancel
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
