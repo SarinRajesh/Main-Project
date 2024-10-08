@@ -18,6 +18,8 @@ urlpatterns = [
     path('product/<int:product_id>/', views.product, name='product'),
     path('portfolio/', views.portfolio, name='portfolio'),
     path('portfolio/<int:portfolio_id>/', views.portfolio_details, name='portfolio_details'),
+    
+path('delete-portfolio/<int:portfolio_id>/', views.delete_portfolio, name='delete_portfolio'),
     path('consultation_booking/<int:portfolio_id>/', views.consultation_booking, name='consultation_booking'),
     path('signin/', views.signin, name='signin'),
     path('signup/', views.signup, name='signup'),

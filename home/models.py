@@ -121,6 +121,7 @@ class ConsultationDate(models.Model):
     is_booked = models.BooleanField(default=False)
 
     class Meta:
+        # Update this line to remove 'design' from unique_together
         unique_together = ('designer', 'date_time')
 
     def __str__(self):

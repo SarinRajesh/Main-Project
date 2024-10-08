@@ -97,13 +97,26 @@ class CustomAccountAdapter(DefaultAccountAdapter):
             user.save()
         return user
 
+# Update the CustomSocialAccountAdapter class
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
+    def pre_social_login(self, request, sociallogin):
+        # Check if the email already exists in the database
+        email = sociallogin.account.extra_data['email']
+        if email:
+            try:
+                user = Users.objects.get(email=email)
+                # If the user exists, connect the social account to the existing user
+                sociallogin.connect(request, user)
+            except Users.DoesNotExist:
+                pass  # If the user doesn't exist, proceed with the normal flow
+
     def save_user(self, request, sociallogin, form=None):
         user = super().save_user(request, sociallogin, form)
         user.user_type_id = UserType.objects.get(user_type='Customer')
         user.save()
         return user
 
+# Update the signup function
 def signup(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -111,6 +124,15 @@ def signup(request):
         email = request.POST.get('email')
         username = request.POST.get('username')
         password = request.POST.get('password')
+
+        # Check if a user with this email already exists
+        existing_user = Users.objects.filter(email=email).first()
+        if existing_user:
+            # If the user exists, check if they have a social account
+            social_account = SocialAccount.objects.filter(user=existing_user).first()
+            if social_account:
+                messages.error(request, "An account with this email already exists. Please use Google login.")
+                return redirect('signin')
 
         # Store user data in session
         request.session['user_data'] = {
@@ -138,6 +160,7 @@ def signup(request):
         
     return render(request, 'signup.html')
 
+# Update the verify_otp function
 def verify_otp(request):
     if request.method == 'POST':
         otp = request.POST.get('otp')
@@ -147,19 +170,29 @@ def verify_otp(request):
             user_data = request.session.get('user_data')
             if user_data:
                 try:
-                    # Create a new user with the provided data
-                    user = Users.objects.create(
-                        name=user_data['name'],
-                        phone=user_data['phone'],
-                        email=user_data['email'],
-                        username=user_data['username'],
-                        password=make_password(user_data['password']),  # Hash the password
-                        user_type_id=UserType.objects.get(user_type='Customer')  # Set default user type to Customer
-                    )
-                    user.save()
+                    # Check if a user with this email already exists
+                    existing_user = Users.objects.filter(email=user_data['email']).first()
+                    if existing_user:
+                        # If the user exists, update their information
+                        existing_user.name = user_data['name']
+                        existing_user.phone = user_data['phone']
+                        existing_user.username = user_data['username']
+                        existing_user.password = make_password(user_data['password'])
+                        existing_user.save()
+                        user = existing_user
+                    else:
+                        # Create a new user with the provided data
+                        user = Users.objects.create(
+                            name=user_data['name'],
+                            phone=user_data['phone'],
+                            email=user_data['email'],
+                            username=user_data['username'],
+                            password=make_password(user_data['password']),
+                            user_type_id=UserType.objects.get(user_type='Customer')
+                        )
 
                     # Log the user in
-                    backend = 'django.contrib.auth.backends.ModelBackend'  # Specify the backend
+                    backend = 'django.contrib.auth.backends.ModelBackend'
                     user = authenticate(username=user_data['username'], password=user_data['password'], backend=backend)
                     if user is not None:
                         login(request, user)
@@ -177,64 +210,6 @@ def verify_otp(request):
             messages.error(request, "Invalid OTP. Please try again.")
 
     return render(request, 'verify_otp.html')
-
-
-
-@nocache
-@login_required
-def profile(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-    return render(request, 'profile.html', {'user': user, 'user_type': user_type})
-
-@login_required
-def edit_profile(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-
-    if request.method == 'POST':
-        # Update user profile fields
-        user.name = request.POST.get('name')
-        user.phone = request.POST.get('phone')
-        user.username = request.POST.get('username')
-        user.email = request.POST.get('email')
-        user.address = request.POST.get('address')
-        user.home_town = request.POST.get('home_town')
-        user.district = request.POST.get('district')
-        user.state = request.POST.get('state')
-        user.pincode = request.POST.get('pincode')
-
-        # Handle photo upload if present
-        if 'photo' in request.FILES:
-            user.photo = request.FILES['photo']
-
-        try:
-            user.save()
-            messages.success(request, 'Profile updated successfully.')
-            return redirect('profile')
-        except Exception as e:
-            messages.error(request, f'Error updating profile: {str(e)}')
-            return redirect('edit_profile')
-
-    context = {
-        'user': user,
-        'user_type': user_type
-    }
-    return render(request, 'edit_profile.html', context)
-
-
-
-@login_required
-@csrf_exempt
-def upload_photo(request):
-    if request.method == 'POST':
-        photo = request.FILES.get('photo')
-        if photo:
-            user = request.user
-            user.photo = photo
-            user.save()
-            return JsonResponse({'success': True, 'photo_url': user.photo.url})
-    return JsonResponse({'success': False})
 
 
 def check_email(request):
@@ -311,6 +286,64 @@ def reset_password_confirm(request, uidb64, token):
 def logout_view(request):
     logout(request)
     return redirect('signin')
+
+
+
+@nocache
+@login_required
+def profile(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    return render(request, 'profile.html', {'user': user, 'user_type': user_type})
+
+@login_required
+def edit_profile(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+
+    if request.method == 'POST':
+        # Update user profile fields
+        user.name = request.POST.get('name')
+        user.phone = request.POST.get('phone')
+        user.username = request.POST.get('username')
+        user.email = request.POST.get('email')
+        user.address = request.POST.get('address')
+        user.home_town = request.POST.get('home_town')
+        user.district = request.POST.get('district')
+        user.state = request.POST.get('state')
+        user.pincode = request.POST.get('pincode')
+
+        # Handle photo upload if present
+        if 'photo' in request.FILES:
+            user.photo = request.FILES['photo']
+
+        try:
+            user.save()
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('profile')
+        except Exception as e:
+            messages.error(request, f'Error updating profile: {str(e)}')
+            return redirect('edit_profile')
+
+    context = {
+        'user': user,
+        'user_type': user_type
+    }
+    return render(request, 'edit_profile.html', context)
+
+
+
+@login_required
+@csrf_exempt
+def upload_photo(request):
+    if request.method == 'POST':
+        photo = request.FILES.get('photo')
+        if photo:
+            user = request.user
+            user.photo = photo
+            user.save()
+            return JsonResponse({'success': True, 'photo_url': user.photo.url})
+    return JsonResponse({'success': False})
 
 
 
@@ -341,811 +374,6 @@ def add_product(request):
         return redirect('add_product')
 
     return render(request, 'admin_page/add_product.html')
-
-@login_required
-@nocache
-def add_portfolio(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-
-    # Check if user details are complete
-    user_details_complete = all([
-        user.name,
-        user.email,
-        user.phone,
-        user.address,
-        user.home_town,
-        user.district,
-        user.state,
-        user.pincode
-    ])
-
-    if request.method == 'POST':
-        if not user_details_complete:
-            messages.error(request, 'Please complete your profile before adding a portfolio.')
-            return redirect('profile')
-
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        amount_value = request.POST.get('amount')
-        image = request.FILES.get('image')
-        category = request.POST.get('category')
-        sqft = request.POST.get('sqft', 0)
-
-        amount = Amount(amount=amount_value)
-        amount.save()
-
-        portfolio = Design(
-            designer_id=request.user,
-            name=name,
-            description=description,
-            amount=amount,
-            image=image,
-            category=category,
-            sqft=sqft
-        )
-        portfolio.save()
-
-        messages.success(request, 'Portfolio added successfully.')
-        return redirect('portfolio')
-
-    context = {
-        'user_type': user_type,
-        'user_details_complete': user_details_complete
-    }
-    return render(request, 'add_portfolio.html', context)
-
-
-@nocache
-def portfolio(request):
-    category = request.GET.get('category', 'all')
-    sqft_range = request.GET.get('sqft_range', 'all')
-
-    if request.user.is_authenticated and request.user.user_type_id.user_type == 'Designer':
-        # For designers, show only their designs
-        portfolios = Design.objects.filter(designer_id=request.user)
-    else:
-        # For other users, show all designs
-        portfolios = Design.objects.all()
-        designer = request.GET.get('designer', 'all')
-        if designer != 'all':
-            portfolios = portfolios.filter(designer_id__username=designer)
-
-    if category != 'all':
-        portfolios = portfolios.filter(category__iexact=category)
-
-    if sqft_range != 'all':
-        if sqft_range == '0-500':
-            portfolios = portfolios.filter(sqft__lte=500)
-        elif sqft_range == '501-1000':
-            portfolios = portfolios.filter(sqft__gt=500, sqft__lte=1000)
-        elif sqft_range == '1001-1500':
-            portfolios = portfolios.filter(sqft__gt=1000, sqft__lte=1500)
-        elif sqft_range == '1501+':
-            portfolios = portfolios.filter(sqft__gt=1500)
-
-    all_designers = Users.objects.filter(user_type_id__user_type='Designer').values_list('username', flat=True).distinct()
-
-class CustomTokenGenerator(PasswordResetTokenGenerator):
-    def _make_hash_value(self, user, timestamp):
-        return str(user.pk) + str(timestamp)
-
-token_generator = CustomTokenGenerator()
-
-@nocache
-def index(request):
-    context = {}
-    if request.user.is_authenticated:
-        user = request.user
-        user_type = user.user_type_id.user_type if user.user_type_id else None
-        context = {'user': user, 'user_type': user_type}
-    return render(request, 'index.html', context)
-
-
-def signin(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            if user.status == 'active':  # Check if user is active
-                login(request, user)  # Log in the user
-                return custom_login_redirect(request)  # Redirect to the appropriate page
-            else:
-                # Store message in session under a custom key
-                request.session['custom_error_message'] = "User account is inactive."
-                return redirect('signin')  # Redirect to sign-in page
-        else:
-            # Store message in session under a custom key
-            request.session['custom_error_message'] = "Invalid username or password."
-            return redirect('signin')  # Redirect to sign-in page
-    
-    return render(request, 'signin.html')
-
-
-def custom_login_redirect(request):
-    user = request.user
-    if not user.is_authenticated:
-        return redirect('signin')
-
-    if user.status != 'active':  # Check if user is active
-        logout(request)  # Log out inactive users
-        # Store message in session under a custom key
-        request.session['custom_error_message'] = "User account is inactive."
-        return redirect('signin')  # Redirect to sign-in page
-
-    if user.user_type_id and user.user_type_id.user_type == 'Admin':
-        return redirect('admin_index')
-    else:
-        return redirect('index')
-
-
-
-def generate_otp():
-    return random.randint(100000, 999999)
-
-class CustomAccountAdapter(DefaultAccountAdapter):
-    def save_user(self, request, user, form, commit=True):
-        user = super().save_user(request, user, form, commit=False)
-        user.user_type_id = UserType.objects.get(user_type='Customer')
-        if commit:
-            user.save()
-        return user
-
-class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
-    def save_user(self, request, sociallogin, form=None):
-        user = super().save_user(request, sociallogin, form)
-        user.user_type_id = UserType.objects.get(user_type='Customer')
-        user.save()
-        return user
-
-def signup(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        phone = request.POST.get('phone')
-        email = request.POST.get('email')
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        # Store user data in session
-        request.session['user_data'] = {
-            'name': name,
-            'phone': phone,
-            'email': email,
-            'username': username,
-            'password': password,
-        }
-        
-        otp = generate_otp()
-        request.session['otp'] = otp
-
-        # Send OTP to user's email
-        send_mail(
-            'Your OTP for signing up',
-            f'Your OTP is {otp}',
-            'your-email@gmail.com',  # Replace with your actual email
-            [email],
-            fail_silently=False,
-        )
-
-        messages.success(request, "Check your email for the OTP.")
-        return redirect('verify_otp')
-        
-    return render(request, 'signup.html')
-
-def verify_otp(request):
-    if request.method == 'POST':
-        otp = request.POST.get('otp')
-        session_otp = request.session.get('otp')
-
-        if otp == str(session_otp):
-            user_data = request.session.get('user_data')
-            if user_data:
-                try:
-                    # Create a new user with the provided data
-                    user = Users.objects.create(
-                        name=user_data['name'],
-                        phone=user_data['phone'],
-                        email=user_data['email'],
-                        username=user_data['username'],
-                        password=make_password(user_data['password']),  # Hash the password
-                        user_type_id=UserType.objects.get(user_type='Customer')  # Set default user type to Customer
-                    )
-                    user.save()
-
-                    # Log the user in
-                    backend = 'django.contrib.auth.backends.ModelBackend'  # Specify the backend
-                    user = authenticate(username=user_data['username'], password=user_data['password'], backend=backend)
-                    if user is not None:
-                        login(request, user)
-                    
-                    # Clear user data from session
-                    request.session.pop('user_data', None)
-
-                    return redirect('index')
-                except Exception as e:
-                    messages.error(request, f"Error creating account: {str(e)}")
-            else:
-                messages.error(request, "User data not found in session. Please sign up again.")
-                return redirect('signup')
-        else:
-            messages.error(request, "Invalid OTP. Please try again.")
-
-    return render(request, 'verify_otp.html')
-
-
-
-@nocache
-@login_required
-def profile(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-    return render(request, 'profile.html', {'user': user, 'user_type': user_type})
-
-@login_required
-def edit_profile(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-
-    if request.method == 'POST':
-        # Update user profile fields
-        user.name = request.POST.get('name')
-        user.phone = request.POST.get('phone')
-        user.username = request.POST.get('username')
-        user.email = request.POST.get('email')
-        user.address = request.POST.get('address')
-        user.home_town = request.POST.get('home_town')
-        user.district = request.POST.get('district')
-        user.state = request.POST.get('state')
-        user.pincode = request.POST.get('pincode')
-
-        # Handle photo upload if present
-        if 'photo' in request.FILES:
-            user.photo = request.FILES['photo']
-
-        try:
-            user.save()
-            messages.success(request, 'Profile updated successfully.')
-            return redirect('profile')
-        except Exception as e:
-            messages.error(request, f'Error updating profile: {str(e)}')
-            return redirect('edit_profile')
-
-    context = {
-        'user': user,
-        'user_type': user_type
-    }
-    return render(request, 'edit_profile.html', context)
-
-
-
-@login_required
-@csrf_exempt
-def upload_photo(request):
-    if request.method == 'POST':
-        photo = request.FILES.get('photo')
-        if photo:
-            user = request.user
-            user.photo = photo
-            user.save()
-            return JsonResponse({'success': True, 'photo_url': user.photo.url})
-    return JsonResponse({'success': False})
-
-
-def check_email(request):
-    email = request.GET.get('email', None)
-    data = {
-        'is_taken': Users.objects.filter(email=email).exists()
-    }
-    return JsonResponse(data)
-
-def check_username(request):
-    username = request.GET.get('username', None)
-    data = {
-        'is_taken': Users.objects.filter(username=username).exists()
-    }
-    return JsonResponse(data)
-
-def request_password_reset(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        try:
-            user = Users.objects.get(email=email)
-            
-            # Generate a password reset token and send it to the user's email
-            token = token_generator.make_token(user)
-            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-            
-            reset_url = reverse('reset_password_confirm', kwargs={'uidb64': uidb64, 'token': token})
-            reset_url = request.build_absolute_uri(reset_url)
-            
-            send_mail(
-                'Password Reset Request',
-                f'Click the following link to reset your password: {reset_url}',
-                'your-email@gmail.com',  # Replace with your actual email
-                [email],
-                fail_silently=False,
-            )
-            
-            messages.success(request, 'Password reset email has been sent. Check your email to proceed.')
-            return redirect('request_password_reset')
-        
-        except Users.DoesNotExist:
-            messages.error(request, 'User does not exist.')
-            return redirect('request_password_reset')
-
-    return render(request, 'password_reset/request_password_reset.html')
-
-def reset_password_confirm(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = Users.objects.get(pk=uid)
-        
-        if token_generator.check_token(user, token):
-            if request.method == 'POST':
-                new_password = request.POST.get('new_password')
-                confirm_password = request.POST.get('confirm_password')
-                
-                if new_password == confirm_password:
-                    user.password = make_password(new_password)  # Hash the password
-                    user.save()
-                    messages.success(request, 'Password reset successful. You can now sign in with your new password.')
-                    return redirect('signin')
-                else:
-                    messages.error(request, 'Passwords do not match. Please try again.')
-            return render(request, 'password_reset/reset_password_confirm.html', {'uidb64': uidb64, 'token': token})
-        else:
-            messages.error(request, 'Invalid password reset link.')
-            return redirect('signin')
-    
-    except (TypeError, ValueError, OverflowError, Users.DoesNotExist):
-        user = None
-    
-    return redirect('signin')
-
-def logout_view(request):
-    logout(request)
-    return redirect('signin')
-
-
-
-@login_required
-@nocache
-def add_product(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        amount_value = request.POST.get('amount')
-        image = request.FILES.get('image')
-        category = request.POST.get('category')
-        stock = request.POST.get('stock')
-
-        amount = Amount(amount=amount_value)
-        amount.save()
-
-        product = Product(
-            name=name,
-            description=description,
-            amount=amount,
-            category=category,
-            image=image,
-            stock=stock  # Add the quantity field
-        )
-        product.save()
-
-        return redirect('add_product')
-
-    return render(request, 'admin_page/add_product.html')
-
-@login_required
-@nocache
-def add_portfolio(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-
-    # Check if user details are complete
-    user_details_complete = all([
-        user.name,
-        user.email,
-        user.phone,
-        user.address,
-        user.home_town,
-        user.district,
-        user.state,
-        user.pincode
-    ])
-
-    if request.method == 'POST':
-        if not user_details_complete:
-            messages.error(request, 'Please complete your profile before adding a portfolio.')
-            return redirect('profile')
-
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        amount_value = request.POST.get('amount')
-        image = request.FILES.get('image')
-        category = request.POST.get('category')
-        sqft = request.POST.get('sqft', 0)
-
-        amount = Amount(amount=amount_value)
-        amount.save()
-
-        portfolio = Design(
-            designer_id=request.user,
-            name=name,
-            description=description,
-            amount=amount,
-            image=image,
-            category=category,
-            sqft=sqft
-        )
-        portfolio.save()
-
-        messages.success(request, 'Portfolio added successfully.')
-        return redirect('portfolio')
-
-    context = {
-        'user_type': user_type,
-        'user_details_complete': user_details_complete
-    }
-    return render(request, 'add_portfolio.html', context)
-
-
-@nocache
-def portfolio(request):
-    category = request.GET.get('category', 'all')
-    sqft_range = request.GET.get('sqft_range', 'all')
-
-    if request.user.is_authenticated and request.user.user_type_id.user_type == 'Designer':
-        # For designers, show only their designs
-        portfolios = Design.objects.filter(designer_id=request.user)
-    else:
-        # For other users, show all designs
-        portfolios = Design.objects.all()
-        designer = request.GET.get('designer', 'all')
-        if designer != 'all':
-            portfolios = portfolios.filter(designer_id__username=designer)
-
-    if category != 'all':
-        portfolios = portfolios.filter(category__iexact=category)
-
-    if sqft_range != 'all':
-        if sqft_range == '0-500':
-            portfolios = portfolios.filter(sqft__lte=500)
-        elif sqft_range == '501-1000':
-            portfolios = portfolios.filter(sqft__gt=500, sqft__lte=1000)
-        elif sqft_range == '1001-1500':
-            portfolios = portfolios.filter(sqft__gt=1000, sqft__lte=1500)
-        elif sqft_range == '1501+':
-            portfolios = portfolios.filter(sqft__gt=1500)
-
-    all_designers = Users.objects.filter(user_type_id__user_type='Designer').values_list('username', flat=True).distinct()
-
-
-
-
-class CustomTokenGenerator(PasswordResetTokenGenerator):
-    def _make_hash_value(self, user, timestamp):
-        return str(user.pk) + str(timestamp)
-
-token_generator = CustomTokenGenerator()
-
-@nocache
-def index(request):
-    context = {}
-    if request.user.is_authenticated:
-        user = request.user
-        user_type = user.user_type_id.user_type if user.user_type_id else None
-        context = {'user': user, 'user_type': user_type}
-    return render(request, 'index.html', context)
-
-
-from django.contrib import messages  # Make sure to import messages
-
-from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
-
-def signin(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            if user.status == 'active':  # Check if user is active
-                login(request, user)  # Log in the user
-                return custom_login_redirect(request)  # Redirect to the appropriate page
-            else:
-                # Store message in session under a custom key
-                request.session['custom_error_message'] = "User account is inactive."
-                return redirect('signin')  # Redirect to sign-in page
-        else:
-            # Store message in session under a custom key
-            request.session['custom_error_message'] = "Invalid username or password."
-            return redirect('signin')  # Redirect to sign-in page
-    
-    return render(request, 'signin.html')
-
-
-def custom_login_redirect(request):
-    user = request.user
-    if not user.is_authenticated:
-        return redirect('signin')
-
-    if user.status != 'active':  # Check if user is active
-        logout(request)  # Log out inactive users
-        # Store message in session under a custom key
-        request.session['custom_error_message'] = "User account is inactive."
-        return redirect('signin')  # Redirect to sign-in page
-
-    if user.user_type_id and user.user_type_id.user_type == 'Admin':
-        return redirect('admin_index')
-    else:
-        return redirect('index')
-
-
-
-def generate_otp():
-    return random.randint(100000, 999999)
-
-
-class CustomAccountAdapter(DefaultAccountAdapter):
-    def save_user(self, request, user, form, commit=True):
-        user = super().save_user(request, user, form, commit=False)
-        user.user_type_id = UserType.objects.get(user_type='Customer')
-        if commit:
-            user.save()
-        return user
-
-class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
-    def save_user(self, request, sociallogin, form=None):
-        user = super().save_user(request, sociallogin, form)
-        user.user_type_id = UserType.objects.get(user_type='Customer')
-        user.save()
-        return user
-
-def signup(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        phone = request.POST.get('phone')
-        email = request.POST.get('email')
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        # Store user data in session
-        request.session['user_data'] = {
-            'name': name,
-            'phone': phone,
-            'email': email,
-            'username': username,
-            'password': password,
-        }
-        
-        otp = generate_otp()
-        request.session['otp'] = otp
-
-        # Send OTP to user's email
-        send_mail(
-            'Your OTP for signing up',
-            f'Your OTP is {otp}',
-            'your-email@gmail.com',  # Replace with your actual email
-            [email],
-            fail_silently=False,
-        )
-
-        messages.success(request, "Check your email for the OTP.")
-        return redirect('verify_otp')
-        
-    return render(request, 'signup.html')
-
-def verify_otp(request):
-    if request.method == 'POST':
-        otp = request.POST.get('otp')
-        session_otp = request.session.get('otp')
-
-        if otp == str(session_otp):
-            user_data = request.session.get('user_data')
-            if user_data:
-                try:
-                    # Create a new user with the provided data
-                    user = Users.objects.create(
-                        name=user_data['name'],
-                        phone=user_data['phone'],
-                        email=user_data['email'],
-                        username=user_data['username'],
-                        password=make_password(user_data['password']),  # Hash the password
-                        user_type_id=UserType.objects.get(user_type='Customer')  # Set default user type to Customer
-                    )
-                    user.save()
-
-                    # Log the user in
-                    backend = 'django.contrib.auth.backends.ModelBackend'  # Specify the backend
-                    user = authenticate(username=user_data['username'], password=user_data['password'], backend=backend)
-                    if user is not None:
-                        login(request, user)
-                    
-                    # Clear user data from session
-                    request.session.pop('user_data', None)
-
-                    return redirect('index')
-                except Exception as e:
-                    messages.error(request, f"Error creating account: {str(e)}")
-            else:
-                messages.error(request, "User data not found in session. Please sign up again.")
-                return redirect('signup')
-        else:
-            messages.error(request, "Invalid OTP. Please try again.")
-
-    return render(request, 'verify_otp.html')
-
-
-
-@nocache
-@login_required
-def profile(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-    return render(request, 'profile.html', {'user': user, 'user_type': user_type})
-
-@login_required
-def edit_profile(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-
-    if request.method == 'POST':
-        # Update user profile fields
-        user.name = request.POST.get('name')
-        user.phone = request.POST.get('phone')
-        user.username = request.POST.get('username')
-        user.email = request.POST.get('email')
-        user.address = request.POST.get('address')
-        user.home_town = request.POST.get('home_town')
-        user.district = request.POST.get('district')
-        user.state = request.POST.get('state')
-        user.pincode = request.POST.get('pincode')
-
-        # Handle photo upload if present
-        if 'photo' in request.FILES:
-            user.photo = request.FILES['photo']
-
-        try:
-            user.save()
-            messages.success(request, 'Profile updated successfully.')
-            return redirect('profile')
-        except Exception as e:
-            messages.error(request, f'Error updating profile: {str(e)}')
-            return redirect('edit_profile')
-
-    context = {
-        'user': user,
-        'user_type': user_type
-    }
-    return render(request, 'edit_profile.html', context)
-
-
-
-@login_required
-@csrf_exempt
-def upload_photo(request):
-    if request.method == 'POST':
-        photo = request.FILES.get('photo')
-        if photo:
-            user = request.user
-            user.photo = photo
-            user.save()
-            return JsonResponse({'success': True, 'photo_url': user.photo.url})
-    return JsonResponse({'success': False})
-
-
-def check_email(request):
-    email = request.GET.get('email', None)
-    data = {
-        'is_taken': Users.objects.filter(email=email).exists()
-    }
-    return JsonResponse(data)
-
-def check_username(request):
-    username = request.GET.get('username', None)
-    data = {
-        'is_taken': Users.objects.filter(username=username).exists()
-    }
-    return JsonResponse(data)
-
-def request_password_reset(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        try:
-            user = Users.objects.get(email=email)
-            
-            # Generate a password reset token and send it to the user's email
-            token = token_generator.make_token(user)
-            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-            
-            reset_url = reverse('reset_password_confirm', kwargs={'uidb64': uidb64, 'token': token})
-            reset_url = request.build_absolute_uri(reset_url)
-            
-            send_mail(
-                'Password Reset Request',
-                f'Click the following link to reset your password: {reset_url}',
-                'your-email@gmail.com',  # Replace with your actual email
-                [email],
-                fail_silently=False,
-            )
-            
-            messages.success(request, 'Password reset email has been sent. Check your email to proceed.')
-            return redirect('request_password_reset')
-        
-        except Users.DoesNotExist:
-            messages.error(request, 'User does not exist.')
-            return redirect('request_password_reset')
-
-    return render(request, 'password_reset/request_password_reset.html')
-
-def reset_password_confirm(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = Users.objects.get(pk=uid)
-        
-        if token_generator.check_token(user, token):
-            if request.method == 'POST':
-                new_password = request.POST.get('new_password')
-                confirm_password = request.POST.get('confirm_password')
-                
-                if new_password == confirm_password:
-                    user.password = make_password(new_password)  # Hash the password
-                    user.save()
-                    messages.success(request, 'Password reset successful. You can now sign in with your new password.')
-                    return redirect('signin')
-                else:
-                    messages.error(request, 'Passwords do not match. Please try again.')
-            return render(request, 'password_reset/reset_password_confirm.html', {'uidb64': uidb64, 'token': token})
-        else:
-            messages.error(request, 'Invalid password reset link.')
-            return redirect('signin')
-    
-    except (TypeError, ValueError, OverflowError, Users.DoesNotExist):
-        user = None
-    
-    return redirect('signin')
-
-def logout_view(request):
-    logout(request)
-    return redirect('signin')
-
-
-
-@login_required
-@nocache
-def add_product(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        amount_value = request.POST.get('amount')
-        image = request.FILES.get('image')
-        category_name = request.POST.get('category')
-        stock = request.POST.get('stock')
-        color = request.POST.get('color')  # Get the color value from the form
-
-        amount = Amount(amount=amount_value)
-        amount.save()
-
-        product = Product(
-            name=name,
-            description=description,
-            amount=amount,
-            category=category_name,  # Use category_name directly
-            image=image,
-            stock=stock,
-            color=color
-        )
-        product.save()
-
-        return redirect('add_product')
-
-    # Get unique categories from existing products
-    categories = Product.objects.values_list('category', flat=True).distinct()
-    return render(request, 'admin_page/add_product.html', {'categories': categories})
 
 @login_required
 @nocache
@@ -1259,7 +487,21 @@ def portfolio(request):
 
     return render(request, 'portfolio.html', context)
 
-
+@login_required
+def delete_portfolio(request, portfolio_id):
+    # Get the design item or return 404 if not found
+    design = get_object_or_404(Design, id=portfolio_id)
+    
+    # Check if the current user is the owner of the design item
+    if request.user == design.designer_id:
+        # Delete the design item
+        design.delete()
+        messages.success(request, "Portfolio item deleted successfully.")
+    else:
+        messages.error(request, "You don't have permission to delete this portfolio item.")
+    
+    # Redirect to the portfolio list page or wherever you want
+    return redirect('portfolio')  # Make sure 'portfolio' is the correct name for your portfolio list view
 
 @nocache
 def shop(request):
@@ -1329,14 +571,26 @@ def portfolio_details(request, portfolio_id):
     if request.method == 'POST':
         # Check if the request is to reject a consultation
         if 'reject' in request.POST:
-            # Delete the consultation entry if it exists
-            Consultation.objects.filter(
+            consultation = Consultation.objects.filter(
                 design_id=portfolio_id,
                 customer_id=user,
                 designer_id=portfolio.designer_id
-            ).delete()
+            ).first()
 
-            messages.success(request, 'Consultation request Cancelled.')
+            if consultation:
+                # Find the corresponding ConsultationDate and set is_booked to False
+                ConsultationDate.objects.filter(
+                    designer=portfolio.designer_id,
+                    date_time=consultation.schedule_date_time
+                ).update(is_booked=False)
+
+                # Delete the consultation entry
+                consultation.delete()
+
+                messages.success(request, 'Consultation request cancelled.')
+            else:
+                messages.error(request, 'Consultation not found.')
+
             return redirect('portfolio_details', portfolio_id=portfolio_id)
 
     # Check for existing consultation status
@@ -1354,7 +608,7 @@ def portfolio_details(request, portfolio_id):
         'is_designer': user == portfolio.designer_id,
     }
     return render(request, 'portfolio_details.html', context)
-
+logout_view
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
@@ -1445,34 +699,43 @@ def consultation_booking(request, portfolio_id):
     ).order_by('date_time')
 
     if request.method == 'POST':
-        schedule_date_time = request.POST.get('schedule_date')
+        schedule_date = request.POST.get('schedule_date')
         room_length = Decimal(request.POST.get('room_length', '0'))
         room_width = Decimal(request.POST.get('room_width', '0'))
         room_height = Decimal(request.POST.get('room_height', '0'))
         design_preferences = request.POST.get('design_preferences')
 
         # Create or get the Amount instance
-        consultation_amount = Amount.objects.create(amount=Decimal('5000.00'))  # Assuming 5000 INR as the consultation fee
+        consultation_amount = Amount.objects.create(amount=Decimal('500.00'))  # 500 INR as the consultation fee
 
-        # Parse the schedule_date_time
-        schedule_datetime = parse_datetime(schedule_date_time)
+        # Parse the schedule_date
+        try:
+            schedule_date = parse_date(schedule_date)
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid date format'})
 
-        if not schedule_datetime:
-            return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+        if not schedule_date:
+            return JsonResponse({'status': 'error', 'message': 'Invalid date format'})
 
-        # Make sure the datetime is timezone-aware
-        if timezone.is_naive(schedule_datetime):
-            schedule_datetime = timezone.make_aware(schedule_datetime)
+        # Find the ConsultationDate object for the selected date
+        consultation_date = ConsultationDate.objects.filter(
+            designer=portfolio.designer_id,
+            date_time__date=schedule_date,
+            is_booked=False
+        ).first()
+
+        if not consultation_date:
+            return JsonResponse({'status': 'error', 'message': 'Selected date is not available'})
 
         # Create consultation object
         consultation = Consultation(
             customer_id=request.user,
             designer_id=portfolio.designer_id,
             design_id=portfolio,
-            date_time=schedule_datetime,
+            date_time=consultation_date.date_time,
             consultation_status='Requested',
             proposal='Pending',
-            schedule_date_time=schedule_datetime,
+            schedule_date_time=consultation_date.date_time,
             room_length=room_length,
             room_width=room_width,
             room_height=room_height,
@@ -1484,10 +747,8 @@ def consultation_booking(request, portfolio_id):
         consultation.save()
 
         # Mark the selected date as booked
-        ConsultationDate.objects.filter(
-            designer=portfolio.designer_id,
-            date_time=schedule_datetime
-        ).update(is_booked=True)
+        consultation_date.is_booked = True
+        consultation_date.save()
 
         return JsonResponse({'status': 'success', 'message': 'Consultation booked successfully'})
     
@@ -2571,16 +1832,19 @@ def recommend_products_by_color(request):
             
             detected_color = detect_color(file_path)
             
+            # Remove underscore and capitalize each word
+            formatted_color = detected_color.replace('_', ' ').title()
+            
             # Filter products based on the detected color
             color_query = Q(color__iexact=detected_color)
             recommended_products = Product.objects.filter(color_query)
             
             context.update({
-                'detected_color': detected_color,
+                'detected_color': formatted_color,  # Use the formatted color name
                 'recommended_products': recommended_products,
                 'products_count': recommended_products.count(),
                 'form_submitted': True,
-                'image_url': default_storage.url(file_name)  # Use this instead of file_name
+                'image_url': default_storage.url(file_name)
             })
         except Exception as e:
             context.update({

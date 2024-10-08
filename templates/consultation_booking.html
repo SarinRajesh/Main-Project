@@ -175,15 +175,12 @@
                                                         Book Consultation for {{ portfolio.name }}
                                                     </h3>
                                                     <p style="margin-top: 20px;">
-                                                        <label for="schedule_date" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Schedule Date:</label>
-                                                        <select name="schedule_date" id="schedule_date" required class="custom-select">
-                                                            <option value="">Select a date and time</option>
-                                                            {% for date in available_dates %}
-                                                                <option value="{{ date.date_time|date:'Y-m-d H:i' }}">
-                                                                    {{ date.date_time|date:'F d, Y' }} at {{ date.date_time|time:'H:i' }}
-                                                                </option>
-                                                            {% endfor %}
-                                                        </select>
+                                                        <label for="schedule_date" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Schedule Date and Time:</label>
+                                                        <div style="display: flex; align-items: center;">
+                                                            <input type="text" id="selected_date_display" readonly style="flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
+                                                            <button type="button" id="openCalendar" class="btn float-btn" style="margin-left: 10px; background-color: #000; color: #fff; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;">Choose Date</button>
+                                                        </div>
+                                                        <input type="hidden" name="schedule_date" id="schedule_date" required>
                                                     </p>
                                                     <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                                                         <p style="width: 30%;">
@@ -220,6 +217,13 @@
                                                
                                                 </form>
 
+                                                <!-- Calendar Modal -->
+                                                <div id="calendarModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+                                                    <div class="modal-content" style="background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto;">
+                                                        <span class="close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+                                                        <div id="calendar" style="margin-top: 20px;"></div>
+                                                    </div>
+                                                </div>
 
                                            
                                         </div>
@@ -249,7 +253,114 @@
                     
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css" rel="stylesheet">
+
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 'auto',
+        selectable: true,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek'
+        },
+        buttonText: {
+            today: 'Today',
+            month: 'Month',
+            week: 'Week'
+        },
+        themeSystem: 'standard',
+        select: function(info) {
+            var selectedDate = info.startStr;
+            var availableDates = [
+                {% for date in available_dates %}
+                    "{{ date.date_time|date:'Y-m-d' }}",
+                {% endfor %}
+            ];
+            if (availableDates.includes(selectedDate)) {
+                document.getElementById('schedule_date').value = selectedDate;
+                updateDateTimeDisplay(selectedDate);
+                calendar.unselect();
+                modal.style.display = "none";
+            } else {
+                alert('This date is not available for booking.');
+            }
+        },
+        eventClick: function(info) {
+            document.getElementById('schedule_date').value = info.event.startStr.split('T')[0];
+            updateDateTimeDisplay(info.event.startStr.split('T')[0]);
+            modal.style.display = "none";
+        },
+        events: [
+            {% for date in available_dates %}
+            {
+                title: 'Available',
+                start: '{{ date.date_time|date:"Y-m-d H:i" }}',
+                allDay: false,
+                color: '#4CAF50',
+                textColor: '#ffffff'
+            },
+            {% endfor %}
+        ],
+        eventTimeFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            meridiem: 'short'
+        },
+        dayMaxEvents: true,
+        slotMinTime: '08:00:00',
+        slotMaxTime: '20:00:00'
+    });
+
+    // Render the calendar when the modal is opened
+    document.getElementById("openCalendar").addEventListener('click', function() {
+        modal.style.display = "block";
+        calendar.render();
+    });
+
+    // Modal functionality
+    var modal = document.getElementById("calendarModal");
+    var btn = document.getElementById("openCalendar");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function updateDateTimeDisplay(selectedDate) {
+        {% for date in available_dates %}
+        if (selectedDate === '{{ date.date_time|date:"Y-m-d" }}') {
+            var formattedDateTime = '{{ date.date_time|date:"F d, Y h:i A" }}';
+            document.getElementById('selected_date_display').value = formattedDateTime;
+            return;
+        }
+        {% endfor %}
+    }
+
+    // Hover effect for the button
+    var chooseButton = document.getElementById('openCalendar');
+    chooseButton.addEventListener('mouseover', function() {
+        this.style.backgroundColor = '#333';
+    });
+    chooseButton.addEventListener('mouseout', function() {
+        this.style.backgroundColor = '#000';
+    });
+});
+
 document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('bookConsultation').addEventListener('click', function(event) {
         event.preventDefault();
@@ -261,7 +372,7 @@ document.addEventListener("DOMContentLoaded", function() {
 function initializeRazorpay() {
     var options = {
         "key": "rzp_test_3ybzcJKABRAGdi", // Replace with your actual Razorpay key
-        "amount": 500000, // Amount in paise (5000 INR)
+        "amount": 50000, // Amount in paise (5000 INR)
         "currency": "INR",
         "name": "ElegantDecor",
         "description": "Consultation Booking",
@@ -298,6 +409,7 @@ function initializeRazorpay() {
                 }
             })
             .catch(error => {
+                console.error('Error:', error);
                 Swal.fire({
                     title: 'Error',
                     text: 'An error occurred. Please try again.',
@@ -319,6 +431,35 @@ function initializeRazorpay() {
     rzp1.open();
 }
 </script>
+
+<style>
+.fc-theme-standard .fc-toolbar {
+    font-family: Arial, sans-serif;
+}
+
+.fc .fc-button-primary {
+    background-color: #000;
+    border-color: #000;
+}
+
+.fc .fc-button-primary:hover {
+    background-color: #333;
+    border-color: #333;
+}
+
+.fc-theme-standard td, .fc-theme-standard th {
+    border-color: #ddd;
+}
+
+.fc-day-today {
+    background-color: #f7f7f7 !important;
+}
+
+.fc-event {
+    border-radius: 2px;
+    font-size: 0.85em;
+}
+</style>
                     <!-- content  end --> 
                     <!--=============== content-footer   ===============-->
                     <div class="height-emulator"></div>
