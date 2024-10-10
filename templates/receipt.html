@@ -17,56 +17,81 @@
             max-width: 800px;
             margin: 0 auto;
             border: 1px solid #ddd;
+            padding: 20px;
         }
         .header {
             background-color: #3498db;
             color: #ffffff;
             text-align: center;
             padding: 10px;
+            margin-bottom: 20px;
         }
         .content {
-            padding: 10px;
+            padding: 20px 0;
         }
-        .section {
-            margin-bottom: 10px;
-        }
-        h1 {
-            font-size: 18px;
-            margin: 0;
-        }
-        h2 {
-            font-size: 14px;
-            margin: 5px 0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 5px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .total {
-            font-weight: bold;
-        }
-        .footer {
-            background-color: #34495e;
-            color: #ecf0f1;
-            text-align: center;
-            padding: 5px;
-            font-size: 10px;
-        }
-        .info-columns {
+        .info-row {
             display: flex;
             justify-content: space-between;
+            margin-bottom: 20px;
         }
         .info-column {
             width: 48%;
+        }
+        .info-column.right {
+            text-align: right;
+        }
+        .info-item {
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-column.right .info-item {
+            flex-direction: row-reverse;
+        }
+        .info-column h2 {
+            margin-bottom: 10px;
+        }
+        .info-column.right .info-item strong {
+            float: right;
+            margin-left: 5px;
+        }
+        .order-details {
+            margin-bottom: 20px;
+        }
+        .product-list {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .product-list th, .product-list td {
+            border: none;
+            padding: 5px 0;
+            text-align: left;
+        }
+        .product-list th {
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .total-row {
+            font-weight: bold;
+            border-top: 1px solid #ddd;
+        }
+        .company-info {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 11px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        h2 {
+            font-size: 16px;
+            margin: 10px 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
         }
     </style>
 </head>
@@ -76,25 +101,25 @@
             <h1>Order Receipt</h1>
         </div>
         <div class="content">
-            <div class="info-columns">
+            <div class="info-row">
                 <div class="info-column">
                     <h2>Customer Information</h2>
-                    <p><strong>Name:</strong> {{ order.user.name }}</p>
-                    <p><strong>Email:</strong> {{ order.user.email }}</p>
-                    <p><strong>Phone:</strong> {{ order.user.phone }}</p>
+                    <div class="info-item"><strong>Name:</strong> <span>{{ order.user.name }}</span></div>
+                    <div class="info-item"><strong>Email:</strong> <span>{{ order.user.email }}</span></div>
+                    <div class="info-item"><strong>Phone:</strong> <span>{{ order.user.phone }}</span></div>
                 </div>
-                <div class="info-column">
+                <div class="info-column right">
                     <h2>Shipping Information</h2>
-                    <p><strong>Address:</strong> {{ order.user.address }}</p>
-                    <p><strong>City:</strong> {{ order.user.home_town }}</p>
-                    <p><strong>State:</strong> {{ order.user.state }}</p>
-                    <p><strong>Zip Code:</strong> {{ order.user.pincode }}</p>
+                    <div class="info-item"><strong>Address:</strong> <span>{{ order.user.address }}</span></div>
+                    <div class="info-item"><strong>City:</strong> <span>{{ order.user.home_town }}</span></div>
+                    <div class="info-item"><strong>State:</strong> <span>{{ order.user.state }}</span></div>
+                    <div class="info-item"><strong>Zip Code:</strong> <span>{{ order.user.pincode }}</span></div>
                 </div>
             </div>
-            <div class="section">
+            <div class="order-details">
                 <h2>Order Details</h2>
                 <p><strong>Order ID:</strong> {{ order.id }} | <strong>Order Date:</strong> {{ order.order_date|date:"F d, Y H:i" }}</p>
-                <table>
+                <table class="product-list">
                     <thead>
                         <tr>
                             <th>Product</th>
@@ -112,7 +137,7 @@
                         </tr>
                     </tbody>
                     <tfoot>
-                        <tr class="total">
+                        <tr class="total-row">
                             <td colspan="3">Total</td>
                             <td>Rs. {{ order.amount.amount|floatformat:2 }}</td>
                         </tr>
@@ -123,9 +148,10 @@
                 <h2>Payment Information</h2>
                 <p><strong>Payment Status:</strong> {{ order.payment_status }} | <strong>Payment Type:</strong> {{ order.payment_type.payment_type }}</p>
             </div>
-        </div>
-        <div class="footer">
-            <p>Thank you for your purchase! If you have any questions, please contact our customer support.</p>
+            <div class="company-info">
+                <p><strong>Elegant Decor Consultation</strong></p>
+                <p>Website: www.elegantdecorconsultation.com | Phone: +91 9497449297 | Email: elegantdecorconsultation@gmail.com</p>
+            </div>
         </div>
     </div>
 </body>

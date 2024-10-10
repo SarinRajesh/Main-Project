@@ -157,3 +157,28 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.user.username} for {self.product.name}"
+    
+from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class MoodBoard(models.Model):
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='mood_boards/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class MoodBoardItem(models.Model):
+    mood_board = models.ForeignKey(MoodBoard, on_delete=models.CASCADE, related_name='items')
+    image = models.ImageField(upload_to='mood_board_items/')
+    caption = models.CharField(max_length=255, blank=True)
+    position_x = models.IntegerField(default=0)
+    position_y = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"Item for {self.mood_board.name}"

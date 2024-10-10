@@ -357,6 +357,7 @@ def add_product(request):
         image = request.FILES.get('image')
         category = request.POST.get('category')
         stock = request.POST.get('stock')
+        color = request.POST.get('color')  # Add this line to get the color value
 
         amount = Amount(amount=amount_value)
         amount.save()
@@ -367,7 +368,8 @@ def add_product(request):
             amount=amount,
             category=category,
             image=image,
-            stock=stock  # Add the quantity field
+            stock=stock,
+            color=color  # Add this line to save the color
         )
         product.save()
 
@@ -1693,6 +1695,9 @@ def admin_index(request):
     return render(request, 'admin_page/admin_index.html')
 
 
+from django.utils import timezone
+from datetime import timedelta
+
 @nocache
 @login_required
 def orders(request):
@@ -1703,6 +1708,10 @@ def orders(request):
     orders = Order.objects.filter(user=user).select_related(
         'product', 'amount', 'payment_type', 'user'
     ).order_by('-order_date')
+    
+    # Calculate and add delivery date for each order
+    for order in orders:
+        order.delivery_date = order.order_date + timedelta(days=7)
     
     context = {
         'orders': orders,
@@ -1855,3 +1864,94 @@ def recommend_products_by_color(request):
         context['form_submitted'] = False
     
     return render(request, 'recommend_products.html', context)
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import MoodBoard, MoodBoardItem
+@nocache
+@login_required
+def mood_board_list(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+
+    mood_boards = MoodBoard.objects.filter(user=user)
+
+    context = {
+        'mood_boards': mood_boards,
+        'user_type': user_type,
+        'user': user,
+        'no_results': mood_boards.count() == 0,
+        # Add any other context variables you need
+    }
+
+    return render(request, 'mood_boards/list.html', context)
+
+@login_required
+def create_mood_board(request):
+    user_type = request.user.user_type_id.user_type if request.user.user_type_id else None
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        image = request.FILES.get('image')
+        MoodBoard.objects.create(user=request.user, name=name, description=description, image=image)
+        return redirect('mood_board_list')
+    return render(request, 'mood_boards/create.html', {'user_type': user_type})
+
+@login_required
+def mood_board_detail(request, pk):
+    user_type = request.user.user_type_id.user_type if request.user.user_type_id else None
+    mood_board = get_object_or_404(MoodBoard, pk=pk, user=request.user)
+    items = mood_board.items.all()
+    return render(request, 'mood_boards/detail.html', {'mood_board': mood_board, 'items': items, 'user_type': user_type})
+
+@login_required
+@require_POST
+def add_mood_board_item(request, pk):
+    mood_board = get_object_or_404(MoodBoard, pk=pk, user=request.user)
+    image = request.FILES.get('image')
+    caption = request.POST.get('caption')
+    if image and caption:
+        # Set a default position, you can adjust these values as needed
+        default_x = 10
+        default_y = 10
+        item = MoodBoardItem.objects.create(
+            mood_board=mood_board, 
+            image=image, 
+            caption=caption,
+            position_x=default_x,
+            position_y=default_y
+        )
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Item added successfully.',
+            'item_id': item.id,
+            'image_url': item.image.url,
+            'caption': item.caption,
+            'position_x': default_x,
+            'position_y': default_y
+        })
+    return JsonResponse({'status': 'error', 'message': 'Please provide both image and caption.'}, status=400)
+
+@login_required
+def mood_board_detail(request, pk):
+    user_type = request.user.user_type_id.user_type if request.user.user_type_id else None
+    mood_board = get_object_or_404(MoodBoard, pk=pk, user=request.user)
+    items = mood_board.items.all()
+    return render(request, 'mood_boards/detail.html', {'mood_board': mood_board, 'items': items, 'user_type': user_type})
+@login_required
+@require_POST
+def update_item_position(request, pk):
+    item = get_object_or_404(MoodBoardItem, pk=pk, mood_board__user=request.user)
+    position_x = request.POST.get('position_x')
+    position_y = request.POST.get('position_y')
+    
+    if position_x is not None and position_y is not None:
+        try:
+            item.position_x = int(float(position_x))
+            item.position_y = int(float(position_y))
+            item.save()
+            return JsonResponse({'status': 'success'})
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid position data'}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Missing position data'}, status=400)

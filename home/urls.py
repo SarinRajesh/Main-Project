@@ -55,6 +55,13 @@ path('admin_page/orders-table/', views.orders_table, name='orders_table'),
 path('download_receipt/<int:order_id>/', views.download_receipt, name='download_receipt'),
 
    path('recommend-products/', views.recommend_products_by_color, name='recommend_products_by_color'),
+
+   path('mood-boards/', views.mood_board_list, name='mood_board_list'),
+    path('mood-boards/create/', views.create_mood_board, name='create_mood_board'),
+    path('mood-boards/<int:pk>/', views.mood_board_detail, name='mood_board_detail'),
+    path('mood-boards/<int:pk>/add-item/', views.add_mood_board_item, name='add_mood_board_item'),
+    path('mood-board-items/<int:pk>/update-position/', views.update_item_position, name='update_item_position'),
+
 ]
 
 # Serve media files during development

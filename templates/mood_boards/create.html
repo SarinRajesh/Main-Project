@@ -14,14 +14,9 @@
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
-        <link type="text/css" rel="stylesheet" href="{% static 'index/css/shop.css' %}">	
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
         <!--=============== favicons ===============-->
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
-        
-        <!-- Add SweetAlert2 CSS and JS -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
     </head>
 
     <body>
@@ -47,9 +42,6 @@
                 </div>
                 {% else %}
                 {% endif %}
-                <!-- share button end-->  		
-                <!-- search button--> 	 
-                <!-- search button end --> 
                 <!-- mobile nav --> 
                 <div class="nav-button-wrap">
                     <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
@@ -61,10 +53,10 @@
                         <ul>   
                             {% if user_type != 'Designer' and user_type != 'Customer' %}
                                 <li>
-                                    <a href="{% url 'index' %}" >Home</a>
+                                    <a href="{% url 'index' %}">Home</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'portfolio' %}">Designs</a>
+                                    <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
                                 </li>
                                         
                             <li>
@@ -103,13 +95,19 @@
                                     <a href="{% url 'index' %}" >Home</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'portfolio' %}">Designs</a>
+                                    <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
+                                    <ul>
+                                        <li><a href="{% url 'mood_board_list' %}">Mood Boards</a></li>
+                                        <li><a href="{% url 'create_mood_board' %}">Create Mood Boards</a></li>
+                             
+                                    </ul>
                                 </li>
-                            
-                                <li>
+                                {% if user_type != 'Designer' %}
+                                 <li>
                                     <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
                                 </li>
                                 
+                            {% endif %}
                             <li>
                                 <a href="about.html">About</a>
                                 <ul>
@@ -122,7 +120,7 @@
                             </li>
                             {% if user_type != 'Designer' %}
                             <li>
-                                <a href="{% url 'shop' %}" >Shop</a>
+                                <a href="{% url 'shop' %}">Shop</a>
                                 <!--second level end-->
                                 <ul>
                                     <li><a href="{% url 'cart' %}">Cart</a></li>
@@ -151,86 +149,57 @@
             <!--=============== wrapper ===============-->
             <div id="wrapper">
                 <!-- content-holder  -->
-                <div class="content-holder">
-                    <!--  content --> 
+                <div class="content-holder scale-bg2">
+                    <!-- content -->
                     <div class="content">
-                        <!--  section  --> 
-                        <section>
-                            <div class="container">
-                                <!-- orders-wrap  -->
-                                <div class="cart-wrap fl-wrap">
-                                    <!-- orders header  -->
-                                    <div class="cart-header fl-wrap">
-                                        <h3>Your Orders</h3>
-                                    </div>
-                                    <!-- orders header end  -->    
-                                    <!-- orders -->
-                                    <div class="cart fl-wrap">
-                                        {% for order in orders %}
-                                        <!-- order item -->
-                                        <div class="cart-item fl-wrap">
-                                            <div class="cart-image">
-                                                <a href="{% url 'product' product_id=order.product.id %}">
-                                                    <img src="{{ order.product.image.url }}" alt="{{ order.product.name }}">
-                                                </a>
-                                            </div>
-                                            <div class="cart-container">
-                                                <table class="table table-border checkout-table">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>
-                                                                <h5 class="product-name">{{ order.product.name }}</h5>
-                                                                <span class="product-cart-cat">{{ order.product.category }}</span>
-                                                            </td>
-                                                            <td>
-                                                                <h5><b>Quantity:</b> {{ order.quantity }}</h5>
-                                                            </td>
-                                                            <td>
-                                                                <h5 class="order-money">Rs. {{ order.amount.amount|floatformat:2 }}</h5>
-                                                            </td>
-                                                            <td>
-                                                                <label><b>Status:</b></label>
-                                                                <span>{{ order.order_status }}</span>
-                                                            </td>
-                                                            <td>
-                                                                <label><b>Delivery Date:</b></label>
-                                                                <span>{{ order.delivery_date|date:"F d, Y" }}</span>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                                
-                                                <!-- order-item-footer -->
-                                                <div class="cart-item-footer fl-wrap">
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <p><b>Order Date:</b> {{ order.order_date }}</p>
-                                                            <p><b>Status:</b> {{ order.payment_status }}</p>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <p><b>Payment Type: </b>{{ order.payment_type.payment_type }}</p>
-                                                            {% if order.order_status == 'Completed' %}
-                                                            <a href="{% url 'download_receipt' order.id %}" class="btn btn-success btn-sm">
-                                                                <i class="fa fa-download"></i> Download Receipt
-                                                            </a>
-                                                            {% endif %}
-                                                        </div>
+                       
+                        <!--=============== Filter Button end ===============-->
+                        <!-- gallery-items   -->
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8" style="margin-top: 100px;margin-bottom: 100px;">
+                                    <div class="custom-form">
+                                        <h3 class="text-center mb-4">Create Mood Board</h3>
+                                        <form method="post" enctype="multipart/form-data" class="contact-form" id="contact-form">
+                                            {% csrf_token %}
+                                            <fieldset>
+                                                <div class="form-group row align-items-center">
+                                                    <label for="id_name" class="col-sm-3 col-form-label text-right"><i class="fa fa-paint-brush"></i> Name</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="text" id="id_name" name="name" class="form-control" placeholder="Enter mood board name" required>
                                                     </div>
                                                 </div>
-                                                <!-- order-item-footer end  -->
-                                            </div>
-                                        </div>
-                                        <!-- order item end-->
-                                        {% empty %}
-                                        <p>You haven't placed any orders yet.</p>
-                                        {% endfor %}
+                                                <div class="form-group row align-items-center">
+                                                    <label for="id_description" class="col-sm-3 col-form-label text-right"><i class="fa fa-comment"></i> Description</label>
+                                                    <div class="col-sm-9">
+                                                        <textarea id="id_description" name="description" class="form-control" rows="4" placeholder="Describe your mood board"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row align-items-center">
+                                                    <label for="id_image" class="col-sm-3 col-form-label text-right"><i class="fa fa-image"></i> Profile Image</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="file" id="id_image" name="image" class="form-control-file" accept="image/*" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-sm-12 text-center">
+                                                                        <a href="#" id="submit-form" class="btn float-btn flat-btn" style="margin-top: 7%;margin-left: 41%;">Create Mood Board</a>
+                                                                    </div>
+                                                                </div>
+                                                            </fieldset>
+                                                        </form>
+                                                        
+                                                        <script>
+                                                            document.getElementById('submit-form').addEventListener('click', function(e) {
+                                                                e.preventDefault();
+                                                                document.getElementById('contact-form').submit();
+                                                            });
+                                                        </script>
                                     </div>
-                                    <!-- orders end  -->
                                 </div>
-                                <!-- orders-wrap end  -->
                             </div>
-                        </section>
-                        <!-- section end  -->
+                        </div>
+                        <!-- end gallery items -->                    
                     </div>
                     <!-- content end -->	
                     <!--=============== content-footer   ===============-->
@@ -269,7 +238,7 @@
                                 <div class="col-md-3"></div>
                                 <div class="col-md-9">
                                     <div class="fl-wrap policy-box">
-                                        <p> &#169; Balkon   2017.  All rights reserved.  </p>
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
                                     </div>
                                 </div>
                             </div>
@@ -277,7 +246,7 @@
                         </div>
                     </footer>
                     <!-- content-footer end    -->
-                 
+                </div>
                 <!-- content-holder end -->
             </div>
             <!-- wrapper end -->
@@ -307,10 +276,13 @@
                             <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
                         </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'my_orders' %}"  style="color: #000; background-color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;">My Orders</a>
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
                         </li>
                     {% endif %}
                     {% if user_type == 'Designer' %}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                    </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                             <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
                         </li>
@@ -330,7 +302,7 @@
             <!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
-                <div class="fixed-title"><span>My Orders</span></div>
+                <div class="fixed-title"><span>Designs</span></div>
                 <div class="footer-social">
                     <ul>
                         <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
@@ -344,9 +316,15 @@
             <!-- footer end-->
         </div>
         <!-- Main end -->
-        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
-        <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
-       
+ <!--=============== scripts  ===============-->
+ <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+ <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+ <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
+
+
+
+
     </body>
 </html>
+

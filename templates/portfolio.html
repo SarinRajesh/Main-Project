@@ -96,6 +96,10 @@
                                 </li>
                                 <li>
                                     <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
+                                    <ul>
+                                        <li><a href="{% url 'mood_board_list' %}">Mood Boards</a></li>
+                                        <li><a href="{% url 'create_mood_board' %}">Create Mood Boards</a></li>
+                                    </ul>
                                 </li>
                                 {% if user_type != 'Designer' %}
                                  <li>

@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage
+from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage,MoodBoard, MoodBoardItem
 # ... (keep existing admin classes) ...
 class UsersAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'phone', 'email', 'address', 'home_town', 'district', 'state', 'pincode', 'username', 'status', 'user_type_id', 'deactivation_reason')
@@ -95,8 +95,29 @@ class ReviewAdmin(admin.ModelAdmin):
     def content_preview(self, obj):
         return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
     content_preview.short_description = 'Content Preview'
+class MoodBoardItemInline(admin.TabularInline):
+    model = MoodBoardItem
+    extra = 1
+
+class MoodBoardAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'name','image', 'description_preview', 'created_at')
+    list_filter = ('user', 'created_at')
+    search_fields = ('name', 'description', 'user__username')
+    inlines = [MoodBoardItemInline]
+    
+    def description_preview(self, obj):
+        return obj.description[:50] + '...' if len(obj.description) > 50 else obj.description
+    description_preview.short_description = 'Description Preview'
+
+class MoodBoardItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'mood_board', 'caption', 'position_x', 'position_y')
+    list_filter = ('mood_board',)
+    search_fields = ('mood_board__name', 'caption')
 
 # ... (keep existing admin registrations) ...
+
+admin.site.register(MoodBoard, MoodBoardAdmin)
+admin.site.register(MoodBoardItem, MoodBoardItemAdmin)
 
 admin.site.register(Review, ReviewAdmin)
 admin.site.register(ChatMessage, ChatMessageAdmin)
