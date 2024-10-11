@@ -4,7 +4,7 @@
     <head>
         <!--=============== basic  ===============-->
         <meta charset="UTF-8">
-        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <title>ElegantDecor - Add Product to Mood Board</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta name="robots" content="index, follow"/>
         <meta name="keywords" content=""/>
@@ -155,32 +155,39 @@
                         
                         <section>
                             <div class="container">
-                                <div class="row">
-                                    <div class="col-md-12" style="margin-top: -6%;">
-                                        <div class="custom-form">
-                                            <b><h2>{{ mood_board.description }}</h2></b>
-
-<div id="mood-board-canvas" style="width: 800px; height: 600px; border: 1px solid #ccc; position: relative; margin: 20px auto;">
-    {% for item in items %}
-        <div class="mood-board-item" data-id="{{ item.id }}" style="position: absolute; left: {{ item.position_x }}px; top: {{ item.position_y }}px; z-index: 1;">
-            <div class="delete-icon" style="position: absolute; top: 5px; right: 5px; cursor: pointer; z-index: 10;">
-                <i class="fa fa-times" aria-hidden="true" style="color: white;"></i>
-            </div>
-            <img src="{{ item.image_url }}" alt="{{ item.caption }}" style="max-width: 200px; max-height: 200px;">
-            <p>{{ item.caption }}</p>
-        </div>
-    {% endfor %}
-</div>
-                                            <div class="row">
-                                                <div class="col-sm-6 text-center">
-                                                    <a href="{% url 'add_design_to_mood_board' pk=mood_board.pk %}" class="btn float-btn flat-btn" style="margin-top: -85%;margin-left: 23px;">Add Design</a>
-                                                </div>
-                                                <div class="col-sm-6 text-center">
-                                                    <a href="{% url 'add_product_to_mood_board' pk=mood_board.pk %}" class="btn float-btn flat-btn" style="margin-top: -85%;margin-left: 407px;">Add Product</a>
-                                                </div>
+                                <div class="section-title">
+                                    <h2 style="color: #fff; font-size: 32px; margin-bottom: -86px; text-align: center;">Add Product to Mood Board</h2>
+                                </div>
+                                <div class="product-filter-wrap fl-wrap">
+                                    <div class="product-search" style="display: inline-block; margin-right: 20px; position: relative;">
+                                        <input type="text" id="search-input" placeholder="Search products..." style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; padding-left: 40px;">
+                                        <i class="fa fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);"></i>
+                                    </div>
+                                    <div class="product-cat-filter" style="display: inline-block; margin-right: 20px;">
+                                        <span style="font-weight: bold; margin-right: 10px;">Filter:</span>
+                                        <select id="category-filter" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px;">
+                                            <option value="all">All Categories</option>
+                                            {% for category in categories %}
+                                                <option value="{{ category }}">{{ category }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="gallery-items grid-small-pad" id="product-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                                    {% for product in products %}
+                                    <div class="gallery-item" data-category="{{ product.category }}" style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                        <div class="grid-item-holder" style="position: relative;">
+                                            <a href="{% url 'product' product.id %}">
+                                                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover;">
+                                            </a>
+                                            <div class="grid-item-details" style="padding: 15px;">
+                                                <h3 style="font-size: 18px; margin-bottom: 10px; color: #333;">{{ product.name }}</h3>
+                                                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Category: {{ product.category }}</p>
+                                                <button class="add-item btn float-btn" data-type="product" data-id="{{ product.id }}" style="background: #000000; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;">Add to Mood Board</button>
                                             </div>
                                         </div>
                                     </div>
+                                {% endfor %}
                                 </div>
                             </div>
                         </section>
@@ -301,70 +308,144 @@
         </div>
         <!-- Main end -->
  <!--=============== scripts  ===============-->
- <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
-        <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
-        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                let zIndex = 1;
+<!-- ... (previous HTML remains unchanged) ... -->
 
-                $(".mood-board-item").draggable({
-                    containment: "#mood-board-canvas",
-                    stop: function(event, ui) {
-                        updateItemPosition($(this));
+<!--=============== scripts  ===============-->
+<script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+<script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<!-- Add SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function() {
+        $(".add-item").click(function() {
+            var itemType = $(this).data('type');
+            var itemId = $(this).data('id');
+            
+            $.ajax({
+                url: "{% url 'add_mood_board_item' pk=mood_board.pk %}",
+                method: 'POST',
+                data: {
+                    'item_type': itemType,
+                    'item_id': itemId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Product added successfully!',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'swal-custom-popup',
+                                title: 'swal-custom-title',
+                                confirmButton: 'swal-custom-confirm-button'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "{% url 'mood_board_detail' pk=mood_board.pk %}";
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Error adding product: ' + response.message,
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'swal-custom-popup',
+                                title: 'swal-custom-title',
+                                confirmButton: 'swal-custom-confirm-button'
+                            }
+                        });
                     }
-                });
-            
-                // Bring item to front when clicked
-                $(".mood-board-item").on("mousedown", function() {
-                    $(this).css('z-index', ++zIndex);
-                });
-            
-                function updateItemPosition($item) {
-                    var itemId = $item.data('id');
-                    var posX = $item.position().left;
-                    var posY = $item.position().top;
-                    
-                    $.ajax({
-                        url: "{% url 'update_item_position' pk=0 %}".replace('0', itemId),
-                        method: 'POST',
-                        data: {
-                            'position_x': posX,
-                            'position_y': posY,
-                            'csrfmiddlewaretoken': '{{ csrf_token }}'
-                        },
-                        success: function(response) {
-                            console.log('Position updated');
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error updating position:', error);
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Error adding product: ' + error,
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            popup: 'swal-custom-popup',
+                            title: 'swal-custom-title',
+                            confirmButton: 'swal-custom-confirm-button'
                         }
                     });
                 }
-        
-                // Add delete functionality
-                $(".delete-icon").on("click", function(e) {
-                    e.stopPropagation();
-                    var $item = $(this).closest('.mood-board-item');
-                    var itemId = $item.data('id');
-        
-                    $.ajax({
-                        url: "{% url 'delete_mood_board_item' pk=0 %}".replace('0', itemId),
-                        method: 'POST',
-                        data: {
-                            'csrfmiddlewaretoken': '{{ csrf_token }}' // Corrected this line
-                        },
-                        success: function(response) {
-                            $item.remove();
-                            console.log('Item deleted');
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error deleting item:', error);
-                        }
-                    });
-                });
             });
-        </script>
-    </body>
+        });
+    });
+
+    // Custom styling for SweetAlert2
+    Swal.mixin({
+        customClass: {
+            popup: 'swal-custom-popup',
+            title: 'swal-custom-title',
+            confirmButton: 'swal-custom-confirm-button'
+        },
+        buttonsStyling: false
+    });
+
+    // Apply custom styles
+    document.head.insertAdjacentHTML('beforeend', `
+        <style>
+            .swal-custom-popup {
+                background-color: #ffffff !important;
+                border-radius: 10px !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+            }
+            .swal-custom-title {
+                color: #000000 !important;
+                font-family: 'Montserrat', sans-serif !important;
+            }
+            .swal-custom-confirm-button {
+                background-color: #000000 !important;
+                color: #ffffff !important;
+                border: none !important;
+                border-radius: 4px !important;
+                padding: 10px 20px !important;
+                font-family: 'Montserrat', sans-serif !important;
+                text-transform: uppercase !important;
+                font-weight: 600 !important;
+                transition: all 0.3s ease !important;
+            }
+            .swal-custom-confirm-button:hover {
+                background-color: #333333 !important;
+            }
+            .swal2-html-container {
+                color: #000000 !important;
+            }
+        </style>
+    `);
+
+    function applyFilters() {
+        var category = document.getElementById('category-filter').value;
+        var searchTerm = document.getElementById('search-input').value.toLowerCase();
+        var products = document.getElementsByClassName('gallery-item');
+        
+        for (var i = 0; i < products.length; i++) {
+            var productName = products[i].querySelector('h3').textContent.toLowerCase();
+            var productCategory = products[i].getAttribute('data-category').toLowerCase();
+            
+            var categoryMatch = category === 'all' || productCategory === category.toLowerCase();
+            var searchMatch = productName.includes(searchTerm) || productCategory.includes(searchTerm);
+            
+            if (categoryMatch && searchMatch) {
+                products[i].style.display = 'block';
+            } else {
+                products[i].style.display = 'none';
+            }
+        }
+    }
+
+    // Add event listener for search input
+    document.getElementById('search-input').addEventListener('input', applyFilters);
+
+    // Add event listener for category filter
+    document.getElementById('category-filter').addEventListener('change', applyFilters);
+</script>
+</body>
 </html>

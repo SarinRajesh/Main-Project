@@ -61,6 +61,11 @@ path('download_receipt/<int:order_id>/', views.download_receipt, name='download_
     path('mood-boards/<int:pk>/', views.mood_board_detail, name='mood_board_detail'),
     path('mood-boards/<int:pk>/add-item/', views.add_mood_board_item, name='add_mood_board_item'),
     path('mood-board-items/<int:pk>/update-position/', views.update_item_position, name='update_item_position'),
+    path('mood-boards/<int:pk>/', views.mood_board_detail, name='mood_board_detail'),
+    path('mood-boards/<int:pk>/add-design/', views.add_design_to_mood_board, name='add_design_to_mood_board'),
+    path('mood-boards/<int:pk>/add-product/', views.add_product_to_mood_board, name='add_product_to_mood_board'),
+    path('mood-boards/<int:pk>/add-item/', views.add_mood_board_item, name='add_mood_board_item'),
+   path('delete-mood-board-item/<int:pk>/', views.delete_mood_board_item, name='delete_mood_board_item'),
 
 ]
 

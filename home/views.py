@@ -1882,66 +1882,153 @@ def mood_board_list(request):
         'user_type': user_type,
         'user': user,
         'no_results': mood_boards.count() == 0,
-        # Add any other context variables you need
     }
 
     return render(request, 'mood_boards/list.html', context)
 
 @login_required
 def create_mood_board(request):
-    user_type = request.user.user_type_id.user_type if request.user.user_type_id else None
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description')
         image = request.FILES.get('image')
-        MoodBoard.objects.create(user=request.user, name=name, description=description, image=image)
+        MoodBoard.objects.create(user=user, name=name, description=description, image=image)
         return redirect('mood_board_list')
     return render(request, 'mood_boards/create.html', {'user_type': user_type})
 
 @login_required
 def mood_board_detail(request, pk):
-    user_type = request.user.user_type_id.user_type if request.user.user_type_id else None
-    mood_board = get_object_or_404(MoodBoard, pk=pk, user=request.user)
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    mood_board = get_object_or_404(MoodBoard, pk=pk, user=user)
     items = mood_board.items.all()
     return render(request, 'mood_boards/detail.html', {'mood_board': mood_board, 'items': items, 'user_type': user_type})
+
+@login_required
+def add_design_to_mood_board(request, pk):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    mood_board = get_object_or_404(MoodBoard, pk=pk, user=user)
+    
+    # Get filter parameters
+    category = request.GET.get('category', 'all')
+    designer = request.GET.get('designer', 'all')
+    sqft_range = request.GET.get('sqft_range', 'all')
+
+    designs = Design.objects.all()
+
+    if category != 'all':
+        designs = designs.filter(category__iexact=category)
+
+    if designer != 'all':
+        designs = designs.filter(designer_id__username=designer)
+
+    if sqft_range != 'all':
+        if sqft_range == '0-500':
+            designs = designs.filter(sqft__lte=500)
+        elif sqft_range == '501-1000':
+            designs = designs.filter(sqft__gt=500, sqft__lte=1000)
+        elif sqft_range == '1001-1500':
+            designs = designs.filter(sqft__gt=1000, sqft__lte=1500)
+        elif sqft_range == '1501+':
+            designs = designs.filter(sqft__gt=1500)
+
+    all_designers = Users.objects.filter(user_type_id__user_type='Designer').values_list('username', flat=True).distinct()
+    all_categories = Design.objects.values_list('category', flat=True).distinct()
+
+    def format_category(category):
+        return category.replace('_', ' ').title()
+
+    formatted_categories = [{'value': cat, 'display': format_category(cat)} for cat in all_categories]
+
+    context = {
+        'mood_board': mood_board,
+        'designs': designs,
+        'user_type': user_type,
+        'designers': all_designers,
+        'categories': formatted_categories,
+        'no_results': designs.count() == 0,
+        'selected_category': category,
+        'selected_designer': designer,
+        'selected_sqft_range': sqft_range,
+    }
+
+    return render(request, 'mood_boards/add_design.html', context)
+
+@login_required
+def add_product_to_mood_board(request, pk):
+    mood_board = get_object_or_404(MoodBoard, pk=pk)
+    products = Product.objects.all()
+    
+    # Get filter parameters
+    category = request.GET.get('category')
+    
+    # Filter by category
+    if category and category != 'all':
+        products = products.filter(category=category)
+    
+    # Get unique categories for the dropdown
+    categories = Product.objects.values_list('category', flat=True).distinct()
+    
+    context = {
+        'mood_board': mood_board,
+        'products': products,
+        'categories': categories,
+        'selected_category': category,
+    }
+
+    if request.user.is_authenticated:
+        user = request.user
+        user_type = user.user_type_id.user_type if user.user_type_id else None
+        context['user_type'] = user_type
+        context['user'] = user
+
+    return render(request, 'mood_boards/add_product.html', context)
 
 @login_required
 @require_POST
 def add_mood_board_item(request, pk):
+    # This function doesn't render a template, so we don't need to pass user_type here
     mood_board = get_object_or_404(MoodBoard, pk=pk, user=request.user)
-    image = request.FILES.get('image')
-    caption = request.POST.get('caption')
-    if image and caption:
-        # Set a default position, you can adjust these values as needed
-        default_x = 10
-        default_y = 10
-        item = MoodBoardItem.objects.create(
-            mood_board=mood_board, 
-            image=image, 
-            caption=caption,
-            position_x=default_x,
-            position_y=default_y
-        )
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Item added successfully.',
-            'item_id': item.id,
-            'image_url': item.image.url,
-            'caption': item.caption,
-            'position_x': default_x,
-            'position_y': default_y
-        })
-    return JsonResponse({'status': 'error', 'message': 'Please provide both image and caption.'}, status=400)
+    item_type = request.POST.get('item_type')
+    item_id = request.POST.get('item_id')
 
-@login_required
-def mood_board_detail(request, pk):
-    user_type = request.user.user_type_id.user_type if request.user.user_type_id else None
-    mood_board = get_object_or_404(MoodBoard, pk=pk, user=request.user)
-    items = mood_board.items.all()
-    return render(request, 'mood_boards/detail.html', {'mood_board': mood_board, 'items': items, 'user_type': user_type})
+    if item_type == 'design':
+        design = get_object_or_404(Design, pk=item_id)
+        item = MoodBoardItem.objects.create(
+            mood_board=mood_board,
+            item_type='design',
+            design=design,
+            position_x=0,
+            position_y=0
+        )
+    elif item_type == 'product':
+        product = get_object_or_404(Product, pk=item_id)
+        item = MoodBoardItem.objects.create(
+            mood_board=mood_board,
+            item_type='product',
+            product=product,
+            position_x=0,
+            position_y=0
+        )
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid item type'})
+
+    return JsonResponse({
+        'status': 'success',
+        'item_id': item.id,
+        'image_url': item.image_url,
+        'caption': item.caption,
+        'position_x': item.position_x,
+        'position_y': item.position_y
+    })
+
 @login_required
 @require_POST
 def update_item_position(request, pk):
+    # This function doesn't render a template, so we don't need to pass user_type here
     item = get_object_or_404(MoodBoardItem, pk=pk, mood_board__user=request.user)
     position_x = request.POST.get('position_x')
     position_y = request.POST.get('position_y')
@@ -1955,3 +2042,15 @@ def update_item_position(request, pk):
         except ValueError:
             return JsonResponse({'status': 'error', 'message': 'Invalid position data'}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Missing position data'}, status=400)
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
+@require_POST
+def delete_mood_board_item(request, pk):
+    try:
+        item = MoodBoardItem.objects.get(pk=pk)
+        item.delete()
+        return JsonResponse({'status': 'success'})
+    except MoodBoardItem.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Item not found'}, status=404)

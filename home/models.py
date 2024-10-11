@@ -174,11 +174,32 @@ class MoodBoard(models.Model):
         return self.name
 
 class MoodBoardItem(models.Model):
+    ITEM_TYPE_CHOICES = (
+        ('design', 'Design'),
+        ('product', 'Product'),
+    )
     mood_board = models.ForeignKey(MoodBoard, on_delete=models.CASCADE, related_name='items')
-    image = models.ImageField(upload_to='mood_board_items/')
-    caption = models.CharField(max_length=255, blank=True)
+    item_type = models.CharField(max_length=10, choices=ITEM_TYPE_CHOICES)
+    design = models.ForeignKey(Design, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
     position_x = models.IntegerField(default=0)
     position_y = models.IntegerField(default=0)
 
     def __str__(self):
         return f"Item for {self.mood_board.name}"
+
+    @property
+    def image_url(self):
+        if self.item_type == 'design' and self.design:
+            return self.design.image.url
+        elif self.item_type == 'product' and self.product:
+            return self.product.image.url
+        return ''
+
+    @property
+    def caption(self):
+        if self.item_type == 'design' and self.design:
+            return self.design.name
+        elif self.item_type == 'product' and self.product:
+            return self.product.name
+        return ''
