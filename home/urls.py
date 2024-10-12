@@ -66,6 +66,8 @@ path('download_receipt/<int:order_id>/', views.download_receipt, name='download_
     path('mood-boards/<int:pk>/add-product/', views.add_product_to_mood_board, name='add_product_to_mood_board'),
     path('mood-boards/<int:pk>/add-item/', views.add_mood_board_item, name='add_mood_board_item'),
    path('delete-mood-board-item/<int:pk>/', views.delete_mood_board_item, name='delete_mood_board_item'),
+    path('mood-boards/<int:pk>/delete/', views.delete_mood_board, name='delete_mood_board'),
+
 
 ]
 

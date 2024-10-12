@@ -151,9 +151,14 @@
                 <div class="content-holder scale-bg2">
                     <!-- content -->
                     <div class="content">
-                        <!--=============== Filter Button ===============-->
+                        <!-- Add this search form just before the filter container -->
+                        <div class="search-container" style="margin: 20px 0;">
+                            <input type="text" id="search-input" name="search" placeholder="Search designs..." value="{{ search_query }}" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; width: 300px;">
+                        </div>
+                        <!-- Update the existing filter form to include the search query -->
                         <div class="filter-container" style="margin: 20px 0;">
                             <form id="filter-form" method="GET">
+                                <input type="hidden" name="search" value="{{ search_query }}">
                                 <label for="category-filter">Filter by Category:</label>
                                 <select id="category-filter" name="category" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px;">
                                     <option value="all" {% if request.GET.category == "all" %}selected{% endif %}>All Categories</option>
@@ -333,7 +338,6 @@
  <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
  <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
-
  <script>
     $(document).ready(function() {
         // Initialize Masonry on document load
@@ -342,13 +346,14 @@
             percentPosition: true,
             columnWidth: '.gallery-item'
         });
-
-        // Filter change event
-        $('#category-filter, #designer-filter, #sqft-filter').change(function() {
+    
+        // Function to update results
+        function updateResults() {
             var category = $('#category-filter').val();
             var designer = $('#designer-filter').length ? $('#designer-filter').val() : 'all';
             var sqft_range = $('#sqft-filter').val();
-
+            var search = $('#search-input').val();
+    
             $.ajax({
                 url: '{% url "portfolio" %}',
                 type: 'GET',
@@ -356,23 +361,32 @@
                     'category': category,
                     'designer': designer,
                     'sqft_range': sqft_range,
+                    'search': search
                 },
                 success: function(response) {
                     // Replace the gallery items with new content
                     $('.gallery-items').html($(response).find('.gallery-items').html());
                     
                     // Re-initialize Masonry after new content is loaded
-                    $grid.masonry('reloadItems'); // Reset items for Masonry
-                    $grid.masonry('layout'); // Recalculate layout
+                    $grid.masonry('reloadItems');
+                    $grid.masonry('layout');
                 },
                 error: function(xhr, status, error) {
                     console.error("AJAX error: " + error);
                 }
             });
+        }
+    
+        // Filter change event
+        $('#category-filter, #designer-filter, #sqft-filter').change(updateResults);
+    
+        // Search input event
+        $('#search-input').on('input', function() {
+            clearTimeout($(this).data('timer'));
+            $(this).data('timer', setTimeout(updateResults, 300));
         });
     });
-</script>
-
+    </script>
 
     </body>
 </html>

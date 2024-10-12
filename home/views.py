@@ -433,11 +433,12 @@ def add_portfolio(request):
 
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-
 @nocache
 def portfolio(request):
     category = request.GET.get('category', 'all')
     sqft_range = request.GET.get('sqft_range', 'all')
+    designer = request.GET.get('designer', 'all')
+    search_query = request.GET.get('search', '')
 
     if request.user.is_authenticated and request.user.user_type_id.user_type == 'Designer':
         # For designers, show only their designs
@@ -445,29 +446,36 @@ def portfolio(request):
     else:
         # For other users, show all designs
         portfolios = Design.objects.all()
-        designer = request.GET.get('designer', 'all')
-        if designer != 'all':
-            portfolios = portfolios.filter(designer_id__username=designer)
+
+    if search_query:
+        portfolios = portfolios.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(designer_id__username__icontains=search_query)
+        )
 
     if category != 'all':
         portfolios = portfolios.filter(category__iexact=category)
 
+    if designer != 'all':
+        portfolios = portfolios.filter(designer_id__username=designer)
+
     if sqft_range != 'all':
-        if sqft_range == '0-500':
-            portfolios = portfolios.filter(sqft__lte=500)
-        elif sqft_range == '501-1000':
-            portfolios = portfolios.filter(sqft__gt=500, sqft__lte=1000)
-        elif sqft_range == '1001-1500':
-            portfolios = portfolios.filter(sqft__gt=1000, sqft__lte=1500)
-        elif sqft_range == '1501+':
-            portfolios = portfolios.filter(sqft__gt=1500)
+        sqft_ranges = {
+            '0-500': (0, 500),
+            '501-1000': (501, 1000),
+            '1001-1500': (1001, 1500),
+            '1501+': (1501, float('inf'))
+        }
+        min_sqft, max_sqft = sqft_ranges.get(sqft_range, (None, None))
+        if min_sqft is not None:
+            portfolios = portfolios.filter(sqft__gte=min_sqft)
+        if max_sqft != float('inf'):
+            portfolios = portfolios.filter(sqft__lte=max_sqft)
 
     all_designers = Users.objects.filter(user_type_id__user_type='Designer').values_list('username', flat=True).distinct()
-    
-    # Fetch all unique categories from the Design model
     all_categories = Design.objects.values_list('category', flat=True).distinct()
 
-    # Format categories
     def format_category(category):
         return category.replace('_', ' ').title()
 
@@ -479,7 +487,9 @@ def portfolio(request):
         'categories': formatted_categories,
         'no_results': portfolios.count() == 0,
         'selected_category': category,
+        'selected_designer': designer,
         'selected_sqft_range': sqft_range,
+        'search_query': search_query,
     }
 
     if request.user.is_authenticated:
@@ -1915,25 +1925,36 @@ def add_design_to_mood_board(request, pk):
     # Get filter parameters
     category = request.GET.get('category', 'all')
     designer = request.GET.get('designer', 'all')
-    sqft_range = request.GET.get('sqft_range', 'all')
+    sqft_range = request.GET.get('sqft', 'all')
+    search_query = request.GET.get('search', '')
 
-    designs = Design.objects.all()
+    designs = Design.objects.select_related('designer_id', 'amount').all()
 
-    if category != 'all':
+    if category and category != 'all':
         designs = designs.filter(category__iexact=category)
 
-    if designer != 'all':
+    if designer and designer != 'all':
         designs = designs.filter(designer_id__username=designer)
 
-    if sqft_range != 'all':
-        if sqft_range == '0-500':
-            designs = designs.filter(sqft__lte=500)
-        elif sqft_range == '501-1000':
-            designs = designs.filter(sqft__gt=500, sqft__lte=1000)
-        elif sqft_range == '1001-1500':
-            designs = designs.filter(sqft__gt=1000, sqft__lte=1500)
-        elif sqft_range == '1501+':
-            designs = designs.filter(sqft__gt=1500)
+    if sqft_range and sqft_range != 'all':
+        sqft_ranges = {
+            '0-500': (0, 500),
+            '501-1000': (501, 1000),
+            '1001-1500': (1001, 1500),
+            '1501+': (1501, float('inf'))
+        }
+        min_sqft, max_sqft = sqft_ranges.get(sqft_range, (None, None))
+        if min_sqft is not None:
+            designs = designs.filter(sqft__gte=min_sqft)
+        if max_sqft != float('inf'):
+            designs = designs.filter(sqft__lte=max_sqft)
+
+    if search_query:
+        designs = designs.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(designer_id__username__icontains=search_query)
+        )
 
     all_designers = Users.objects.filter(user_type_id__user_type='Designer').values_list('username', flat=True).distinct()
     all_categories = Design.objects.values_list('category', flat=True).distinct()
@@ -1953,21 +1974,30 @@ def add_design_to_mood_board(request, pk):
         'selected_category': category,
         'selected_designer': designer,
         'selected_sqft_range': sqft_range,
+        'search_query': search_query,
     }
 
     return render(request, 'mood_boards/add_design.html', context)
 
 @login_required
 def add_product_to_mood_board(request, pk):
-    mood_board = get_object_or_404(MoodBoard, pk=pk)
+    mood_board = get_object_or_404(MoodBoard, pk=pk, user=request.user)
     products = Product.objects.all()
     
     # Get filter parameters
-    category = request.GET.get('category')
+    category = request.GET.get('category', 'all')
+    search_query = request.GET.get('search', '')
     
     # Filter by category
     if category and category != 'all':
         products = products.filter(category=category)
+    
+    # Filter by search query
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
     
     # Get unique categories for the dropdown
     categories = Product.objects.values_list('category', flat=True).distinct()
@@ -1977,6 +2007,8 @@ def add_product_to_mood_board(request, pk):
         'products': products,
         'categories': categories,
         'selected_category': category,
+        'search_query': search_query,
+        'no_results': products.count() == 0,
     }
 
     if request.user.is_authenticated:
@@ -2054,3 +2086,14 @@ def delete_mood_board_item(request, pk):
         return JsonResponse({'status': 'success'})
     except MoodBoardItem.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Item not found'}, status=404)
+    
+    
+@login_required
+@require_POST
+def delete_mood_board(request, pk):
+    try:
+        mood_board = MoodBoard.objects.get(pk=pk, user=request.user)
+        mood_board.delete()
+        return JsonResponse({'status': 'success'})
+    except MoodBoard.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Mood board not found'}, status=404)

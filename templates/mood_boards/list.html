@@ -153,18 +153,23 @@
                     <!-- content -->
                     <div class="content">
                        
-                        <!--=============== Filter Button end ===============-->
+                        <div style="text-align: center; padding: 40px 0; background-color: #f8f9fa; margin-bottom: 30px;">
+                            <h1 style="font-size: 36px; color: #333; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">Mood Boards</h1>
+                        </div>
                         <!-- gallery-items   -->
                         <div style="padding: 20px;">
                             {% if no_results %}
                             <div style="text-align: center; padding: 20px;">
                                 <p style="font-size: 18px; margin-bottom: 15px;">You haven't created any mood boards yet.</p>
-                                <a href="{% url 'create_mood_board' %}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Create New Mood Board</a>
+                                <a href="{% url 'create_mood_board' %}" style="display: inline-block; padding: 10px 20px; background-color: #000000; color: #fff; text-decoration: none; border-radius: 5px;">Create New Mood Board</a>
                             </div>
                             {% else %}
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
                                 {% for mood_board in mood_boards %}
-                                <div style="background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
+                                <div style="background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s ease; position: relative;">
+                                    <div class="delete-icon" style="position: absolute; top: 10px; right: 10px; z-index: 10; cursor: pointer;">
+                                        <i class="fa fa-trash" style="color: #fff; background-color: rgba(0,0,0,0.5); padding: 8px; border-radius: 50%;" onclick="deleteMoodBoard({{ mood_board.pk }})"></i>
+                                    </div>
                                     <div style="position: relative; overflow: hidden;">
                                         <a href="{% url 'mood_board_detail' pk=mood_board.pk %}" style="text-decoration: none; color: inherit;">
                                             {% if mood_board.image %}
@@ -308,7 +313,30 @@
  <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
  <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
+ <script>
+    function deleteMoodBoard(moodBoardId) {
+            fetch(`/mood-boards/${moodBoardId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert('Error deleting mood board');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting mood board');
+            });
+        }
 
+    </script>
 
 
 

@@ -160,34 +160,41 @@
                                 </div>
                                 <div class="product-filter-wrap fl-wrap">
                                     <div class="product-search" style="display: inline-block; margin-right: 20px; position: relative;">
-                                        <input type="text" id="search-input" placeholder="Search products..." style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; padding-left: 40px;">
+                                        <input type="text" id="search-input" placeholder="Search products..." style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; padding-left: 40px;" value="{{ search_query }}">
                                         <i class="fa fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);"></i>
                                     </div>
-                                    <div class="product-cat-filter" style="display: inline-block; margin-right: 20px;">
-                                        <span style="font-weight: bold; margin-right: 10px;">Filter:</span>
+                                    <div class="product-cat-filter" style="display: inline-block;">
+                                        <span style="font-weight: bold; margin-right: 10px;">Category:</span>
                                         <select id="category-filter" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px;">
-                                            <option value="all">All Categories</option>
+                                            <option value="all" {% if selected_category == 'all' or not selected_category %}selected{% endif %}>All Categories</option>
                                             {% for category in categories %}
-                                                <option value="{{ category }}">{{ category }}</option>
+                                                <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                 </div>
                                 <div class="gallery-items grid-small-pad" id="product-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-                                    {% for product in products %}
-                                    <div class="gallery-item" data-category="{{ product.category }}" style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                        <div class="grid-item-holder" style="position: relative;">
-                                            <a href="{% url 'product' product.id %}">
-                                                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover;">
-                                            </a>
-                                            <div class="grid-item-details" style="padding: 15px;">
-                                                <h3 style="font-size: 18px; margin-bottom: 10px; color: #333;">{{ product.name }}</h3>
-                                                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Category: {{ product.category }}</p>
-                                                <button class="add-item btn float-btn" data-type="product" data-id="{{ product.id }}" style="background: #000000; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;">Add to Mood Board</button>
+                                    {% if no_results %}
+                                        <div class="no-results" style="text-align: center; padding: 20px; font-size: 18px; color: #666;">
+                                            No results found for the current filters. Please try different filter options.
+                                        </div>
+                                    {% else %}
+                                        {% for product in products %}
+                                        <div class="gallery-item" style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                            <div class="grid-item-holder" style="position: relative;">
+                                                <a href="{% url 'product' product_id=product.id %}">
+                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover;">
+                                                </a>
+                                                 <div class="grid-item-details" style="padding: 15px;">
+                                                    <h3 style="font-size: 18px; margin-bottom: 10px; color: #333;">{{ product.name }}</h3>
+                                                    <!-- <p style="font-size: 14px; color: #666; margin-bottom: 10px;">{{ product.description|truncatechars:50 }}</p> -->
+                                                    <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Price: ${{ product.amount.amount }}</p>
+                                                    <button class="add-item btn float-btn" data-type="product" data-id="{{ product.id }}" style="background: #000000; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;">Add to Mood Board</button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                {% endfor %}
+                                        {% endfor %}
+                                    {% endif %}
                                 </div>
                             </div>
                         </section>
@@ -319,6 +326,41 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).ready(function() {
+        var $grid = $('.gallery-items').masonry({
+            itemSelector: '.gallery-item',
+            percentPosition: true,
+            columnWidth: '.gallery-item'
+        });
+
+        function updateProducts() {
+            var category = $('#category-filter').val();
+            var search_query = $('#search-input').val();
+
+            $.ajax({
+                url: '{% url "add_product_to_mood_board" pk=mood_board.pk %}',
+                type: 'GET',
+                data: {
+                    'category': category,
+                    'search': search_query
+                },
+                success: function(response) {
+                    $('#product-container').html($(response).find('#product-container').html());
+                    $grid.masonry('reloadItems');
+                    $grid.masonry('layout');
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX error: " + error);
+                }
+            });
+        }
+
+        $('#category-filter').change(updateProducts);
+
+        $('#search-input').on('input', function() {
+            clearTimeout($(this).data('timer'));
+            $(this).data('timer', setTimeout(updateProducts, 500));
+        });
+
         $(".add-item").click(function() {
             var itemType = $(this).data('type');
             var itemId = $(this).data('id');
@@ -420,32 +462,7 @@
             }
         </style>
     `);
-
-    function applyFilters() {
-        var category = document.getElementById('category-filter').value;
-        var searchTerm = document.getElementById('search-input').value.toLowerCase();
-        var products = document.getElementsByClassName('gallery-item');
-        
-        for (var i = 0; i < products.length; i++) {
-            var productName = products[i].querySelector('h3').textContent.toLowerCase();
-            var productCategory = products[i].getAttribute('data-category').toLowerCase();
-            
-            var categoryMatch = category === 'all' || productCategory === category.toLowerCase();
-            var searchMatch = productName.includes(searchTerm) || productCategory.includes(searchTerm);
-            
-            if (categoryMatch && searchMatch) {
-                products[i].style.display = 'block';
-            } else {
-                products[i].style.display = 'none';
-            }
-        }
-    }
-
-    // Add event listener for search input
-    document.getElementById('search-input').addEventListener('input', applyFilters);
-
-    // Add event listener for category filter
-    document.getElementById('category-filter').addEventListener('change', applyFilters);
-</script>
-</body>
+    
+             </script>
+ </body>
 </html>

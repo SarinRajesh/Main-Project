@@ -199,7 +199,7 @@
                                         </div>
                                     {% else %}
                                     {% for design in designs %}
-                                    <div class="gallery-item" data-category="{{ design.category }}" data-designer="{{ design.designer_id.username }}" data-sqft="{{ design.sqft }}" style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                    <div class="gallery-item" data-category="{{ design.category }}" data-designer="{{ design.designer_id.username }}" data-sqft="{{ design.sqft|floatformat:0 }}" style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;">
                                         <div class="grid-item-holder" style="position: relative;">
                                             <a href="{% url 'portfolio_details' portfolio_id=design.id %}">
                                                 <img src="{{ design.image.url }}" alt="{{ design.name }}" style="width: 100%; height: 200px; object-fit: cover;">
@@ -208,8 +208,8 @@
                                                 <h3 style="font-size: 18px; margin-bottom: 10px; color: #333;">{{ design.name }}</h3>
                                                 <!-- <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Category: {{ design.category }}</p>
                                                 <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Designer: {{ design.designer_id.username }}</p>
-                                                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Square Feet: {{ design.sqft }}</p>
-                                                <button class="add-item btn float-btn" data-type="design" data-id="{{ design.id }}" style="background: #000000; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;">Add to Mood Board</button> -->
+                                                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Square Feet: {{ design.sqft }}</p>-->
+                                                <button class="add-item btn float-btn" data-type="design" data-id="{{ design.id }}" style="background: #000000; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;">Add to Mood Board</button> 
                                             </div>
                                         </div>
                                     </div>
@@ -445,50 +445,58 @@
             }
         </style>
     `);
-</script>
-<script>
+
     $(document).ready(function() {
-        function applyFilters() {
+        // Initialize Masonry on document load
+        var $grid = $('.gallery-items').masonry({
+            itemSelector: '.gallery-item',
+            percentPosition: true,
+            columnWidth: '.gallery-item'
+        });
+
+        // Function to update designs
+        function updateDesigns() {
             var category = $('#category-filter').val();
             var designer = $('#designer-filter').val();
-            var sqftRange = $('#sqft-filter').val();
-            var searchTerm = $('#search-input').val().toLowerCase();
+            var sqft_range = $('#sqft-filter').val();
+            var search_query = $('#search-input').val();
 
-            $('.gallery-item').each(function() {
-                var $item = $(this);
-                var itemCategory = $item.data('category').toLowerCase();
-                var itemDesigner = $item.data('designer').toLowerCase();
-                var itemSqft = $item.data('sqft');
-                var itemName = $item.find('h3').text().toLowerCase();
-
-                var categoryMatch = category === 'all' || itemCategory === category.toLowerCase();
-                var designerMatch = designer === 'all' || itemDesigner === designer.toLowerCase();
-                var sqftMatch = sqftRange === 'all' || 
-                    (sqftRange === '0-500' && itemSqft <= 500) ||
-                    (sqftRange === '501-1000' && itemSqft > 500 && itemSqft <= 1000) ||
-                    (sqftRange === '1001-1500' && itemSqft > 1000 && itemSqft <= 1500) ||
-                    (sqftRange === '1501+' && itemSqft > 1500);
-                var searchMatch = itemName.includes(searchTerm);
-
-                if (categoryMatch && designerMatch && sqftMatch && searchMatch) {
-                    $item.show();
-                } else {
-                    $item.hide();
+            $.ajax({
+                url: '{% url "add_design_to_mood_board" pk=mood_board.pk %}',
+                type: 'GET',
+                data: {
+                    'category': category,
+                    'designer': designer,
+                    'sqft': sqft_range,
+                    'search': search_query
+                },
+                success: function(response) {
+                    // Replace the gallery items with new content
+                    $('#design-container').html($(response).find('#design-container').html());
+                    
+                    // Re-initialize Masonry after new content is loaded
+                    $grid.masonry('reloadItems');
+                    $grid.masonry('layout');
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX error: " + error);
                 }
             });
-
-            // Check if there are any visible items
-            if ($('.gallery-item:visible').length === 0) {
-                $('#design-container').html('<div class="no-results" style="text-align: center; padding: 20px; font-size: 18px; color: #666;">No results found for the current filters. Please try different filter options.</div>');
-            }
         }
 
-        $('#category-filter, #designer-filter, #sqft-filter').change(applyFilters);
-        $('#search-input').on('input', applyFilters);
+        // Filter change event
+        $('#category-filter, #designer-filter, #sqft-filter').change(updateDesigns);
 
-        // Initial application of filters
-        applyFilters();
+        // Search input event
+        $('#search-input').on('input', function() {
+            clearTimeout($(this).data('timer'));
+            $(this).data('timer', setTimeout(updateDesigns, 500));
+        });
+
+        // ... (rest of your existing JavaScript code)
     });
 </script>
+
+
     </body>
 </html>
