@@ -1113,8 +1113,10 @@ def schedule_consultation(request):
                 'title': 'Consultation',
                 'start': date['date_time'].isoformat(),
                 'allDay': False,
-                'className': 'past-date' if date['date_time'] < timezone.now() else '',
-                'editable': date['date_time'] >= timezone.now() and not date['is_booked']
+                'className': 'past-date' if date['date_time'] < timezone.now() else ('booked-date' if date['is_booked'] else ''),
+                'editable': date['date_time'] >= timezone.now() and not date['is_booked'],
+                'backgroundColor': '#FF0000' if date['is_booked'] else '#292929',  # Red for booked, default color otherwise
+                'borderColor': '#FF0000' if date['is_booked'] else '#292929',
             } for date in consultation_dates
         ]
         
@@ -1209,10 +1211,14 @@ def consultations(request):
             consultation = Consultation.objects.get(id=consultation_id)
             
             if action == 'approve':
-                consultation.consultation_status = 'Approved'
+                consultation.consultation_status = 'Scheduled'
                 consultation.save()
             elif action == 'cancel':
-                consultation.delete()
+                consultation.consultation_status = 'Pending'
+                consultation.save()
+            elif action == 'complete':
+                consultation.consultation_status = 'Completed'
+                consultation.save()
             
             return redirect('consultations')
     
@@ -1222,11 +1228,62 @@ def consultations(request):
     }
     return render(request, 'consultations.html', context)
 
-@nocache
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Consultation, Project
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.cache import never_cache
+from django.db import transaction
+
+
+@never_cache
 @login_required
+@require_http_methods(["GET", "POST"])
 def my_consultations(request):
     user = request.user
     user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    if request.method == 'POST':
+        consultation_id = request.POST.get('consultation_id')
+        action = request.POST.get('action')
+        
+        if consultation_id and action:
+            try:
+                with transaction.atomic():
+                    consultation = get_object_or_404(Consultation, id=consultation_id, customer_id=user)
+                    
+                    if consultation.consultation_status == 'Completed' and consultation.proposal == 'Pending':
+                        if action == 'accept':
+                            consultation.proposal = 'Accepted'
+                            consultation.save()
+                            
+                            # Create a new project
+                            Project.objects.create(
+                                consultation=consultation,
+                                design=consultation.design_id,
+                                customer=consultation.customer_id,
+                                designer=consultation.designer_id,
+                                room_length=consultation.room_length,
+                                room_width=consultation.room_width,
+                                room_height=consultation.room_height
+                            )
+                            
+                            messages.success(request, 'Proposal accepted and project created successfully!')
+                        elif action == 'reject':
+                            consultation.proposal = 'Rejected'
+                            consultation.save()
+                            messages.success(request, 'Proposal rejected successfully!')
+                        else:
+                            messages.error(request, 'Invalid action.')
+                    else:
+                        messages.error(request, 'Cannot update proposal for this consultation.')
+            except Exception as e:
+                messages.error(request, f'An error occurred: {str(e)}')
+        else:
+            messages.error(request, 'Invalid form submission.')
+        
+        return redirect('my_consultations')
     
     # Fetch consultations for the current user
     consultations = Consultation.objects.filter(customer_id=user).select_related('designer_id', 'design_id')
@@ -2097,3 +2154,52 @@ def delete_mood_board(request, pk):
         return JsonResponse({'status': 'success'})
     except MoodBoard.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Mood board not found'}, status=404)
+    
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Project
+
+@login_required
+def my_projects(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    if user_type == 'Customer':
+        projects = Project.objects.filter(customer=user).select_related('design', 'designer')
+    elif user_type == 'Designer':
+        projects = Project.objects.filter(designer=user).select_related('design', 'customer')
+    else:
+        projects = []
+
+    context = {
+        'projects': projects,
+        'user_type': user_type,
+    }
+    return render(request, 'my_projects.html', context)
+
+
+from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    user_type = request.user.user_type_id.user_type if request.user.user_type_id else None
+    
+    if request.method == 'POST':
+        payment_id = request.POST.get('payment_id')
+        if payment_id:
+            # Update project payment status
+            project.payment = 'paid'
+            project.save()
+            return JsonResponse({'status': 'success', 'user_type': user_type})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid payment data', 'user_type': user_type})
+    
+    context = {
+        'project': project,
+        'user_type': user_type,
+    }
+    return render(request, 'project.html', context)

@@ -365,9 +365,31 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('bookConsultation').addEventListener('click', function(event) {
         event.preventDefault();
         
-        initializeRazorpay();
+        if (validateForm()) {
+            initializeRazorpay();
+        } else {
+            Swal.fire({
+                title: 'Form Incomplete',
+                text: 'Please fill in all required fields before proceeding.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+        }
     });
 });
+
+function validateForm() {
+    var scheduleDate = document.getElementById('schedule_date').value;
+    var roomLength = document.getElementById('room_length').value;
+    var roomWidth = document.getElementById('room_width').value;
+    var roomHeight = document.getElementById('room_height').value;
+    var designPreferences = document.getElementById('design_preferences').value;
+
+    if (!scheduleDate || !roomLength || !roomWidth || !roomHeight || !designPreferences) {
+        return false;
+    }
+    return true;
+}
 
 function initializeRazorpay() {
     var options = {
@@ -561,7 +583,7 @@ function initializeRazorpay() {
             <!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
-                <div class="fixed-title"><span>Portfolio</span></div>
+                <div class="fixed-title"><span>Consultation Booking</span></div>
                 <div class="footer-social">
                     <ul>
                         <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>

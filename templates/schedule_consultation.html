@@ -126,6 +126,13 @@
                 font-weight: normal;
                 font-size: 0.9em;
             }
+            .fc-event.booked-date {
+                background-color: #FF0000 !important;
+                border-color: #FF0000 !important;
+                color: #fff !important;
+                opacity: 0.8;
+                pointer-events: none;
+            }
         </style>
     </head>
     <body>
@@ -393,6 +400,7 @@
                                         <div class="fc-event-title fc-sticky">${arg.event.title}</div>
                                     </div>
                                     ${arg.timeText ? `<div class="fc-event-time">${arg.timeText}</div>` : ''}
+                                    ${arg.event.extendedProps.isBooked ? '<div class="fc-event-booked">Booked</div>' : ''}
                                 </div>
                             `
                         };
@@ -400,6 +408,9 @@
                     eventDidMount: function(info) {
                         if (info.event.start < new Date()) {
                             info.el.classList.add('past-date');
+                        }
+                        if (info.event.extendedProps.isBooked) {
+                            info.el.classList.add('booked-date');
                         }
                     }
                 });

@@ -18,6 +18,7 @@
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
         <!--=============== favicons ===============-->
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
 
     <body>
@@ -60,7 +61,7 @@
                                     <a href="{% url 'index' %}" >Home</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'portfolio' %}" >Designs</a>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
                                 </li>
                                         
                             <li>
@@ -99,9 +100,12 @@
                                     <a href="{% url 'index' %}" >Home</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'portfolio' %}" >Designs</a>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
                                 </li>
-                            
+                                <li>
+                                   <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
+                               </li>
+                               
                                 
                             <li>
                                 <a href="about.html">About</a>
@@ -149,97 +153,52 @@
                     <div class="content">
                         <!--  section  --> 
                         <section>
-                            <div class="container">
-                                <!-- cart-wrap  -->
-                                <div class="cart-wrap fl-wrap">
-                                    <!-- cart header  -->
-                                    <div class="cart-header fl-wrap">
-                                        <div class="row">
-                                            <div class="col-md-7">
-                                                <h3>Your Consultations</h3>
-                                                <span class="tottal-items">{{ consultations|length }} Available{% if consultations|length != 1 %}s{% endif %}</span>
-                                            </div>
+                            <div class="container" style="margin-top: -70px;">
+                                <h2 style="font-size: 2.8em; color: #333; margin-bottom: 40px; text-align: center; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; border-bottom: 2px solid #f39c12; padding-bottom: 10px;">My Projects</h2>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px;">
+                                    {% for project in projects %}
+                                    <div style="background-color: #fff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden; transition: transform 0.3s ease;">
+                                        <div style="width: 100%; height: 200px; overflow: hidden;">
+                                            <img src="{{ project.design.image.url }}" alt="{{ project.design.name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                         </div>
-                                    </div>
-                                    <!-- cart header end  -->    
-                                    <!-- cart -->
-                                    <div class="cart fl-wrap">
-                                        {% for consultation in consultations %}
-                                        <!-- consultation item -->
-                                        <div class="cart-item fl-wrap">
-                                            <div class="cart-image">
-                                                <img src="{{ consultation.design_id.image.url }}" alt="{{ consultation.design_id.name }}">
+                                        <div style="padding: 20px;">
+                                            <h3 style="font-size: 1.5em; color: #333; margin-bottom: 10px;">{{ project.design.name }}</h3>
+                                            <p style="display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.9em; font-weight: bold; text-transform: uppercase; {% if project.status == 'In Progress' %}background-color: #ffd700; color: #333;{% else %}background-color: #4caf50; color: #fff;{% endif %}">
+                                                {{ project.status }}
+                                            </p>
+                                            <div style="margin-top: 15px;">
+                                                <p style="margin-bottom: 5px; color: #666;">
+                                                    <strong>{% if user_type == 'Customer' %}Designer:{% else %}Customer:{% endif %}</strong> 
+                                                    {% if user_type == 'Customer' %}{{ project.designer.username }}{% else %}{{ project.customer.username }}{% endif %}
+                                                </p>
+                                                <p style="margin-bottom: 5px; color: #666;">
+                                                    <strong>Start Date:</strong> {{ project.start_date|date:"M d, Y"|default:"Not set" }}
+                                                </p>
+                                                <p style="margin-bottom: 5px; color: #666;">
+                                                    <strong>Completion Date:</strong> {{ project.completed_date|date:"M d, Y"|default:"Not set" }}
+                                                </p>
                                             </div>
-                                            <div class="cart-container">
-                                                <table class="table table-border checkout-table">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>
-                                                                <h5 class="product-name">{{ consultation.design_id.name }}</h5>
-                                                            </td>
-                                                            <td>
-                                                                <label><b>Customer: </b></label>
-                                                                <span>{{ consultation.customer_id.name }}</span>
-                                                            </td>
-                                                            <td>
-                                                                <label><b>Date & Time: </b></label>
-                                                                <span>{{ consultation.date_time|date:"F d, Y H:i" }}</span>
-                                                            </td>
-                                                            <td>
-                                                                <h5 class="order-money">Rs. {{ consultation.design_id.amount.amount|floatformat:2 }}</h5>
-                                                            </td>
-                                                            <td>
-                                                                <label><b>Status:</b></label>
-                                                                <span>{{ consultation.consultation_status }}</span>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                                
-                                                <!-- consultation-item-footer -->
-                                                <div class="cart-item-footer fl-wrap">
-                                                    <div class="row">
-                                                        <div class="col-md-10">
-                                                            <p>{{ consultation.design_id.description|truncatewords:20 }}</p>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            {% if consultation.consultation_status == 'Scheduled' %}
-                                                                <form method="POST" action="{% url 'consultations' %}">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
-                                                                    <input type="hidden" name="action" value="complete">
-                                                                    <button type="submit" class="btn float-btn flat-btn" style="margin-left: -194px;height: 4vh;">Completed ?</button>
-                                                                </form>
-                                                                <form method="POST" action="{% url 'consultations' %}">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
-                                                                    <input type="hidden" name="action" value="cancel">
-                                                                    <button type="submit" class="btn float-btn flat-btn" style="display: inline-block;height: 4vh; background-color: #ff0000;border: none; color: #ffffff;">Cancel</button>
-                                                                </form>
-                                                            {% elif consultation.consultation_status == 'Requested' or consultation.consultation_status == 'Pending' %}
-                                                                <form method="POST" action="{% url 'consultations' %}">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
-                                                                    <input type="hidden" name="action" value="approve">
-                                                                    <button type="submit" class="btn float-btn flat-btn" style="margin-left: -25vh;height: 4vh;">Schedule</button>
-                                                                </form>
-                                                             
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- consultation-item-footer end  -->
+                                            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                                                <p style="margin-bottom: 5px; color: #666;"><strong>Room Dimensions:</strong></p>
+                                                <p style="color: #666;">{{ project.room_length }} x {{ project.room_width }} x {{ project.room_height }} m</p>
                                             </div>
-                                        </div>
-                                        <!-- consultation item end-->
-                                        {% empty %}
-                                        <p>No Consultations Available.</p>
-                                        {% endfor %}
+                                            {% if project.payment == 'pending' %}
+                                            <div style="margin-top: 15px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px;">
+                                                <p style="color: #856404; font-weight: bold; margin: 0;">
+                                                    <i class="fas fa-exclamation-triangle" style="margin-right: 5px;"></i>
+                                                    Complete payment to start project
+                                                </p>
+                                            </div>
+                                            {% endif %}
+                                            <a href="{% url 'project' project.id %}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #000; color: #fff; text-decoration: none; border-radius: 5px; transition: all 0.3s ease; border: 2px solid #000;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='#000'; this.style.color='#fff';">View Details</a>
+                                         </div>
                                     </div>
-
-
+                                    {% empty %}
+                                    <div class="no-projects">
+                                        <p>You don't have any projects yet.</p>
+                                    </div>
+                                    {% endfor %}
                                 </div>
-                                <!-- cart-wrap end  -->
                             </div>
                         </section>
                         <!-- section end  -->
@@ -317,21 +276,18 @@
                             <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
                         </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                            <a href="{% url 'my_consultations' %}" style="color: #000; background-color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;">My Consultations</a>
                         </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                             <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
                         </li>
                     {% endif %}
                     {% if user_type == 'Designer' %}
-                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                        <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
-                    </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                             <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
                         </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'consultations' %}"  style="color: #000; background-color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;">Manage Consultations</a>
+                            <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
                         </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                             <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
@@ -346,7 +302,7 @@
             <!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
-                <div class="fixed-title"><span>Consultations</span></div>
+                <div class="fixed-title"><span>My Consultations</span></div>
                 <div class="footer-social">
                     <ul>
                         <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>

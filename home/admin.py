@@ -1,6 +1,5 @@
-
 from django.contrib import admin
-from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage,MoodBoard, MoodBoardItem
+from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage, MoodBoard, MoodBoardItem, Project, Review
 # ... (keep existing admin classes) ...
 class UsersAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'phone', 'email', 'address', 'home_town', 'district', 'state', 'pincode', 'username', 'status', 'user_type_id', 'deactivation_reason')
@@ -24,7 +23,7 @@ class ConsultationAdmin(admin.ModelAdmin):
             'fields': ('customer_id', 'designer_id', 'design_id', 'date_time', 'consultation_status', 'proposal')
         }),
         ('Room Details', {
-            'fields': ('room_type', 'room_length', 'room_width', 'room_height')
+            'fields': ( 'room_length', 'room_width', 'room_height')
         }),
         ('Additional Information', {
             'fields': ('feedback', 'design_preferences')
@@ -114,7 +113,30 @@ class MoodBoardItemAdmin(admin.ModelAdmin):
     list_filter = ('mood_board',)
     search_fields = ('mood_board__name', 'caption')
 
-# ... (keep existing admin registrations) ...
+
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('id', 'customer', 'designer', 'design', 'start_date', 'completed_date', 'status', 'room_dimensions','payment')
+    list_filter = ('status', 'start_date', 'completed_date')
+    search_fields = ('customer__username', 'designer__username', 'design__name')
+    date_hierarchy = 'start_date'
+
+    def room_dimensions(self, obj):
+        return f"{obj.room_length} x {obj.room_width} x {obj.room_height}"
+    room_dimensions.short_description = 'Room Dimensions (L x W x H)'
+
+    fieldsets = (
+        ('Project Information', {
+            'fields': ('consultation', 'design', 'customer', 'designer', 'status')
+        }),
+        ('Dates', {
+            'fields': ('start_date', 'completed_date')
+        }),
+        ('Room Details', {
+            'fields': ('room_length', 'room_width', 'room_height')
+        }),
+    )
+
+    readonly_fields = ('start_date',)
 
 admin.site.register(MoodBoard, MoodBoardAdmin)
 admin.site.register(MoodBoardItem, MoodBoardItemAdmin)
@@ -133,3 +155,6 @@ admin.site.register(Design, DesignAdmin)
 admin.site.register(Amount, AmountAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Payment_Type, Payment_TypeAdmin)
+
+
+admin.site.register(Project, ProjectAdmin)

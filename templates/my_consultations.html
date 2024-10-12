@@ -18,6 +18,7 @@
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
         <!--=============== favicons ===============-->
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
 
     <body>
@@ -181,7 +182,7 @@
                                                         <td style="padding: 5px 10px;">Rs. {{ consultation.amount.amount|floatformat:2 }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <td style="font-weight: bold; color: #666; padding: 5px 10px;">Status:</td>
+                                                        <td style="font-weight: bold; color: #666; padding: 5px 10px;">Consultation Status:</td>
                                                         <td style="padding: 5px 10px;">{{ consultation.consultation_status }}</td>
                                                     </tr>
                                                     <tr>
@@ -196,6 +197,28 @@
                                                         <td style="font-weight: bold; color: #666; padding: 5px 10px;">Room Size:</td>
                                                         <td style="padding: 5px 10px;">{{ consultation.room_length }} x {{ consultation.room_width }} x {{ consultation.room_height }}</td>
                                                     </tr>
+                                                    <tr>
+                                                        <td style="font-weight: bold; color: #666; padding: 5px 10px;">Proposal Status:</td>
+                                                        <td style="padding: 5px 10px;">{{ consultation.proposal }}</td>
+                                                    </tr>
+                                                    {% if consultation.consultation_status == 'Completed' and consultation.proposal == 'Pending' %}
+                                                    <tr>
+                                                        <td style="font-weight: bold; color: #666; padding: 5px 10px;">Proposal Action:</td>
+                                                        <td style="padding: 5px 10px;">
+                                                            <button onclick="confirmAction({{ consultation.id }}, 'accept')" style="background-color: #000000; color: white; border: none; padding: 5px 10px; margin-right: 5px; cursor: pointer; transition: opacity 0.3s;">Accept</button>
+                                                            <button onclick="confirmAction({{ consultation.id }}, 'reject')" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; transition: opacity 0.3s;">Reject</button>
+                                                        </td>
+                                                    </tr>
+                                                    {% elif consultation.proposal == 'Accepted' %}
+                                                    <tr>
+                                                        <td style="padding: 5px 10px; text-align: center;">
+                                                            <a href="{% url 'my_projects' %}" style="left:130%;color: #0e970c; text-decoration: none; font-weight: bold; transition: color 0.3s; display: inline-block;" onmouseover="this.style.color='#000000'" onmouseout="this.style.color='#000000'">
+                                                                View Project Details
+                                                                <span style="margin-left: 5px; font-size: 18px;">&rarr;</span>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                    {% endif %}
                                                 </table>
                                             </div>
                                         </div>
@@ -324,5 +347,96 @@
         <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
         <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+        <script>
+            function confirmAction(consultationId, action) {
+                const title = action === 'accept' ? 'Accept Proposal' : 'Reject Proposal';
+                const text = action === 'accept' ? 'Are you sure you want to accept this proposal?' : 'Are you sure you want to reject this proposal?';
+                const confirmButtonText = action === 'accept' ? 'Yes, accept it!' : 'Yes, reject it!';
+                const confirmButtonColor = action === 'accept' ? '#000000' : '#f44336';
+
+                Swal.fire({
+                    title: title,
+                    text: text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: confirmButtonColor,
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: confirmButtonText,
+                    cancelButtonText: 'Cancel',
+                    background: '#f9f9f9',
+                    customClass: {
+                        title: 'custom-swal-title',
+                        content: 'custom-swal-text',
+                        confirmButton: 'custom-swal-button',
+                        cancelButton: 'custom-swal-button'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitForm(consultationId, action);
+                    }
+                });
+            }
+
+            function submitForm(consultationId, action) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{% url 'my_consultations' %}";
+
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = '{{ csrf_token }}';
+                form.appendChild(csrfInput);
+
+                const consultationIdInput = document.createElement('input');
+                consultationIdInput.type = 'hidden';
+                consultationIdInput.name = 'consultation_id';
+                consultationIdInput.value = consultationId;
+                form.appendChild(consultationIdInput);
+
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = action;
+                form.appendChild(actionInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            // Add custom styles for SweetAlert
+            document.head.insertAdjacentHTML('beforeend', `
+                <style>
+                    .custom-swal-title {
+                        font-size: 24px !important;
+                        color: #333 !important;
+                    }
+                    .custom-swal-text {
+                        font-size: 16px !important;
+                        color: #666 !important;
+                    }
+                    .custom-swal-button {
+                        font-size: 14px !important;
+                        padding: 8px 16px !important;
+                    }
+                </style>
+            `);
+
+            // Add hover effect for buttons and links
+            document.addEventListener('mouseover', function(event) {
+                if (event.target.tagName === 'BUTTON') {
+                    event.target.style.opacity = '0.8';
+                } else if (event.target.tagName === 'A' && event.target.textContent.includes('View Project Details')) {
+                    event.target.style.color = '#45a049';
+                }
+            });
+            document.addEventListener('mouseout', function(event) {
+                if (event.target.tagName === 'BUTTON') {
+                    event.target.style.opacity = '1';
+                } else if (event.target.tagName === 'A' && event.target.textContent.includes('View Project Details')) {
+                    event.target.style.color = '#4CAF50';
+                }
+            });
+        </script>
     </body>
 </html>
