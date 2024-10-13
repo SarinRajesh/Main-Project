@@ -214,18 +214,12 @@ class Project(models.Model):
     customer = models.ForeignKey(Users, on_delete=models.CASCADE)
     designer = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='designed_projects')
     start_date = models.DateTimeField(null=True, blank=True)
-    completed_date = models.DateTimeField(null=True, blank=True)
+    completed_date = models.DateTimeField(null=True, blank=True)  # Ensure this field exists
     status = models.CharField(max_length=50, default='In Progress')
     room_length = models.FloatField()
     room_width = models.FloatField()
     room_height = models.FloatField()
-    payment = models.CharField(max_length=50, default='pending')  # New payment column
-
+    payment = models.CharField(max_length=50, default='pending')
 
     def __str__(self):
         return f"Project for {self.customer.username} - {self.design.name}"
-
-    def complete_project(self):
-        self.status = 'Completed'
-        self.completed_date = timezone.now()
-        self.save()

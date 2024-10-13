@@ -42,6 +42,8 @@ path('delete-portfolio/<int:portfolio_id>/', views.delete_portfolio, name='delet
     path('admin_page/consultations_table/', views.consultations_table, name='consultations_table'),
     path('admin_page/products_table/', views.products_table, name='products_table'),
     path('admin_page/admin_index/', views.admin_index, name='admin_index'),
+     path('admin_page/projects_table/', views.projects_table, name='projects_table'),
+ 
     path('clear_cart/', views.clear_cart, name='clear_cart'),
      path('create_order_from_product/', views.create_order_from_product, name='create_order_from_product'),
     path('create_order_from_cart/', views.create_order_from_cart, name='create_order_from_cart'),
@@ -69,6 +71,7 @@ path('download_receipt/<int:order_id>/', views.download_receipt, name='download_
     path('mood-boards/<int:pk>/delete/', views.delete_mood_board, name='delete_mood_board'),
  path('my_projects/', views.my_projects, name='my_projects'),
   path('project/<int:project_id>/', views.project, name='project'),
+path('projects_manage/', views.projects_manage, name='projects_manage'),
 
   
 

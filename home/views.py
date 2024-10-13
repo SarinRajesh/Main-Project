@@ -560,67 +560,77 @@ def shop(request):
 from django.shortcuts import render, get_object_or_404
 
 
-@login_required
-@nocache
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from .models import Design, Consultation, ConsultationDate
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.utils import timezone
+
 def portfolio_details(request, portfolio_id):
     portfolio = get_object_or_404(Design.objects.select_related('designer_id'), id=portfolio_id)
     
     # Replace underscores with spaces in the category
     portfolio.category_display = portfolio.category.replace("_", " ")
     
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
+    user_type = None
+    user_details_complete = False
+    consultation_status = None
 
-    # Check if user details are complete
-    user_details_complete = all([
-        user.address,
-        user.home_town,
-        user.district,
-        user.state,
-        user.pincode
-    ])
+    if request.user.is_authenticated:
+        user = request.user
+        user_type = user.user_type_id.user_type if user.user_type_id else None
 
-    if request.method == 'POST':
-        # Check if the request is to reject a consultation
-        if 'reject' in request.POST:
-            consultation = Consultation.objects.filter(
-                design_id=portfolio_id,
-                customer_id=user,
-                designer_id=portfolio.designer_id
-            ).first()
+        # Check if user details are complete
+        user_details_complete = all([
+            user.address,
+            user.home_town,
+            user.district,
+            user.state,
+            user.pincode
+        ])
 
-            if consultation:
-                # Find the corresponding ConsultationDate and set is_booked to False
-                ConsultationDate.objects.filter(
-                    designer=portfolio.designer_id,
-                    date_time=consultation.schedule_date_time
-                ).update(is_booked=False)
+        if request.method == 'POST':
+            # Check if the request is to reject a consultation
+            if 'reject' in request.POST:
+                consultation = Consultation.objects.filter(
+                    design_id=portfolio_id,
+                    customer_id=user,
+                    designer_id=portfolio.designer_id
+                ).first()
 
-                # Delete the consultation entry
-                consultation.delete()
+                if consultation:
+                    # Find the corresponding ConsultationDate and set is_booked to False
+                    ConsultationDate.objects.filter(
+                        designer=portfolio.designer_id,
+                        date_time=consultation.schedule_date_time
+                    ).update(is_booked=False)
 
-                messages.success(request, 'Consultation request cancelled.')
-            else:
-                messages.error(request, 'Consultation not found.')
+                    # Delete the consultation entry
+                    consultation.delete()
 
-            return redirect('portfolio_details', portfolio_id=portfolio_id)
+                    messages.success(request, 'Consultation request cancelled.')
+                else:
+                    messages.error(request, 'Consultation not found.')
 
-    # Check for existing consultation status
-    consultation_status = Consultation.objects.filter(
-        design_id=portfolio_id,
-        customer_id=user,
-        designer_id=portfolio.designer_id
-    ).values_list('consultation_status', flat=True).first()
-    
+                return redirect('portfolio_details', portfolio_id=portfolio_id)
+
+        # Check for existing consultation status
+        consultation_status = Consultation.objects.filter(
+            design_id=portfolio_id,
+            customer_id=user,
+            designer_id=portfolio.designer_id
+        ).values_list('consultation_status', flat=True).first()
+
     context = {
         'portfolio': portfolio,
         'user_type': user_type,
         'consultation_status': consultation_status,
         'user_details_complete': user_details_complete,
-        'is_designer': user == portfolio.designer_id,
+        'is_designer': request.user.is_authenticated and request.user == portfolio.designer_id,
     }
     return render(request, 'portfolio_details.html', context)
-logout_view
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
@@ -1391,6 +1401,22 @@ def designs_table(request):
     }
     return render(request, 'admin_page/designs_table.html', context)
 
+@nocache
+@login_required
+def projects_table(request):
+    projects = Project.objects.select_related('customer', 'designer', 'design').all()
+    
+    if 'download' in request.GET:
+        if request.GET['download'] == 'pdf':
+            return download_pdf(request, 'projects')
+        elif request.GET['download'] == 'excel':
+            return download_excel(request, 'projects')
+    
+    context = {
+        'projects': projects
+    }
+    return render(request, 'admin_page/projects_table.html', context)
+
 
 from django.http import HttpResponse
 from django.template.loader import get_template
@@ -1494,19 +1520,23 @@ def download_pdf(request, data_type, user_type=None):
                 order.payment_status
             ] for order in orders
         ]
-    elif data_type == 'products':
-        filename = 'products_table.pdf'
-        title = 'Products'
-        headers = ['Name', 'Description', 'Amount', 'Stock', 'Category']
-        products = Product.objects.select_related('amount').all()
+    elif data_type == 'projects':
+        filename = 'projects_table.pdf'
+        title = 'Projects'
+        headers = ['Project ID', 'Customer', 'Designer', 'Design', 'Status', 'Start Date', 'Completed Date', 'Room Dimensions', 'Payment Status']
+        projects = Project.objects.select_related('customer', 'designer', 'design').all()
         items = [
             [
-                product.name,
-                product.description[:50] + ('...' if len(product.description) > 50 else ''),
-                str(product.amount.amount),
-                str(product.stock),
-                product.category
-            ] for product in products
+                str(project.id),
+                project.customer.name,
+                project.designer.name,
+                project.design.name,
+                project.status,
+                str(project.start_date) if project.start_date else 'N/A',
+                str(project.completed_date) if project.completed_date else 'N/A',
+                f"{project.room_length}x{project.room_width}x{project.room_height}",
+                project.payment
+            ] for project in projects
         ]
     else:
         return HttpResponse('Invalid data type')
@@ -1600,6 +1630,36 @@ def download_excel(request, data_type, user_type=None):
                 order.order_status,
                 order.payment_type.payment_type,
                 order.payment_status
+            ])
+        
+        # Create a BytesIO buffer for the Excel file
+        buffer = BytesIO()
+        workbook.save(buffer)
+        buffer.seek(0)
+
+        # Create the HttpResponse object with Excel mime type
+        response = HttpResponse(buffer.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+
+        return response
+    elif data_type == 'projects':
+        filename = 'projects_table.xlsx'
+        worksheet.title = 'Projects'
+        headers = ['Project ID', 'Customer', 'Designer', 'Design', 'Status', 'Start Date', 'Completed Date', 'Room Dimensions', 'Payment Status']
+        worksheet.append(headers)
+        
+        projects = Project.objects.select_related('customer', 'designer', 'design').all()
+        for project in projects:
+            worksheet.append([
+                str(project.id),
+                project.customer.name,
+                project.designer.name,
+                project.design.name,
+                project.status,
+                str(project.start_date) if project.start_date else 'N/A',
+                str(project.completed_date) if project.completed_date else 'N/A',
+                f"{project.room_length}x{project.room_width}x{project.room_height}",
+                project.payment
             ])
         
         # Create a BytesIO buffer for the Excel file
@@ -2203,3 +2263,59 @@ def project(request, project_id):
         'user_type': user_type,
     }
     return render(request, 'project.html', context)
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def projects_manage(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    if user_type != 'Designer':
+        return redirect('index')  # Redirect non-designers to home page
+    
+    projects = Project.objects.filter(designer=user).select_related('design', 'customer')
+    
+    if request.method == 'POST':
+        project_id = request.POST.get('project_id')
+        action = request.POST.get('action')
+        
+        try:
+            project = projects.get(id=project_id)
+            
+            if action == 'update_status':
+                new_status = request.POST.get('status')
+                if new_status in ['Not Started', 'In Progress', 'Completed', 'On Hold']:
+                    project.status = new_status
+                    if new_status == 'In Progress' and not project.start_date:
+                        project.start_date = timezone.now()
+                    elif new_status == 'Completed' and not project.completed_date:
+                        project.completed_date = timezone.now()
+                project.save()
+                return JsonResponse({'status': 'success', 'message': 'Project status updated successfully'})
+            elif action == 'update_start_date':
+                start_date = request.POST.get('start_date')
+                try:
+                    project.start_date = timezone.make_aware(datetime.strptime(start_date, '%Y-%m-%d'))
+                    project.save()
+                    return JsonResponse({'status': 'success', 'message': 'Start date updated successfully'})
+                except ValueError:
+                    return JsonResponse({'status': 'error', 'message': 'Invalid date format'})
+            elif action == 'update_completed_date':
+                completed_date = request.POST.get('end_date')  # Note: We're using 'end_date' here to match the frontend
+                try:
+                    project.completed_date = timezone.make_aware(datetime.strptime(completed_date, '%Y-%m-%d'))
+                    project.save()
+                    return JsonResponse({'status': 'success', 'message': 'Completed date updated successfully'})
+                except ValueError:
+                    return JsonResponse({'status': 'error', 'message': 'Invalid date format'})
+            
+            return JsonResponse({'status': 'error', 'message': 'Invalid action'})
+        
+        except Project.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Project not found'}, status=404)
+    
+    context = {
+        'projects': projects,
+        'user_type': user_type,
+    }
+    return render(request, 'projects_manage.html', context)

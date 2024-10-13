@@ -119,20 +119,9 @@
                                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
                                                         
                                                         <div style="margin-bottom: 20px; background-color: #f8f9fa; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                                            <label for="color" style="display: block; font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333;">Choose Product Color:</label>
-                                                            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
-                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #FF0000;" data-color="#FF0000" title="Red"></div>
-                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #00FF00;" data-color="#00FF00" title="Green"></div>
-                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #0000FF;" data-color="#0000FF" title="Blue"></div>
-                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #FFFF00;" data-color="#FFFF00" title="Yellow"></div>
-                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #FF00FF;" data-color="#FF00FF" title="Magenta"></div>
-                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #00FFFF;" data-color="#00FFFF" title="Cyan"></div>
-                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #FFFFFF;" data-color="#FFFFFF" title="White"></div>
-                                                                <div class="color-option" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-color: #000000;" data-color="#000000" title="Black"></div>
-                                                                <div class="color-option custom" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); background-image: url('{% static 'images/color-wheel.png' %}'); background-size: cover;" data-color="custom" title="Custom Color"></div>
-                                                            </div>
+                                                           
                                                             <div style="display: flex; align-items: center; background-color: white; border-radius: 25px; padding: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                                                <input type="text" id="color-input" name="color" placeholder="Enter color (e.g., #FF0000)" required style="flex-grow: 1; padding: 10px 15px; border: none; border-radius: 20px 0 0 20px; font-size: 16px; outline: none;">
+                                                                <input type="text" id="color-input" name="color" placeholder="Enter color....." required style="flex-grow: 1; padding: 10px 15px; border: none; border-radius: 20px 0 0 20px; font-size: 16px; outline: none;">
                                                                 <div id="color-preview" style="width: 40px; height: 40px; border-radius: 50%; margin: 0 10px;"></div>
                                                             </div>
                                                             <input type="color" id="custom-color" style="display: none;">
@@ -397,6 +386,13 @@
                     onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
                     onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
                     Consultations Table
+                </a>
+            </li>
+            <li style="margin-bottom: 20px;">
+                <a href="{% url 'projects_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                    Projects Table
                 </a>
             </li>
             <li style="margin-bottom: 20px;">

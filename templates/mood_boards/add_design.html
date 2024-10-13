@@ -51,14 +51,17 @@
                 <div class="nav-holder">
                     <nav>
                         <ul>   
-                            {% if user_type != 'Designer' and user_type != 'Customer' %}
+                           
                                 <li>
-                                    <a href="{% url 'index' %}">Home</a>
+                                    <a href="{% url 'index' %}" >Home</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
                                 </li>
-                                        
+                                <li>
+                                    <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
+                                </li>
+                                 
                             <li>
                                 <a href="about.html">About</a>
                                 <ul>
@@ -77,68 +80,14 @@
                                     </ul>
                                     <!--second level end-->
                                 </li>
-                                <li>
-                                    <a href="blog.html">Journal</a>
-                                    <ul>
-                                        <li><a href="blog-grid.html">Grid</a></li>
-                                        <li><a href="blog-masonry.html">Masonry</a></li>
-                                        <li><a href="blog-single.html">Post Single</a></li>
-                                        <li><a href="404.html">404</a></li>
-                                    </ul>
-                                </li>
-                             
-                                <li>
-                                    <a href="{% url 'signin' %}">Signin</a>
-                                </li>
-                                {% else %}
-                                <li>
-                                    <a href="{% url 'index' %}" >Home</a>
-                                </li>
-                                <li>
-                                    <a href="{% url 'portfolio' %}"  class="act-link">Designs</a>
-                                    <ul>
-                                        <li><a href="{% url 'mood_board_list' %}">Mood Boards</a></li>
-                                        <li><a href="{% url 'create_mood_board' %}">Create Mood Boards</a></li>
-                             
-                                    </ul>
-                                </li>
-                                {% if user_type != 'Designer' %}
-                                 <li>
-                                    <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
-                                </li>
                                 
-                            {% endif %}
-                            <li>
-                                <a href="about.html">About</a>
-                                <ul>
-                                    <li><a href="about-personal.html">Personal</a></li>
-                                    <li><a href="services.html">Services</a></li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="contact.html">Contacts</a>
-                            </li>
-                            {% if user_type != 'Designer' %}
-                            <li>
-                                <a href="{% url 'shop' %}">Shop</a>
-                                <!--second level end-->
-                                <ul>
-                                    <li><a href="{% url 'cart' %}">Cart</a></li>
-                                </ul>
-                                <!--second level end-->
-                            </li>
-                            {% endif %}
-                            <li>
-                                <a href="blog.html">Journal</a>
-                                <ul>
-                                    <li><a href="blog-grid.html">Grid</a></li>
-                                    <li><a href="blog-masonry.html">Masonry</a></li>
-                                    <li><a href="blog-single.html">Post Single</a></li>
-                                    <li><a href="404.html">404</a></li>
-                                </ul>
-                            </li>
-                            
-                            {% endif %}
+                                <li><a href="{% url 'mood_board_list' %}"  class="act-link">Mood Boards</a>
+                                    <ul>
+                                        <li><a href="{% url 'create_mood_board' %}">Create Mood Boards</a></li>
+                                    </ul>
+                                </li>
+                       
+                           
                         </ul>
                     </nav>
                     
@@ -286,31 +235,19 @@
             <div class="share-wrapper isShare">
                 <div class="share-container" style="padding: 20px;">
                     <ul style="list-style-type: none; padding: 0; margin: 0;">
-                        {% if user_type == 'Customer' %}
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
+                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
                         </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Consultations</a>
+                            <a href="{% url 'my_projects' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Projects</a>
                         </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Orders</a>
-                        </li>
-                    {% endif %}
-                    {% if user_type == 'Designer' %}
-                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                        <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Account</a>
-                    </li>
-                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Consultations</a>
                         </li>
                         <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Manage Consultations</a>
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Orders</a>
                         </li>
-                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
-                        </li>
-                    {% endif %}
+                        
                     <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                         <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
                     </li>
@@ -320,7 +257,7 @@
             <!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
-                <div class="fixed-title"><span>Designs</span></div>
+                <div class="fixed-title"><span>Mood boards</span></div>
                 <div class="footer-social">
                     <ul>
                         <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
