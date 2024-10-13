@@ -60,7 +60,7 @@
                                     <a href="{% url 'index' %}">Home</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'portfolio' %}"  >Designs</a>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
                                 </li>
                                         
                             <li>
@@ -99,12 +99,13 @@
                                     <a href="{% url 'index' %}" >Home</a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'portfolio' %}" >Designs</a>
+                                    <a href="{% url 'portfolio' %}">Designs</a>
                                 </li>
+                                {% if user_type == 'Customer' %}
                                 <li>
                                     <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
                                 </li>
-                            
+                                {% endif %}
                                 
                             <li>
                                 <a href="about.html">About</a>
@@ -116,6 +117,15 @@
                             <li>
                                 <a href="contact.html">Contacts</a>
                             </li>
+                            {% if user_type == 'Designer' %}
+                            <li>
+                                <a href="{% url 'consultations' %}">Consultations</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'projects_manage' %}">Projects</a>
+                            </li>
+                            {% endif %}
+                            
                             {% if user_type != 'Designer' %}
                             <li>
                                 <a href="{% url 'shop' %}">Shop</a>
@@ -401,12 +411,11 @@
                     </ul>
                     {% endif %}
                     {% if user_type == 'Designer' %}
-                    <div class="share-wrapper isShare">
                             <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                                 <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
                             </li>
                                 <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                                    <a href="{% url 'add_portfolio' %}" style="color: #000; background-color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;">Add Designs</a>
+                                    <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
                                 </li>
                                 <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
                                     <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>

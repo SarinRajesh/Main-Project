@@ -73,7 +73,6 @@ path('download_receipt/<int:order_id>/', views.download_receipt, name='download_
   path('project/<int:project_id>/', views.project, name='project'),
 path('projects_manage/', views.projects_manage, name='projects_manage'),
 
-  
 
 
 ]

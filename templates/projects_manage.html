@@ -110,7 +110,7 @@
                                 {% for project in projects %}
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <div style="background: #fff; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease;">
+                                        <div style="background: #fff; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; margin-bottom: 40px;">
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <a href="{% url 'portfolio_details' portfolio_id=project.design.id %}">
@@ -130,8 +130,8 @@
                                                             {{ project.status }}
                                                         </span>
                                                     </p>
-                                                    <p style="margin-bottom: 10px;"><strong style="color: #555;">Start Date:</strong> <span id="start-date-{{ project.id }}">{{ project.start_date|date:"M. d, Y" }}</span></p>
-                                                    <p style="margin-bottom: 20px;"><strong style="color: #555;">Completed Date:</strong> <span id="completed-date-{{ project.id }}">{{ project.completed_date|date:"M. d, Y" }}</span></p>
+                                                    <p style="margin-bottom: 10px;"><strong style="color: #555;">Start Date:</strong> <span id="start-date-{{ project.id }}">{% if project.start_date %}{{ project.start_date|date:"M. d, Y" }}{% else %}Not set{% endif %}</span></p>
+                                                    <p style="margin-bottom: 20px;"><strong style="color: #555;">Completed Date:</strong> <span id="completed-date-{{ project.id }}">{% if project.completed_date %}{{ project.completed_date|date:"M. d, Y" }}{% else %}Not set{% endif %}</span></p>
                                                     <div style="margin-top: 15px;">
                                                         <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Not Started" style="background-color: #ffeeba; color: #856404; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
                                                             <i class="fas fa-hourglass-start"></i> Not Started

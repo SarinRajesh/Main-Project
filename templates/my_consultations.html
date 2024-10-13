@@ -166,7 +166,7 @@
                                                     {% elif consultation.proposal == 'Accepted' %}
                                                     <tr>
                                                         <td style="padding: 5px 10px; text-align: center;">
-                                                            <a href="{% url 'my_projects' %}" style="left:130%;color: #0e970c; text-decoration: none; font-weight: bold; transition: color 0.3s; display: inline-block;" onmouseover="this.style.color='#000000'" onmouseout="this.style.color='#000000'">
+                                                            <a href="{% url 'project' consultation.project.id %}" style="left:130%;color: #0e970c; text-decoration: none; font-weight: bold; transition: color 0.3s; display: inline-block;" onmouseover="this.style.color='#000000'" onmouseout="this.style.color='#0e970c'">
                                                                 View Project Details
                                                                 <span style="margin-left: 5px; font-size: 18px;">&rarr;</span>
                                                             </a>

@@ -213,9 +213,9 @@ class Project(models.Model):
     design = models.ForeignKey(Design, on_delete=models.CASCADE)
     customer = models.ForeignKey(Users, on_delete=models.CASCADE)
     designer = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='designed_projects')
-    start_date = models.DateTimeField(null=True, blank=True)
-    completed_date = models.DateTimeField(null=True, blank=True)  # Ensure this field exists
-    status = models.CharField(max_length=50, default='In Progress')
+    start_date = models.DateField(null=True, blank=True)
+    completed_date = models.DateField(null=True, blank=True)  # Ensure this field exists
+    status = models.CharField(max_length=50, default='Pending')
     room_length = models.FloatField()
     room_width = models.FloatField()
     room_height = models.FloatField()
