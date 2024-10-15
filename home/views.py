@@ -709,8 +709,6 @@ def get_chat_messages(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid design_id'})
 
 
-from django.utils.dateparse import parse_datetime
-
 @login_required
 @csrf_exempt
 def consultation_booking(request, portfolio_id):
@@ -775,38 +773,6 @@ def consultation_booking(request, portfolio_id):
         consultation_date.is_booked = True
         consultation_date.save()
 
-        # Send email to the customer
-        subject = 'Consultation Scheduled - ElegantDecor'
-        message = f"""
-        Dear {request.user.name},
-
-        Your consultation has been successfully scheduled with ElegantDecor.
-
-        Consultation Details:
-        - Date and Time: {consultation.schedule_date_time}
-        - Designer: {portfolio.designer_id.name}
-        - Designer's Contact Number: {portfolio.designer_id.phone}
-        - Design: {portfolio.name}
-        - Room Dimensions: {room_length}x{room_width}x{room_height}
-        - Your Design Preferences: {design_preferences}
-
-        If you need to make any changes or have any questions, please don't hesitate to contact us.
-
-        Thank you for choosing ElegantDecor!
-
-        Best regards,
-        The ElegantDecor Team
-        """
-
-        from_email = settings.DEFAULT_FROM_EMAIL
-        recipient_list = [request.user.email]
-
-        try:
-            send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-        except Exception as e:
-            # Log the error, but don't stop the consultation booking process
-            print(f"Error sending email: {str(e)}")
-
         return JsonResponse({'status': 'success', 'message': 'Consultation booked successfully'})
     
     context = {
@@ -815,6 +781,7 @@ def consultation_booking(request, portfolio_id):
         'available_dates': available_dates,
     }
     return render(request, 'consultation_booking.html', context)
+
 
 from decimal import Decimal, InvalidOperation
 from django.core.exceptions import ValidationError
@@ -1122,32 +1089,49 @@ def orders(request):
 
 
 
+
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def schedule_consultation(request):
     if request.method == 'POST':
         date_time_str = request.POST.get('date_time')
-        date_time = parse_datetime(date_time_str)
+        logger.info(f"Received date_time: {date_time_str}")
+        try:
+            # Parse the datetime string
+            date_time = parse_datetime(date_time_str)
+            logger.info(f"Parsed date_time: {date_time}")
+            
+            # Ensure the datetime is timezone aware
+            if timezone.is_naive(date_time):
+                date_time = timezone.make_aware(date_time, timezone.get_current_timezone())
+            logger.info(f"Timezone-aware date_time: {date_time}")
+            
+            # Convert to the project's timezone if different
+            date_time = timezone.localtime(date_time)
+            logger.info(f"Localized date_time: {date_time}")
 
-        if not date_time:
+            if date_time < timezone.now():
+                return JsonResponse({'status': 'error', 'message': 'Cannot schedule consultations for past dates'})
+
+            consultation_date, created = ConsultationDate.objects.get_or_create(
+                designer=request.user,
+                date_time=date_time,
+                defaults={'is_booked': False}
+            )
+            logger.info(f"Saved date_time: {consultation_date.date_time}")
+
+            if created:
+                return JsonResponse({'status': 'success', 'message': 'Consultation date scheduled successfully'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'This date and time is already scheduled'})
+
+        except ValueError:
             return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
-
-        # Make the datetime timezone-aware
-        date_time = timezone.make_aware(date_time, timezone.get_current_timezone())
-
-        if date_time < timezone.now():
-            return JsonResponse({'status': 'error', 'message': 'Cannot schedule consultations for past dates'})
-
-        consultation_date, created = ConsultationDate.objects.get_or_create(
-            designer=request.user,
-            date_time=date_time,
-            defaults={'is_booked': False}
-        )
-
-        if created:
-            return JsonResponse({'status': 'success', 'message': 'Consultation date scheduled successfully'})
-        else:
-            return JsonResponse({'status': 'error', 'message': 'This date and time is already scheduled'})
 
     else:
         # Handle GET request
@@ -1169,7 +1153,6 @@ def schedule_consultation(request):
             'consultation_dates': json.dumps(consultation_dates_list)
         }
         return render(request, 'schedule_consultation.html', context)
-
 
 
 @login_required
@@ -2329,25 +2312,52 @@ def my_projects(request):
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from .models import Project, ProjectFeedback
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     user_type = request.user.user_type_id.user_type if request.user.user_type_id else None
     
+    # Check if feedback already exists
+    existing_feedback = ProjectFeedback.objects.filter(project=project, customer=request.user).first()
+    
     if request.method == 'POST':
-        payment_id = request.POST.get('payment_id')
-        if payment_id:
-            # Update project payment status
-            project.payment = 'paid'
-            project.save()
-            return JsonResponse({'status': 'success', 'user_type': user_type})
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Invalid payment data', 'user_type': user_type})
+        if 'payment_id' in request.POST:
+            payment_id = request.POST.get('payment_id')
+            if payment_id:
+                # Update project payment status
+                project.payment = 'paid'
+                project.save()
+                return JsonResponse({'status': 'success', 'user_type': user_type})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Invalid payment data', 'user_type': user_type})
+        elif 'feedback' in request.POST:
+            feedback = request.POST.get('feedback')
+            if feedback:
+                # Create new feedback or update existing
+                if existing_feedback:
+                    existing_feedback.feedback = feedback
+                    existing_feedback.save()
+                else:
+                    ProjectFeedback.objects.create(
+                        project=project,
+                        customer=request.user,
+                        feedback=feedback
+                    )
+                return JsonResponse({'status': 'success', 'message': 'Feedback submitted successfully'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Invalid feedback data'})
     
     context = {
         'project': project,
         'user_type': user_type,
+        'existing_feedback': existing_feedback,
     }
     return render(request, 'project.html', context)
 
@@ -2360,7 +2370,7 @@ def projects_manage(request):
     if user_type != 'Designer':
         return redirect('index')  # Redirect non-designers to home page
     
-    projects = Project.objects.filter(designer=user).select_related('design', 'customer')
+    projects = Project.objects.filter(designer=user).select_related('design', 'customer').prefetch_related('feedbacks').order_by('-id')
     
     if request.method == 'POST':
         project_id = request.POST.get('project_id')
@@ -2373,26 +2383,21 @@ def projects_manage(request):
                 new_status = request.POST.get('status')
                 if new_status in ['Not Started', 'In Progress', 'Completed', 'On Hold']:
                     project.status = new_status
-                    if new_status == 'In Progress' and not project.start_date:
-                        project.start_date = timezone.now()
-                    elif new_status == 'Completed' and not project.completed_date:
-                        project.completed_date = timezone.now()
-                project.save()
-                return JsonResponse({'status': 'success', 'message': 'Project status updated successfully'})
+                    if new_status == 'Completed' and not project.completed_date:
+                        project.completed_date = timezone.now().date()
+                    project.save()
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Project status updated successfully',
+                        'completed_date': project.completed_date.strftime('%b. %d, %Y') if project.completed_date else None
+                    })
             elif action == 'update_start_date':
                 start_date = request.POST.get('start_date')
                 try:
-                    project.start_date = timezone.make_aware(datetime.strptime(start_date, '%Y-%m-%d'))
+                    project.start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                    project.status = 'In Progress'  # Automatically set status to 'In Progress' when start date is set
                     project.save()
                     return JsonResponse({'status': 'success', 'message': 'Start date updated successfully'})
-                except ValueError:
-                    return JsonResponse({'status': 'error', 'message': 'Invalid date format'})
-            elif action == 'update_completed_date':
-                completed_date = request.POST.get('end_date')  # Note: We're using 'end_date' here to match the frontend
-                try:
-                    project.completed_date = timezone.make_aware(datetime.strptime(completed_date, '%Y-%m-%d'))
-                    project.save()
-                    return JsonResponse({'status': 'success', 'message': 'Completed date updated successfully'})
                 except ValueError:
                     return JsonResponse({'status': 'error', 'message': 'Invalid date format'})
             

@@ -477,21 +477,28 @@
                 }
         
                 function scheduleConsultation(dateTime, calendar) {
+                    // Convert the dateTime to a Date object
+                    const dateObj = new Date(dateTime);
+                    
+                    // Format the date as ISO string and log it
+                    const isoString = dateObj.toISOString();
+                    console.log("Sending dateTime:", isoString);
+                    
                     fetch('{% url "schedule_consultation" %}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                             'X-CSRFToken': '{{ csrf_token }}'
                         },
-                        body: `date_time=${encodeURIComponent(dateTime)}`
+                        body: `date_time=${encodeURIComponent(isoString)}`
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
                             calendar.addEvent({
-                                id: dateTime,  // Ensure the ID is set to the dateTime
+                                id: isoString,  // Use the ISO string as the ID
                                 title: 'Consultation',
-                                start: dateTime,
+                                start: dateObj,
                                 allDay: false,
                                 className: 'custom-event',
                                 extendedProps: {

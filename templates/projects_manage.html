@@ -118,24 +118,48 @@
                                                     </a>
                                                 </div>
                                                 <div class="col-md-8" style="padding: 20px;">
-                                                    <h3 style="font-size: 1.8em; color: #333; margin-bottom: 15px;">{{ project.design.name }}</h3>
-                                                    <p style="margin-bottom: 10px;"><strong style="color: #555;">Customer:</strong> {{ project.customer.username }}</p>
-                                                    <p style="margin-bottom: 10px;"><strong style="color: #555;">Status:</strong> 
-                                                        <span id="status-{{ project.id }}" style="display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.9em; font-weight: bold; 
-                                                            {% if project.status == 'Not Started' %}background: #ffeeba; color: #856404;
-                                                            {% elif project.status == 'In Progress' %}background: #b8daff; color: #004085;
-                                                            {% elif project.status == 'Completed' %}background: #c3e6cb; color: #155724;
-                                                            {% elif project.status == 'On Hold' %}background: #f5c6cb; color: #721c24;
-                                                            {% else %}background: #f5c6cb; color: #721c24;{% endif %}">
-                                                            {{ project.status }}
-                                                        </span>
-                                                    </p>
-                                                    <p style="margin-bottom: 10px;"><strong style="color: #555;">Start Date:</strong> <span id="start-date-{{ project.id }}">{% if project.start_date %}{{ project.start_date|date:"M. d, Y" }}{% else %}Not set{% endif %}</span></p>
-                                                    <p style="margin-bottom: 20px;"><strong style="color: #555;">Completed Date:</strong> <span id="completed-date-{{ project.id }}">{% if project.completed_date %}{{ project.completed_date|date:"M. d, Y" }}{% else %}Not set{% endif %}</span></p>
-                                                    <div style="margin-top: 15px;">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <h3 style="font-size: 1.8em; color: #333; margin-bottom: 15px;">{{ project.design.name }}</h3>
+                                                            <p style="margin-bottom: 10px;"><strong style="color: #555;">Customer:</strong> {{ project.customer.username }}</p>
+                                                            <p style="margin-bottom: 10px;">
+                                                                <strong style="color: #555;">Status:</strong> 
+                                                                <span id="status-{{ project.id }}" style="display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.9em; font-weight: bold; 
+                                                                    {% if project.status == 'Not Started' %}background: #ffeeba; color: #856404;
+                                                                    {% elif project.status == 'In Progress' %}background: #b8daff; color: #004085;
+                                                                    {% elif project.status == 'Completed' %}background: #c3e6cb; color: #155724;
+                                                                    {% elif project.status == 'On Hold' %}background: #f5c6cb; color: #721c24;
+                                                                    {% else %}background: #f5c6cb; color: #721c24;{% endif %}">
+                                                                    {{ project.status }}
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-md-6 text-right"   style="margin-top: 6%;">
+                                                            <p style="margin-bottom: 10px;">
+                                                                <strong style="color: #555;">Start Date:</strong> 
+                                                                <span id="start-date-{{ project.id }}">
+                                                                    {% if project.start_date %}{{ project.start_date|date:"M. d, Y" }}{% else %}Not set{% endif %}
+                                                                </span>
+                                                            </p>
+                                                            <p style="margin-bottom: 10px;">
+                                                                <strong style="color: #555;">End Date:</strong> 
+                                                                <span id="completed-date-{{ project.id }}">
+                                                                    {% if project.completed_date %}{{ project.completed_date|date:"M. d, Y" }}{% else %}Not set{% endif %}
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {% if project.status != 'Completed' %}
+                                                    <div id="update-controls-{{ project.id }}" style="margin-top: 15px;">
+                                                        {% if not project.start_date %}
                                                         <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Not Started" style="background-color: #ffeeba; color: #856404; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
                                                             <i class="fas fa-hourglass-start"></i> Not Started
                                                         </button>
+                                                        <button class="btn date-picker" data-project-id="{{ project.id }}" data-date-type="start" style="background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
+                                                            <i class="far fa-calendar-alt"></i> Set Start Date
+                                                        </button>
+                                                        {% else %}
                                                         <button class="btn update-status" data-project-id="{{ project.id }}" data-status="In Progress" style="background-color: #b8daff; color: #004085; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
                                                             <i class="fas fa-spinner fa-spin"></i> In Progress
                                                         </button>
@@ -145,15 +169,28 @@
                                                         <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Completed" style="background-color: #c3e6cb; color: #155724; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer;">
                                                             <i class="fas fa-check-circle"></i> Completed
                                                         </button>
+                                                        {% endif %}
                                                     </div>
-                                                    <div style="margin-top: 15px;">
-                                                        <button class="btn date-picker" data-project-id="{{ project.id }}" data-date-type="start" style="background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
-                                                            <i class="far fa-calendar-alt"></i> Set Start Date
-                                                        </button>
-                                                        <button class="btn date-picker" data-project-id="{{ project.id }}" data-date-type="end" style="background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer;">
-                                                            <i class="far fa-calendar-check"></i> Set End Date
-                                                        </button>
+                                                    {% endif %}
+                                                    
+                                                    <!-- Add this section for payment status -->
+                                                    <p style="margin-top: 20px;">
+                                                        <strong style="color: #555;">Payment Status:</strong> 
+                                                        <span style="display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.9em; font-weight: bold; 
+                                                            {% if project.payment == 'paid' %}background: #c3e6cb; color: #155724;
+                                                            {% else %}background: #f8d7da; color: #721c24;{% endif %}">
+                                                            {{ project.payment|title }}
+                                                        </span>
+                                                    </p>
+                                                    
+                                                    <!-- Add this section for feedback preview -->
+                                                    {% if project.feedbacks.exists %}
+                                                    <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                                                        <h4 style="color: #333; margin-bottom: 10px;">Customer Feedback:</h4>
+                                                        <p style="color: #555;">{{ project.feedbacks.first.feedback|truncatechars:100 }}</p>
+                                                        <button class="view-feedback-btn" data-project-id="{{ project.id }}" style="background-color: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">View Full Feedback</button>
                                                     </div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -281,7 +318,7 @@
                     var projectId = $(this).data('project-id');
                     var newStatus = $(this).data('status');
                     var button = $(this);
-            
+
                     $.ajax({
                         url: '{% url "projects_manage" %}',
                         method: 'POST',
@@ -315,10 +352,13 @@
                                 }
                                 statusSpan.attr('style', statusSpan.attr('style').replace(/background:[^;]+; color:[^;]+;/, '') + newStyle);
                                 
-                                // Update button styles
-                                $('.update-status[data-project-id="' + projectId + '"]').removeClass('active');
-                                button.addClass('active');
-            
+                                // Update button display
+                                var controlsDiv = $('#update-controls-' + projectId);
+                                if (newStatus === 'Completed') {
+                                    controlsDiv.empty();
+                                    $('#completed-date-' + projectId).text(response.completed_date);
+                                }
+
                                 // Show a success message
                                 Swal.fire({
                                     icon: 'success',
@@ -345,58 +385,25 @@
                         }
                     });
                 });
-            
-                // Initialize Flatpickr for all date-picker buttons
-                $('.date-picker').each(function() {
-                    var $button = $(this);
-                    var projectId = $button.data('project-id');
-                    var dateType = $button.data('date-type');
 
-                    var config = {
-                        enableTime: false,
-                        dateFormat: "Y-m-d",
-                        minDate: "today",
-                        onChange: function(selectedDates, dateStr, instance) {
-                            // Close the calendar immediately after date selection
-                            instance.close();
-                            
-                            updateProjectDate(projectId, dateType, dateStr, instance);
-                            
-                            // If this is a start date picker, update the min date for the corresponding end date picker
-                            if (dateType === 'start') {
-                                var endDatePicker = $('button.date-picker[data-project-id="' + projectId + '"][data-date-type="end"]')[0]._flatpickr;
-                                if (endDatePicker) {
-                                    endDatePicker.set('minDate', dateStr);
-                                }
-                            }
-                        },
-                        onOpen: function(selectedDates, dateStr, instance) {
-                            instance.set('clickOpens', true);
-                        }
-                    };
-
-                    // If this is an end date picker, set its initial minDate to the current start date (if exists)
-                    if (dateType === 'end') {
-                        var startDateStr = $('#start-date-' + projectId).text();
-                        if (startDateStr) {
-                            config.minDate = new Date(startDateStr);
-                        }
+                $('.date-picker').flatpickr({
+                    enableTime: false,
+                    dateFormat: "Y-m-d",
+                    minDate: "today",
+                    onChange: function(selectedDates, dateStr, instance) {
+                        instance.close();
+                        updateProjectDate(instance.element.dataset.projectId, 'start', dateStr);
                     }
-
-                    $button.flatpickr(config);
                 });
-            
-                function updateProjectDate(projectId, dateType, dateStr, instance) {
-                    var action = dateType === 'start' ? 'update_start_date' : 'update_completed_date';
-                    var dateField = dateType === 'start' ? 'start_date' : 'end_date';
 
+                function updateProjectDate(projectId, dateType, dateStr) {
                     $.ajax({
                         url: '{% url "projects_manage" %}',
                         method: 'POST',
                         data: {
                             'project_id': projectId,
-                            'action': action,
-                            [dateField]: dateStr,
+                            'action': 'update_start_date',
+                            'start_date': dateStr,
                             'csrfmiddlewaretoken': '{{ csrf_token }}'
                         },
                         success: function(response) {
@@ -405,13 +412,31 @@
                                 var formattedDate = new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                                 
                                 // Update the date display
-                                var displayId = dateType === 'start' ? 'start-date-' : 'completed-date-';
-                                $('#' + displayId + projectId).text(formattedDate);
+                                $('#start-date-' + projectId).text(formattedDate);
+
+                                // Update the controls
+                                var controlsDiv = $('#update-controls-' + projectId);
+                                controlsDiv.html(`
+                                    <button class="btn update-status" data-project-id="${projectId}" data-status="In Progress" style="background-color: #b8daff; color: #004085; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
+                                        <i class="fas fa-spinner fa-spin"></i> In Progress
+                                    </button>
+                                    <button class="btn update-status" data-project-id="${projectId}" data-status="On Hold" style="background-color: #f5c6cb; color: #721c24; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
+                                        <i class="fas fa-pause-circle"></i> On Hold
+                                    </button>
+                                    <button class="btn update-status" data-project-id="${projectId}" data-status="Completed" style="background-color: #c3e6cb; color: #155724; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer;">
+                                        <i class="fas fa-check-circle"></i> Completed
+                                    </button>
+                                `);
+
+                                // Reattach click event to new buttons
+                                controlsDiv.find('.update-status').click(function() {
+                                    $('.update-status').click();
+                                });
 
                                 // Show a success message
                                 Swal.fire({
                                     icon: 'success',
-                                    title: 'Date Updated',
+                                    title: 'Start Date Set',
                                     text: response.message,
                                     timer: 2000,
                                     showConfirmButton: false
@@ -423,8 +448,6 @@
                                     title: 'Error',
                                     text: response.message
                                 });
-                                // Reopen the calendar if there's an error
-                                instance.open();
                             }
                         },
                         error: function() {
@@ -433,12 +456,59 @@
                                 title: 'Error',
                                 text: 'An error occurred while updating the date.'
                             });
-                            // Reopen the calendar if there's an error
-                            instance.open();
                         }
                     });
                 }
             });
             </script>
+        <!-- Add this modal at the end of the body -->
+        <div id="feedbackModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+            <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; position: relative;">
+                <span class="close" style="position: absolute; top: 10px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+                <h2 style="margin-top: 10px;">Full Feedback</h2>
+                <p id="fullFeedback"></p>
+                <p id="feedbackDate" style="color: #777; font-size: 0.9em; margin-top: 10px;"></p>
+            </div>
+        </div>
+
+        <!-- Add this script at the end of the file -->
+        <script>
+            // Get the modal
+            var modal = document.getElementById("feedbackModal");
+
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            // Add click event to all view feedback buttons
+            document.querySelectorAll('.view-feedback-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    var projectId = this.getAttribute('data-project-id');
+                    var feedback = {
+                        {% for project in projects %}
+                            {{ project.id }}: {
+                                text: "{{ project.feedbacks.first.feedback|escapejs }}",
+                                date: "{{ project.feedbacks.first.created_at|date:"F d, Y" }}"
+                            }{% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    };
+
+                    document.getElementById('fullFeedback').textContent = feedback[projectId].text;
+                    document.getElementById('feedbackDate').textContent = "Submitted on: " + feedback[projectId].date;
+                    modal.style.display = "block";
+                });
+            });
+        </script>
     </body>
 </html>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage, MoodBoard, MoodBoardItem, Project, Review
+from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage, MoodBoard, MoodBoardItem, Project, Review, ProjectFeedback
 # ... (keep existing admin classes) ...
 class UsersAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'phone', 'email', 'address', 'home_town', 'district', 'state', 'pincode', 'username', 'status', 'user_type_id', 'deactivation_reason')
@@ -138,6 +138,26 @@ class ProjectAdmin(admin.ModelAdmin):
 
     readonly_fields = ('start_date',)
 
+class ProjectFeedbackAdmin(admin.ModelAdmin):
+    list_display = ('id', 'project', 'customer', 'feedback_preview', 'created_at')
+    list_filter = ('project', 'customer', 'created_at')
+    search_fields = ('project__design__name', 'customer__username', 'feedback')
+    date_hierarchy = 'created_at'
+    readonly_fields = ('created_at',)
+
+    def feedback_preview(self, obj):
+        return obj.feedback[:50] + '...' if len(obj.feedback) > 50 else obj.feedback
+    feedback_preview.short_description = 'Feedback Preview'
+
+    fieldsets = (
+        ('Feedback Information', {
+            'fields': ('project', 'customer', 'feedback')
+        }),
+        ('Timestamp', {
+            'fields': ('created_at',)
+        }),
+    )
+
 admin.site.register(MoodBoard, MoodBoardAdmin)
 admin.site.register(MoodBoardItem, MoodBoardItemAdmin)
 
@@ -158,3 +178,7 @@ admin.site.register(Payment_Type, Payment_TypeAdmin)
 
 
 admin.site.register(Project, ProjectAdmin)
+
+
+
+admin.site.register(ProjectFeedback, ProjectFeedbackAdmin)

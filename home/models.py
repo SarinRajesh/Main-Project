@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 
 class UserType(models.Model):
     user_type = models.CharField(max_length=100, unique=True)
@@ -223,3 +224,12 @@ class Project(models.Model):
 
     def __str__(self):
         return f"Project for {self.customer.username} - {self.design.name}"
+
+class ProjectFeedback(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='feedbacks')
+    customer = models.ForeignKey(Users, on_delete=models.CASCADE)
+    feedback = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Feedback for {self.project} by {self.customer.username}"

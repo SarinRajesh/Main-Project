@@ -234,9 +234,19 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         themeSystem: 'standard',
         select: function(info) {
-            // This function will now only handle date selection in month view
-            if (calendar.view.type === 'dayGridMonth') {
-                calendar.changeView('timeGridDay', info.startStr);
+            // Check if the selected date is available
+            var selectedDate = info.start;
+            var isAvailable = calendar.getEvents().some(function(event) {
+                return event.start.toDateString() === selectedDate.toDateString();
+            });
+
+            if (isAvailable) {
+                if (calendar.view.type === 'dayGridMonth') {
+                    calendar.changeView('timeGridDay', info.startStr);
+                }
+            } else {
+                showErrorModal('Selected date is not available. Please choose an available date.');
+                calendar.unselect();
             }
         },
         eventClick: function(info) {
@@ -311,6 +321,15 @@ document.addEventListener('DOMContentLoaded', function() {
     chooseButton.addEventListener('mouseout', function() {
         this.style.backgroundColor = '#000';
     });
+
+    function showErrorModal(message) {
+        Swal.fire({
+            title: 'Error',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
 });
 
 document.addEventListener("DOMContentLoaded", function() {
