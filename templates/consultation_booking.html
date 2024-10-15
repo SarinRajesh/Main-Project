@@ -224,40 +224,31 @@ document.addEventListener('DOMContentLoaded', function() {
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek'
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         buttonText: {
             today: 'Today',
             month: 'Month',
-            week: 'Week'
+            week: 'Week',
+            day: 'Day'
         },
         themeSystem: 'standard',
         select: function(info) {
-            var selectedDate = info.startStr;
-            var availableDates = [
-                {% for date in available_dates %}
-                    "{{ date.date_time|date:'Y-m-d' }}",
-                {% endfor %}
-            ];
-            if (availableDates.includes(selectedDate)) {
-                document.getElementById('schedule_date').value = selectedDate;
-                updateDateTimeDisplay(selectedDate);
-                calendar.unselect();
-                modal.style.display = "none";
-            } else {
-                alert('This date is not available for booking.');
+            // This function will now only handle date selection in month view
+            if (calendar.view.type === 'dayGridMonth') {
+                calendar.changeView('timeGridDay', info.startStr);
             }
         },
         eventClick: function(info) {
-            document.getElementById('schedule_date').value = info.event.startStr.split('T')[0];
-            updateDateTimeDisplay(info.event.startStr.split('T')[0]);
+            document.getElementById('schedule_date').value = info.event.start.toISOString();
+            updateDateTimeDisplay(info.event.start);
             modal.style.display = "none";
         },
         events: [
             {% for date in available_dates %}
             {
                 title: 'Available',
-                start: '{{ date.date_time|date:"Y-m-d H:i" }}',
+                start: '{{ date.date_time|date:"c" }}',
                 allDay: false,
                 color: '#4CAF50',
                 textColor: '#ffffff'
@@ -299,14 +290,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateDateTimeDisplay(selectedDate) {
-        {% for date in available_dates %}
-        if (selectedDate === '{{ date.date_time|date:"Y-m-d" }}') {
-            var formattedDateTime = '{{ date.date_time|date:"F d, Y h:i A" }}';
-            document.getElementById('selected_date_display').value = formattedDateTime;
-            return;
-        }
-        {% endfor %}
+    function updateDateTimeDisplay(selectedDateTime) {
+        var formattedDateTime = selectedDateTime.toLocaleString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+        document.getElementById('selected_date_display').value = formattedDateTime;
     }
 
     // Hover effect for the button

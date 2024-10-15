@@ -408,10 +408,17 @@
                         Swal.fire('Error', 'Cannot schedule consultations for past dates', 'error');
                         return;
                     }
+
+                    // Get events for the selected date
+                    var eventsOnDay = calendar.getEvents().filter(function(event) {
+                        return event.start.toDateString() === new Date(date).toDateString();
+                    });
+
                     Swal.fire({
                         title: 'Schedule Consultation',
                         html: `
                             <p>Select a time for the consultation on ${date}:</p>
+                            <p>Note: Consultations must be at least one hour apart.</p>
                             <input type="time" id="consultation-time" min="09:00" max="18:00" step="1800" required>
                         `,
                         icon: 'question',
@@ -423,7 +430,20 @@
                             const time = document.getElementById('consultation-time').value;
                             if (!time) {
                                 Swal.showValidationMessage('Please select a time');
+                                return false;
                             }
+
+                            // Check if the selected time is at least one hour apart from existing events
+                            const selectedDateTime = new Date(`${date}T${time}`);
+                            for (let event of eventsOnDay) {
+                                const eventTime = event.start;
+                                const timeDiff = Math.abs(selectedDateTime - eventTime) / 36e5; // Convert to hours
+                                if (timeDiff < 1) {
+                                    Swal.showValidationMessage('Consultations must be at least one hour apart');
+                                    return false;
+                                }
+                            }
+
                             return time;
                         },
                         customClass: {

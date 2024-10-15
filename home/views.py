@@ -28,6 +28,7 @@ import json
 import re
 from datetime import datetime, time
 from django.views.decorators.cache import never_cache
+from django.utils.formats import date_format
 
 
 class CustomTokenGenerator(PasswordResetTokenGenerator):
@@ -708,6 +709,8 @@ def get_chat_messages(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid design_id'})
 
 
+from django.utils.dateparse import parse_datetime
+
 @login_required
 @csrf_exempt
 def consultation_booking(request, portfolio_id):
@@ -721,7 +724,7 @@ def consultation_booking(request, portfolio_id):
     ).order_by('date_time')
 
     if request.method == 'POST':
-        schedule_date = request.POST.get('schedule_date')
+        schedule_date_time = request.POST.get('schedule_date')
         room_length = Decimal(request.POST.get('room_length', '0'))
         room_width = Decimal(request.POST.get('room_width', '0'))
         room_height = Decimal(request.POST.get('room_height', '0'))
@@ -730,24 +733,24 @@ def consultation_booking(request, portfolio_id):
         # Create or get the Amount instance
         consultation_amount = Amount.objects.create(amount=Decimal('500.00'))  # 500 INR as the consultation fee
 
-        # Parse the schedule_date
+        # Parse the schedule_date_time
         try:
-            schedule_date = parse_date(schedule_date)
+            schedule_date_time = parse_datetime(schedule_date_time)
         except ValueError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid date format'})
+            return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
 
-        if not schedule_date:
-            return JsonResponse({'status': 'error', 'message': 'Invalid date format'})
+        if not schedule_date_time:
+            return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
 
-        # Find the ConsultationDate object for the selected date
+        # Find the ConsultationDate object for the selected date and time
         consultation_date = ConsultationDate.objects.filter(
             designer=portfolio.designer_id,
-            date_time__date=schedule_date,
+            date_time=schedule_date_time,
             is_booked=False
         ).first()
 
         if not consultation_date:
-            return JsonResponse({'status': 'error', 'message': 'Selected date is not available'})
+            return JsonResponse({'status': 'error', 'message': 'Selected date and time is not available'})
 
         # Create consultation object
         consultation = Consultation(
@@ -771,6 +774,38 @@ def consultation_booking(request, portfolio_id):
         # Mark the selected date as booked
         consultation_date.is_booked = True
         consultation_date.save()
+
+        # Send email to the customer
+        subject = 'Consultation Scheduled - ElegantDecor'
+        message = f"""
+        Dear {request.user.name},
+
+        Your consultation has been successfully scheduled with ElegantDecor.
+
+        Consultation Details:
+        - Date and Time: {consultation.schedule_date_time}
+        - Designer: {portfolio.designer_id.name}
+        - Designer's Contact Number: {portfolio.designer_id.phone}
+        - Design: {portfolio.name}
+        - Room Dimensions: {room_length}x{room_width}x{room_height}
+        - Your Design Preferences: {design_preferences}
+
+        If you need to make any changes or have any questions, please don't hesitate to contact us.
+
+        Thank you for choosing ElegantDecor!
+
+        Best regards,
+        The ElegantDecor Team
+        """
+
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [request.user.email]
+
+        try:
+            send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+        except Exception as e:
+            # Log the error, but don't stop the consultation booking process
+            print(f"Error sending email: {str(e)}")
 
         return JsonResponse({'status': 'success', 'message': 'Consultation booked successfully'})
     
@@ -1205,13 +1240,23 @@ def edit_portfolio(request, portfolio_id):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     
 
+from django.core.mail import send_mail
+from django.conf import settings
+
+import logging
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib import messages
+
+logger = logging.getLogger(__name__)
+
 @nocache
 @login_required
 def consultations(request):
     user = request.user
     user_type = user.user_type_id.user_type if user.user_type_id else None
     designer = Users.objects.get(username=user.username)
-    consultations = Consultation.objects.filter(designer_id=designer).select_related('customer_id', 'design_id')
+    consultations = Consultation.objects.filter(designer_id=designer).select_related('customer_id', 'design_id').order_by('-id')
     
     if request.method == 'POST':
         if 'consultation_id' in request.POST:
@@ -1223,6 +1268,48 @@ def consultations(request):
             if action == 'approve':
                 consultation.consultation_status = 'Scheduled'
                 consultation.save()
+                
+                # Format the date and time
+                formatted_datetime = consultation.schedule_date_time.astimezone(timezone.get_current_timezone())
+                formatted_date = date_format(formatted_datetime, format="l, F j, Y")  # e.g., "Monday, October 17, 2024"
+                formatted_time = date_format(formatted_datetime, format="g:i A")  # e.g., "2:00 PM"
+
+                # Send email to the customer
+                subject = 'Consultation Approved - ElegantDecor'
+                message = f"""
+                Dear {consultation.customer_id.name},
+
+                Your consultation request has been approved and scheduled with ElegantDecor.
+
+                Consultation Details:
+                - Date: {formatted_date}
+                - Time: {formatted_time}
+                - Designer: {designer.name}
+                - Designer's Contact Number: {designer.phone}
+                - Design: {consultation.design_id.name}
+                - Room Dimensions: {consultation.room_length} x {consultation.room_width} x {consultation.room_height}
+                - Your Design Preferences: {consultation.design_preferences}
+
+                If you need to make any changes or have any questions, please don't hesitate to contact us.
+
+                Thank you for choosing ElegantDecor!
+
+                Best regards,
+                The ElegantDecor Team
+                """
+
+                from_email = settings.DEFAULT_FROM_EMAIL
+                recipient_list = [consultation.customer_id.email]
+
+                logger.info(f"Attempting to send email to {recipient_list}")
+
+                try:
+                    send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+                    logger.info("Email sent successfully")
+                except Exception as e:
+                    logger.error(f"Error sending email: {str(e)}")
+                    messages.error(request, "Consultation approved, but there was an error sending the email.")
+                
             elif action == 'cancel':
                 consultation.consultation_status = 'Pending'
                 consultation.save()
@@ -1296,7 +1383,7 @@ def my_consultations(request):
         return redirect('my_consultations')
     
     # Fetch consultations for the current user
-    consultations = Consultation.objects.filter(customer_id=user).select_related('designer_id', 'design_id')
+    consultations = Consultation.objects.filter(customer_id=user).select_related('designer_id', 'design_id').order_by('-id')
     
     context = {
         'consultations': consultations,
