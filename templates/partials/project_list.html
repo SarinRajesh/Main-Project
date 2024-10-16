@@ -1,0 +1,29 @@
+{% for project in projects %}
+<div style="background-color: #fff; border-radius: 15px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); overflow: hidden; transition: all 0.3s ease; position: relative;">
+    <div style="position: relative; width: 100%; height: 220px; overflow: hidden;">
+        <img src="{{ project.design.image.url }}" alt="{{ project.design.name }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.6)); opacity: 0; transition: opacity 0.3s ease;"></div>
+    </div>
+    <div style="padding: 25px; position: relative;">
+        <h3 style="font-size: 1.8em; color: #333; margin-bottom: 15px; font-weight: 600;">{{ project.design.name }}</h3>
+        <p style="display: inline-block; padding: 8px 15px; border-radius: 25px; font-size: 0.95em; font-weight: bold; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            {% if project.status == 'Not Started' %}background: linear-gradient(135deg, #ffeeba, #fff3cd); color: #856404;
+            {% elif project.status == 'In Progress' %}background: linear-gradient(135deg, #b8daff, #cce5ff); color: #004085;
+            {% elif project.status == 'Completed' %}background: linear-gradient(135deg, #c3e6cb, #d4edda); color: #155724;
+            {% elif project.status == 'On Hold' %}background: linear-gradient(135deg, #f5c6cb, #f8d7da); color: #721c24;
+            {% else %}background: linear-gradient(135deg, #f5c6cb, #f8d7da); color: #721c24;{% endif %}">
+            <i class="fas {% if project.status == 'Not Started' %}fa-hourglass-start
+                        {% elif project.status == 'In Progress' %}fa-spinner fa-spin
+                        {% elif project.status == 'Completed' %}fa-check-circle
+                        {% elif project.status == 'On Hold' %}fa-pause-circle
+                        {% else %}fa-question-circle{% endif %}" style="margin-right: 8px;"></i>
+            {{ project.status }}
+        </p>
+        <!-- ... rest of the project card content ... -->
+    </div>
+</div>
+{% empty %}
+<div class="no-projects" style="grid-column: 1 / -1; text-align: center; padding: 40px; background-color: #f8f9fa; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+    <p style="font-size: 1.5em; color: #6c757d; font-style: italic;">You don't have any projects yet.</p>
+</div>
+{% endfor %}

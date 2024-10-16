@@ -18,9 +18,11 @@
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
         <!--=============== favicons ===============-->
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     </head>
 
-    <body>
+    <body style="font-family: 'Poppins', sans-serif; background-color: #f4f7f6;">
         <!-- loader -->
         <div class="loader">
             <div id="movingBallG">
@@ -99,96 +101,62 @@
                         <!--  section  --> 
                         <section>
                             <div class="container">
-                                <!-- cart-wrap  -->
-                                <div class="cart-wrap fl-wrap">
-                                    <!-- cart header  -->
-                                    <div class="cart-header fl-wrap">
-                                        <div class="row">
-                                            <div class="col-md-7">
-                                                <h3>Consultations</h3>
-                                                <span class="tottal-items">{{ consultations|length }} Available{% if consultations|length != 1 %}s{% endif %}</span>
-                                            </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="section-title" style="text-align: center; margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                            <h2 style="font-size: 2.5em; color: #333; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;margin-top: -7%;margin-left: 75%;">Consultations</h2>
+                                            <p style="font-size: 1.1em; color: #666; max-width: 600px; text-align: center;">Manage your design consultations and appointments with ease.</p>
                                         </div>
                                     </div>
-                                    <!-- cart header end  -->    
-                                    <!-- cart -->
-                                    <div class="cart fl-wrap">
-                                        {% for consultation in consultations %}
-                                        <!-- consultation item -->
-                                        <div class="cart-item fl-wrap">
-                                            <div class="cart-image">
-                                                <img src="{{ consultation.design_id.image.url }}" alt="{{ consultation.design_id.name }}">
-                                            </div>
-                                            <div class="cart-container">
-                                                <table class="table table-border checkout-table">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>
-                                                                <h5 class="product-name">{{ consultation.design_id.name }}</h5>
-                                                            </td>
-                                                            <td>
-                                                                <label><b>Customer: </b></label>
-                                                                <span>{{ consultation.customer_id.name }}</span>
-                                                            </td>
-                                                            <td>
-                                                                <label><b>Date & Time: </b></label>
-                                                                <span>{{ consultation.date_time|date:"F d, Y H:i" }}</span>
-                                                            </td>
-                                                            <td>
-                                                                <h5 class="order-money">Rs. {{ consultation.design_id.amount.amount|floatformat:2 }}</h5>
-                                                            </td>
-                                                            <td>
-                                                                <label><b>Status:</b></label>
-                                                                <span>{{ consultation.consultation_status }}</span>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                                
-                                                <!-- consultation-item-footer -->
-                                                <div class="cart-item-footer fl-wrap">
-                                                    <div class="row">
-                                                        <div class="col-md-10">
-                                                            <p>{{ consultation.design_id.description|truncatewords:20 }}</p>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            {% if consultation.consultation_status == 'Scheduled' %}
-                                                                <form method="POST" action="{% url 'consultations' %}">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
-                                                                    <input type="hidden" name="action" value="complete">
-                                                                    <button type="submit" class="btn float-btn flat-btn" style="margin-left: -194px;height: 4vh;">Completed ?</button>
-                                                                </form>
-                                                                <form method="POST" action="{% url 'consultations' %}">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
-                                                                    <input type="hidden" name="action" value="cancel">
-                                                                    <button type="submit" class="btn float-btn flat-btn" style="display: inline-block;height: 4vh; background-color: #ff0000;border: none; color: #ffffff;">Cancel</button>
-                                                                </form>
-                                                            {% elif consultation.consultation_status == 'Requested' or consultation.consultation_status == 'Pending' %}
-                                                                <form method="POST" action="{% url 'consultations' %}">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
-                                                                    <input type="hidden" name="action" value="approve">
-                                                                    <button type="submit" class="btn float-btn flat-btn" style="margin-left: -25vh;height: 4vh;">Schedule</button>
-                                                                </form>
-                                                             
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- consultation-item-footer end  -->
-                                            </div>
-                                        </div>
-                                        <!-- consultation item end-->
-                                        {% empty %}
-                                        <p>No Consultations Available.</p>
-                                        {% endfor %}
-                                    </div>
-
-
                                 </div>
-                                <!-- cart-wrap end  -->
+                                <div class="row">
+                                    {% for consultation in consultations %}
+                                    <div class="col-md-6 col-lg-4" style="margin-bottom: 30px;">
+                                        <div style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden; transition: all 0.3s ease; height: 100%; display: flex; flex-direction: column;">
+                                            <div style="background-color: #0d171d; color: #ffffff; padding: 15px; font-size: 1.2em; font-weight: 600;">
+                                                {{ consultation.design_id.name }}
+                                            </div>
+                                            <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column;">
+                                                <img src="{{ consultation.design_id.image.url }}" alt="{{ consultation.design_id.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 5px;">
+                                                <div style="margin-top: 15px; flex-grow: 1;">
+                                                    <p style="margin: 5px 0;"><i class="fas fa-user"></i> <strong>Customer:</strong> {{ consultation.customer_id.name }}</p>
+                                                    <p style="margin: 5px 0;"><i class="far fa-calendar-alt"></i> <strong>Date & Time:</strong> {{ consultation.date_time|date:"F d, Y H:i" }}</p>
+                                                    <p style="margin: 5px 0;"><i class="fas fa-dollar-sign"></i> <strong>Price:</strong> Rs. {{ consultation.design_id.amount.amount|floatformat:2 }}</p>
+                                                    <p style="margin: 5px 0;"><i class="fas fa-info-circle"></i> <strong>Status:</strong> {{ consultation.consultation_status }}</p>
+                                                    <p style="margin: 5px 0;"><i class="fas fa-align-left"></i> <strong>Description:</strong> {{ consultation.design_id.description|truncatewords:20 }}</p>
+                                                </div>
+                                                <div style="text-align: center; margin-top: 20px; min-height: 50px;">
+                                                    {% if consultation.consultation_status == 'Scheduled' %}
+                                                        <form method="POST" action="{% url 'consultations' %}" style="display: inline-block; margin-right: 10px;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
+                                                            <input type="hidden" name="action" value="complete">
+                                                            <button type="submit" style="padding: 10px 20px; border-radius: 30px; font-weight: 600; text-transform: uppercase; transition: all 0.3s ease; background-color: #3498db; color: #ffffff; border: none; cursor: pointer;">Complete</button>
+                                                        </form>
+                                                        <form method="POST" action="{% url 'consultations' %}" style="display: inline-block;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
+                                                            <input type="hidden" name="action" value="cancel">
+                                                            <button type="submit" style="padding: 10px 20px; border-radius: 30px; font-weight: 600; text-transform: uppercase; transition: all 0.3s ease; background-color: #e74c3c; color: #ffffff; border: none; cursor: pointer;">Cancel</button>
+                                                        </form>
+                                                    {% elif consultation.consultation_status == 'Requested' or consultation.consultation_status == 'Pending' %}
+                                                        <form method="POST" action="{% url 'consultations' %}">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
+                                                            <input type="hidden" name="action" value="approve">
+                                                            <button type="submit" style="padding: 10px 20px; border-radius: 30px; font-weight: 600; text-transform: uppercase; transition: all 0.3s ease; background-color: #2ecc71; color: #ffffff; border: none; cursor: pointer;">Schedule</button>
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div class="col-12">
+                                        <p style="text-align: center; font-size: 1.1em; color: #666;">No Consultations Available.</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </section>
                         <!-- section end  -->

@@ -2345,7 +2345,7 @@ def project(request, project_id):
                     existing_feedback.feedback = feedback
                     existing_feedback.save()
                 else:
-                    ProjectFeedback.objects.create(
+                    existing_feedback = ProjectFeedback.objects.create(
                         project=project,
                         customer=request.user,
                         feedback=feedback

@@ -105,26 +105,29 @@
                     <div class="content">
                         <!--  section  --> 
                         <section>
-                            <div class="container" style="margin-top: -70px;">
-                                <h1 class="text-center mb-5" style="font-size: 2.5em; color: #333; margin-bottom: 30px;">Manage Projects</h1>
+                            <div class="container" style="margin-top: -70px; padding: 20px; background-color: #f8f9fa; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.1);">
+                                <h1 class="text-center mb-5" style="font-size: 2.8em; color: #333; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Manage Projects</h1>
                                 {% for project in projects %}
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <div style="background: #fff; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; margin-bottom: 40px;">
+                                        <div style="background: linear-gradient(135deg, #fff, #f0f0f0); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; margin-bottom: 40px; border: 1px solid #e0e0e0;">
                                             <div class="row">
-                                                <div class="col-md-4">
+                                                <div class="col-md-4" style="position: relative; overflow: hidden;">
                                                     <a href="{% url 'portfolio_details' portfolio_id=project.design.id %}">
-                                                        <img src="{{ project.design.image.url }}" alt="{{ project.design.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                        <img src="{{ project.design.image.url }}" alt="{{ project.design.name }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                                                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center;">
+                                                            <span style="color: #fff; font-size: 1.2em; font-weight: bold;">View Details</span>
+                                                        </div>
                                                     </a>
                                                 </div>
-                                                <div class="col-md-8" style="padding: 20px;">
+                                                <div class="col-md-8" style="padding: 30px;">
                                                     <div class="row">
                                                         <div class="col-md-6">
-                                                            <h3 style="font-size: 1.8em; color: #333; margin-bottom: 15px;">{{ project.design.name }}</h3>
-                                                            <p style="margin-bottom: 10px;"><strong style="color: #555;">Customer:</strong> {{ project.customer.username }}</p>
+                                                            <h3 style="font-size: 2em; color: #333; margin-bottom: 15px; font-weight: 700;">{{ project.design.name }}</h3>
+                                                            <p style="margin-bottom: 10px; font-size: 1.1em;"><strong style="color: #555;">Customer:</strong> <span style="color: #007bff;">{{ project.customer.username }}</span></p>
                                                             <p style="margin-bottom: 10px;">
                                                                 <strong style="color: #555;">Status:</strong> 
-                                                                <span id="status-{{ project.id }}" style="display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.9em; font-weight: bold; 
+                                                                <span id="status-{{ project.id }}" style="display: inline-block; padding: 8px 15px; border-radius: 25px; font-size: 0.9em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
                                                                     {% if project.status == 'Not Started' %}background: #ffeeba; color: #856404;
                                                                     {% elif project.status == 'In Progress' %}background: #b8daff; color: #004085;
                                                                     {% elif project.status == 'Completed' %}background: #c3e6cb; color: #155724;
@@ -134,16 +137,16 @@
                                                                 </span>
                                                             </p>
                                                         </div>
-                                                        <div class="col-md-6 text-right"   style="margin-top: 6%;">
-                                                            <p style="margin-bottom: 10px;">
+                                                        <div class="col-md-6 text-right" style="margin-top: 6%;">
+                                                            <p style="margin-bottom: 10px; font-size: 1.1em;">
                                                                 <strong style="color: #555;">Start Date:</strong> 
-                                                                <span id="start-date-{{ project.id }}">
+                                                                <span id="start-date-{{ project.id }}" style="color: #28a745; font-weight: bold;">
                                                                     {% if project.start_date %}{{ project.start_date|date:"M. d, Y" }}{% else %}Not set{% endif %}
                                                                 </span>
                                                             </p>
-                                                            <p style="margin-bottom: 10px;">
+                                                            <p style="margin-bottom: 10px; font-size: 1.1em;">
                                                                 <strong style="color: #555;">End Date:</strong> 
-                                                                <span id="completed-date-{{ project.id }}">
+                                                                <span id="completed-date-{{ project.id }}" style="color: #dc3545; font-weight: bold;">
                                                                     {% if project.completed_date %}{{ project.completed_date|date:"M. d, Y" }}{% else %}Not set{% endif %}
                                                                 </span>
                                                             </p>
@@ -151,46 +154,54 @@
                                                     </div>
 
                                                     {% if project.status != 'Completed' %}
-                                                    <div id="update-controls-{{ project.id }}" style="margin-top: 15px;">
+                                                    <div id="update-controls-{{ project.id }}" style="margin-top: 25px;">
                                                         {% if not project.start_date %}
-                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Not Started" style="background-color: #ffeeba; color: #856404; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
+                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Not Started" style="background-color: #ffeeba; color: #856404; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                                                             <i class="fas fa-hourglass-start"></i> Not Started
                                                         </button>
-                                                        <button class="btn date-picker" data-project-id="{{ project.id }}" data-date-type="start" style="background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
+                                                        <button class="btn date-picker" data-project-id="{{ project.id }}" data-date-type="start" style="background-color: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                                                             <i class="far fa-calendar-alt"></i> Set Start Date
                                                         </button>
                                                         {% else %}
-                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="In Progress" style="background-color: #b8daff; color: #004085; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
+                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="In Progress" style="background-color: #b8daff; color: #004085; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                                                             <i class="fas fa-spinner fa-spin"></i> In Progress
                                                         </button>
-                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="On Hold" style="background-color: #f5c6cb; color: #721c24; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
+                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="On Hold" style="background-color: #f5c6cb; color: #721c24; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                                                             <i class="fas fa-pause-circle"></i> On Hold
                                                         </button>
-                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Completed" style="background-color: #c3e6cb; color: #155724; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer;">
+                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Completed" style="background-color: #c3e6cb; color: #155724; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                                                             <i class="fas fa-check-circle"></i> Completed
                                                         </button>
                                                         {% endif %}
                                                     </div>
                                                     {% endif %}
                                                     
-                                                    <!-- Add this section for payment status -->
-                                                    <p style="margin-top: 20px;">
+                                                    <!-- Payment status section -->
+                                                    <p style="margin-top: 25px; font-size: 1.1em;">
                                                         <strong style="color: #555;">Payment Status:</strong> 
-                                                        <span style="display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.9em; font-weight: bold; 
+                                                        <span style="display: inline-block; padding: 8px 15px; border-radius: 25px; font-size: 0.9em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
                                                             {% if project.payment == 'paid' %}background: #c3e6cb; color: #155724;
                                                             {% else %}background: #f8d7da; color: #721c24;{% endif %}">
                                                             {{ project.payment|title }}
                                                         </span>
                                                     </p>
                                                     
-                                                    <!-- Add this section for feedback preview -->
-                                                    {% if project.feedbacks.exists %}
-                                                    <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
-                                                        <h4 style="color: #333; margin-bottom: 10px;">Customer Feedback:</h4>
-                                                        <p style="color: #555;">{{ project.feedbacks.first.feedback|truncatechars:100 }}</p>
-                                                        <button class="view-feedback-btn" data-project-id="{{ project.id }}" style="background-color: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">View Full Feedback</button>
+                                                    <!-- Feedback section -->
+                                                    <div style="margin-top: 25px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                                                        <h4 style="color: #333; margin-bottom: 15px; font-size: 1.3em; font-weight: 600;">Customer Feedback</h4>
+                                                        {% if project.feedbacks.exists %}
+                                                            <p style="color: #555; font-style: italic;">"{{ project.feedbacks.first.feedback|truncatechars:100 }}"</p>
+                                                            <button class="view-feedback-btn" data-project-id="{{ project.id }}" style="background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; margin-top: 10px;">View Full Feedback</button>
+                                                        {% else %}
+                                                            <div style="background-color: #e9ecef; padding: 15px; border-radius: 8px; text-align: center;">
+                                                                <p style="color: #6c757d; margin-bottom: 10px;">No feedback provided yet.</p>
+                                                                <div style="font-size: 3em; color: #adb5bd;">
+                                                                    <i class="far fa-comment-dots"></i>
+                                                                </div>
+                                                                <p style="color: #6c757d; margin-top: 10px; font-style: italic;">Feedback will appear here once the customer submits it.</p>
+                                                            </div>
+                                                        {% endif %}
                                                     </div>
-                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -199,7 +210,11 @@
                                 {% empty %}
                                 <div class="row">
                                     <div class="col-12">
-                                        <p class="text-center" style="color: #6c757d; font-size: 1.1em;">No projects found.</p>
+                                        <div style="text-align: center; padding: 40px; background-color: #fff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                            <i class="fas fa-clipboard-list" style="font-size: 4em; color: #6c757d; margin-bottom: 20px;"></i>
+                                            <p style="color: #6c757d; font-size: 1.4em; font-style: italic;">No projects found.</p>
+                                            <p style="color: #6c757d; font-size: 1.1em; margin-top: 10px;">Start by creating a new project or check back later.</p>
+                                        </div>
                                     </div>
                                 </div>
                                 {% endfor %}
@@ -463,11 +478,11 @@
             </script>
         <!-- Add this modal at the end of the body -->
         <div id="feedbackModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-            <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; position: relative;">
-                <span class="close" style="position: absolute; top: 10px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-                <h2 style="margin-top: 10px;">Full Feedback</h2>
-                <p id="fullFeedback"></p>
-                <p id="feedbackDate" style="color: #777; font-size: 0.9em; margin-top: 10px;"></p>
+            <div class="modal-content" style="background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; position: relative; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <span class="close" style="position: sticky; top: 10px; float: right; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+                <h2 style="margin-top: 10px; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Full Feedback</h2>
+                <p id="fullFeedback" style="margin-top: 20px; line-height: 1.6; color: #555;"></p>
+                <p id="feedbackDate" style="color: #777; font-size: 0.9em; margin-top: 20px; font-style: italic;"></p>
             </div>
         </div>
 
@@ -507,6 +522,9 @@
                     document.getElementById('fullFeedback').textContent = feedback[projectId].text;
                     document.getElementById('feedbackDate').textContent = "Submitted on: " + feedback[projectId].date;
                     modal.style.display = "block";
+                    
+                    // Scroll to the top of the modal content
+                    document.querySelector('.modal-content').scrollTop = 0;
                 });
             });
         </script>
