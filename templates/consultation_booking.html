@@ -18,6 +18,8 @@
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
         <!--=============== favicons ===============-->
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     </head>
 
     <body>
@@ -115,17 +117,16 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="pr-title">
-                                                <div class="swiper-slide">
-                                                    <a href="{{ portfolio.image.url }}" class="gallery-popup popgal" ><i class="fa fa-search"></i></a>
-                                                    <img src="{{ portfolio.image.url }}" alt="{{ portfolio.name }}" style="margin-left: -21vh;margin-top:-6vh;height: 544px;width: 235%;">
+                                                <!-- <div class="swiper-slide">
+                                                       <img src="{{ portfolio.image.url }}" alt="{{ portfolio.name }}" style="margin-left: -21vh;margin-top:-6vh;height: 544px;width: 235%;">
                                                  
-                                                </div>
+                                                </div> -->
                                                 <!-- <span>Internet tend to repeat predefined chunks If you are going to use a passage of Lorem Ipsum.</span> -->
                                             </div>
                                         </div>
                                     
                                         
-                                            <div class="col-md-8"  style="margin-left: 58%;margin-top: -43%;width:47%">
+                                            <div class="col-md-8" style="margin-left: 0; margin-top: 20px; width: 100%;">
                                        
                                                 <form id="consultationForm" method="post" action="{% url 'consultation_booking' portfolio.id %}" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                                                     {% csrf_token %}
@@ -134,22 +135,22 @@
                                                     </h3>
                                                     <p style="margin-top: 20px;">
                                                         <label for="schedule_date" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Schedule Date and Time:</label>
-                                                        <div style="display: flex; align-items: center;">
-                                                            <input type="text" id="selected_date_display" readonly style="flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
-                                                            <button type="button" id="openCalendar" class="btn float-btn" style="margin-left: 10px; background-color: #000; color: #fff; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;">Choose Date</button>
+                                                        <div style="display: flex; flex-wrap: wrap; align-items: center;">
+                                                            <input type="text" id="selected_date_display" readonly style="flex: 1 1 200px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff; margin-bottom: 10px;">
+                                                            <button type="button" id="openCalendar" class="btn float-btn" style="flex: 0 0 auto; margin-left: 10px; background-color: #000; color: #fff; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;">Choose Date</button>
                                                         </div>
                                                         <input type="hidden" name="schedule_date" id="schedule_date" required>
                                                     </p>
-                                                    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                                                        <p style="width: 30%;">
+                                                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 20px;">
+                                                        <p style="flex: 1 1 30%; min-width: 200px; margin-right: 10px; margin-bottom: 10px;">
                                                             <label for="room_length" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Length (ft):</label>
                                                             <input type="number" name="room_length" id="room_length" step="0.01" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
                                                         </p>
-                                                        <p style="width: 30%;">
+                                                        <p style="flex: 1 1 30%; min-width: 200px; margin-right: 10px; margin-bottom: 10px;">
                                                             <label for="room_width" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Width (ft):</label>
                                                             <input type="number" name="room_width" id="room_width" step="0.01" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
                                                         </p>
-                                                        <p style="width: 30%;">
+                                                        <p style="flex: 1 1 30%; min-width: 200px; margin-bottom: 10px;">
                                                             <label for="room_height" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Height (ft):</label>
                                                             <input type="number" name="room_height" id="room_height" step="0.01" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #fff;">
                                                         </p>
@@ -164,14 +165,7 @@
                                                     </p>
                                                     <div class="clearfix"></div>
                                                     <span class="bold-separator" style="display: block; margin: 20px 0; height: 2px; background-color: #e0e0e0;"></span>
-                                                    <!-- <ul class="pr-list" style="list-style-type: none; padding: 0;">
-                                                        <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Designer:</span> {{ portfolio.designer_id.name }}</li>
-                                                        <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Design:</span> {{ portfolio.name }}</li>
-                                                        <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Category:</span> {{ portfolio.category }}</li>
-                                                       <li style="margin-bottom: 10px;"><span style="font-weight: bold; color: #555;">Amount:</span> {{ portfolio.amount.amount }}</li>
-                                                    </ul> -->
-                                                    <span class="bold-separator" style="display: block; margin: 20px 0; height: 2px; background-color: #e0e0e0;"></span>
-                                                    <button type="button" id="bookConsultation" class="btn float-btn flat-btn" style="margin-top: 7%;margin-left:-13%; vertical-align: middle;">Submit</button>
+                                                    <button type="button" id="bookConsultation" class="btn float-btn flat-btn" style="width: 100%; margin-top: 20px;">Submit</button>
                                                
                                                 </form>
 
@@ -192,15 +186,7 @@
                                     </div>
                                 </div>
                                 
-                                {% if messages %}
-                                                    {% for message in messages %}
-                                                        {% if forloop.last %}
-                                                            <div style="margin-top: 15px;margin-left: 100vh;" class="alert alert-{{ message.tags }}">
-                                                                {{ message }}
-                                                            </div>
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                    {% endif %}
+                         
                             </div>
                             <!-- container end -->
                             <div class="partcile-dec" data-parcount="120"></div>
@@ -371,7 +357,6 @@ function initializeRazorpay() {
         "description": "Consultation Booking",
         "image": "{% static 'index/images/ElegantDecor.gif' %}",
         "handler": function (response){
-            // On successful payment, create the consultation
             var form = document.getElementById('consultationForm');
             var formData = new FormData(form);
             
@@ -392,6 +377,17 @@ function initializeRazorpay() {
                             window.location.href = '{% url "my_consultations" %}';
                         }
                     });
+                } else if (data.status === 'error' && data.errors) {
+                    let errorMessage = 'Please correct the following errors:\n';
+                    for (let field in data.errors) {
+                        errorMessage += `${data.errors[field]}\n`;
+                    }
+                    Swal.fire({
+                        title: 'Error',
+                        text: errorMessage,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
                 } else {
                     Swal.fire({
                         title: 'Error',
@@ -405,7 +401,7 @@ function initializeRazorpay() {
                 console.error('Error:', error);
                 Swal.fire({
                     title: 'Error',
-                    text: 'An error occurred. Please try again.',
+                    text: 'An unexpected error occurred. Please try again.',
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
@@ -451,6 +447,32 @@ function initializeRazorpay() {
 .fc-event {
     border-radius: 2px;
     font-size: 0.85em;
+}
+
+@media (max-width: 768px) {
+    .col-md-8 {
+        margin-left: 0 !important;
+        margin-top: 20px !important;
+        width: 100% !important;
+    }
+
+    #consultationForm {
+        padding: 15px;
+    }
+
+    .bold-title {
+        font-size: 1.5em;
+    }
+
+    #openCalendar {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    #bookConsultation {
+        margin-left: 0;
+    }
 }
 </style>
                     <!-- content  end --> 

@@ -52,8 +52,33 @@
                 </div>
                 <!-- mobile nav end--> 
                 <!--  navigation --> 
-                <div class="nav-holder">
-                
+                <div class="nav-holder" style="display: none;">
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li>
+                            <a href="{% url 'users_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Users Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'designs_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designs Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'consultations_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Consultations Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'projects_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Projects Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'products_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Products Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'orders_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Orders Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_designer' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Designers</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_product' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Products</a>
+                        </li>
+                    </ul>
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -164,26 +189,7 @@
                 </div>
                 <!-- content-holder end -->
             </div>
-            <!-- wrapper end -->
-            <!--search-form-holder -->  
-            <div class="search-form-holder fixed-search">
-                <div class="search-form-bg"></div>
-                <div class="search-form-wrap">
-                    <div class="container">
-                        <form class="searchform" method="get"  >
-                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
-                        </form>
-                        <div class="close-fixed-search"></div>
-                    </div>
-                    <div class="dublicated-text"></div>
-                </div>
-            </div>
-            <!--search-form-holder  end-->  
-            <!-- Share container  -->
-            <div class="share-wrapper isShare">
-                <div class="share-container"></div>
-            </div>
-            <!-- Share container  end-->
+
             <!-- footer -->
         <!-- footer -->
 <footer class="main-footer" style="width: 15%;    background-color: #000000f2; padding: 20px; height: 100vh; position: fixed;">
@@ -260,5 +266,21 @@
         <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+            <script>
+                function updateNavDisplay() {
+                    var navHolder = document.querySelector('.nav-holder');
+                    if (window.innerWidth < 768) {
+                        navHolder.style.display = 'block';
+                    } else {
+                        navHolder.style.display = 'none';
+                    }
+                }
+
+                // Run on page load
+                updateNavDisplay();
+
+                // Run on window resize
+                window.addEventListener('resize', updateNavDisplay);
+            </script>
  </body>
 </html>

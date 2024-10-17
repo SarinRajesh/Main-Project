@@ -17,7 +17,37 @@
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
         <!--=============== favicons ===============-->
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            @media (max-width: 768px) {
+                #wrapper {
+                    width: 100% !important;
+                    max-width: none !important;
+                }
+                .container {
+                    padding: 0 15px !important;
+                }
+                .col-md-4, .col-md-8 {
+                    width: 100% !important;
+                    max-width: none !important;
+                    margin-left: 0 !important;
+                    margin-top: 0 !important;
+                }
+                .pr-title img {
+                    margin-left: 0 !important;
+                    margin-top: 0 !important;
+                    height: auto !important;
+                    width: 100% !important;
+                }
+                .det-wrap {
+                    flex-direction: column !important;
+                }
+                .btn {
+                    margin-top: 10px !important;
+                    margin-left: 0 !important;
+                }
+            }
+        </style>
     </head>
 
     <body>
@@ -166,7 +196,7 @@
                                         <div class="col-md-4">
                                             <div class="pr-title">
                                                 <div class="swiper-slide">
-                                                    <a href="{{ portfolio.image.url }}" class="gallery-popup popgal" ><i class="fa fa-search"></i></a>
+                                                    
                                                     <img src="{{ portfolio.image.url }}" alt="{{ portfolio.name }}" style="margin-left: -21vh;margin-top:-6vh;height: 544px;width: 235%;">
                                                  
                                                 </div>
@@ -177,15 +207,14 @@
                                         
                                             {% if user_type == 'Designer' %}
                                             <div class="col-md-8"  style="margin-left: 58%;margin-top: -43%;width:47%">
-                                       
                                                 <form method="post" action="{% url 'edit_portfolio' portfolio.id %}" enctype="multipart/form-data" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                                                     {% csrf_token %}
-                                                    <h3 class="bold-title" style="padding-bottom: 14px; color: #333; border-bottom: 2px solid #e0e0e0;">
-                                                        <input type="text" name="name" value="{{ portfolio.name }}" style="width: 100%; font-size: 24px; padding: 10px; border: none; border-bottom: 2px solid #ddd; background-color: transparent; transition: border-color 0.3s;">
-                                                   
-                                                    <a href="{% url 'delete_portfolio' portfolio.id %}" onclick="return confirm('Are you sure you want to delete this design?');" style="color: #ff4444; font-size: 24px; margin-left: 15px;">
-                                                        <i class="fas fa-trash-alt" style="margin-left: 90%;" ></i>
-                                                    </a> </h3>
+                                                    <h3 class="bold-title" style="padding-bottom: 14px; color: #333; border-bottom: 2px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+                                                        <input type="text" name="name" value="{{ portfolio.name }}" style="width: calc(100% - 40px); font-size: 24px; padding: 10px; border: none; border-bottom: 2px solid #ddd; background-color: transparent; transition: border-color 0.3s;">
+                                                        <a href="{% url 'delete_portfolio' portfolio.id %}" onclick="return confirm('Are you sure you want to delete this design?');" style="color: #ff4444; font-size: 24px;">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </a>
+                                                    </h3>
                                                     <p style="margin-top: 20px;">
                                                         <textarea name="description" style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; font-family: Arial, sans-serif;">{{ portfolio.description }}</textarea>
                                                     </p>
@@ -225,9 +254,8 @@
                                                     <!-- Submit button for saving changes -->
                                                     <button type="submit" class="btn float-btn flat-btn" style="margin-top: -106px;margin-left: 52%;">Save Changes</button>
                                                     
-                                                    </form>
-
-
+                                                </form>
+                                            </div>
                                             {% else %}
                                         <div class="col-md-8"  style="margin-left: 58%;margin-top: -40%;width:47%">
                                             <h3 class="bold-title" style="padding-bottom: 14px;">{{ portfolio.name }}</h3>
@@ -235,41 +263,35 @@
                                             <div class="clearfix"></div>
                                             
                                             <span class="bold-separator"></span>
-                                            <ul class="pr-list">
-
+                                            <ul class="pr-list" style="padding-left: 0; list-style-type: none;">
                                                 <li><span>Client :</span> {{ portfolio.designer_id.name }}</li>
-                                                <li><span>Category :</span> {{ portfolio.category_display }}</span></li>
-                                                <li><span>Square Feet :</span> {{ portfolio.sqft }}</li>  <!-- Added sqft display -->
+                                                <li><span>Category :</span> {{ portfolio.category_display }}</li>
+                                                <li><span>Square Feet :</span> {{ portfolio.sqft }}</li>
                                                 <li><span>Amount :</span> {{ portfolio.amount.amount }}</li>
-                                                <li><span>Status :</span> {{ consultation_status|default:"Not Booked" }}</li>
                                                 <li><span>Location :</span> <a href="https://goo.gl/maps/UzN5m" target="_blank">{{ portfolio.designer_id.address }}, {{ portfolio.designer_id.home_town }}, {{ portfolio.designer_id.district }}, {{ portfolio.designer_id.state }}, {{ portfolio.designer_id.pincode}}</a></li>
                                              
                                             </ul>
                                             <span class="dec-border fl-wrap"></span>
                                             {% if user.is_authenticated %}
-                                            {% if consultation_status == 'Requested' %}
-                                                <!-- Show Proceed and Cancel buttons if the consultation is booked -->
-                                                <a href="" class="btn float-btn flat-btn" style="margin-top:-11%">Requested</a>
-                                              
-                                                <form method="post" style="display:inline;">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="portfolio_id" value="{{ portfolio.id }}">
-                                                    <button type="submit" name="reject" class="btn float-btn flat-btn" style="background-color: #ab1605;height: 9vh;border:none;margin-left: 5vh;margin-top:-11%">Cancel</button>
-                                                </form>
-                                            {% elif consultation_status == 'Approved' %}
-                                                <!-- Show Approved button if the consultation is approved -->
-                                                <button class="btn float-btn flat-btn" style="margin-top:-11%" disabled>Approved</button>
+                                                {% if consultation_status == 'Requested' %}
+                                                    <a href="" class="btn float-btn flat-btn" style="display: inline-block; margin-top: 10px; margin-right: 10px;">Requested</a>
+                                                    <form method="post" style="display: inline-block;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="portfolio_id" value="{{ portfolio.id }}">
+                                                        <button type="submit" name="reject" class="btn float-btn flat-btn" style="background-color: #ab1605; border: none; margin-top: 10px;">Cancel</button>
+                                                    </form>
+                                                {% elif consultation_status == 'Approved' %}
+                                                    <button class="btn float-btn flat-btn" style="margin-top: 10px;" disabled>Approved</button>
+                                                {% elif consultation_status == 'Scheduled' %}
+                                                    <button class="btn float-btn flat-btn" style="margin-top: 10px;" disabled>Scheduled</button>
+                                                {% else %}
+                                                    <a href="#" id="bookConsultationBtn" class="btn float-btn flat-btn" style="margin-top: 10px;">Book Consultation</a>
+                                                {% endif %}
                                             {% else %}
-                                                <!-- Show Book Consultation button if the consultation is not booked -->
-                                                <a href="#" id="bookConsultationBtn" class="btn float-btn flat-btn" style="margin-top:-11%">Book Consultation</a>
+                                                <a href="{% url 'signin' %}" class="btn float-btn flat-btn" style="margin-top: 10px;">Sign in to book consultation</a>
                                             {% endif %}
-                                        {% else %}
-                                            <!-- Show sign in button for guest users -->
-                                            <a href="{% url 'signin' %}" class="btn float-btn flat-btn" style="margin-top:-11%">Sign in to book consultation</a>
-                                        {% endif %}
-                                        {% endif %}
-                                        </div>
-                                        
+                                            {% endif %}
+                                            </div>
                                         <!-- Hidden Consultation Form -->
                                       
                                         {% block extra_js %}
@@ -309,15 +331,7 @@
                                     </div>
                                 </div>
                                 
-                                {% if messages %}
-                                                    {% for message in messages %}
-                                                        {% if forloop.last %}
-                                                            <div style="margin-top: 15px;margin-left: 100vh;" class="alert alert-{{ message.tags }}">
-                                                                {{ message }}
-                                                            </div>
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                    {% endif %}
+                 
                             </div>
                             <!-- container end -->
                             <div class="partcile-dec" data-parcount="120"></div>
@@ -433,11 +447,11 @@
                 <div class="fixed-title"><span>Designs</span></div>
                 <div class="footer-social">
                     <ul>
-                        <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
-                        <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
-                        <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
-                        <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
-                        <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fab fa-facebook-f"></i></a></li>
+                        <li><a href="#" target="_blank"><i class="fab fa-twitter"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fab fa-instagram"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fab fa-pinterest-p"></i></a></li>
+                        <li><a href="#" target="_blank" ><i class="fab fa-tumblr"></i></a></li>
                     </ul>
                 </div>
             </footer>

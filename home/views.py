@@ -569,60 +569,59 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils import timezone
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+@login_required
 def portfolio_details(request, portfolio_id):
     portfolio = get_object_or_404(Design.objects.select_related('designer_id'), id=portfolio_id)
     
     # Replace underscores with spaces in the category
     portfolio.category_display = portfolio.category.replace("_", " ")
     
-    user_type = None
-    user_details_complete = False
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    user_details_complete = all([
+        user.address,
+        user.home_town,
+        user.district,
+        user.state,
+        user.pincode
+    ])
+
+    # Get the latest consultation for this design and user
+    latest_consultation = Consultation.objects.filter(
+        customer_id=user,
+        design_id=portfolio
+    ).order_by('-created_at').first()
+
+    logger.debug(f"Latest consultation for user {user.id} and portfolio {portfolio_id}: {latest_consultation}")
+
     consultation_status = None
+    if latest_consultation:
+        consultation_status = latest_consultation.consultation_status
+        logger.debug(f"Latest consultation status: {consultation_status}")
 
-    if request.user.is_authenticated:
-        user = request.user
-        user_type = user.user_type_id.user_type if user.user_type_id else None
-
-        # Check if user details are complete
-        user_details_complete = all([
-            user.address,
-            user.home_town,
-            user.district,
-            user.state,
-            user.pincode
-        ])
-
-        if request.method == 'POST':
-            # Check if the request is to reject a consultation
-            if 'reject' in request.POST:
-                consultation = Consultation.objects.filter(
-                    design_id=portfolio_id,
-                    customer_id=user,
-                    designer_id=portfolio.designer_id
-                ).first()
-
-                if consultation:
-                    # Find the corresponding ConsultationDate and set is_booked to False
-                    ConsultationDate.objects.filter(
-                        designer=portfolio.designer_id,
-                        date_time=consultation.schedule_date_time
-                    ).update(is_booked=False)
-
-                    # Delete the consultation entry
-                    consultation.delete()
-
-                    messages.success(request, 'Consultation request cancelled.')
-                else:
-                    messages.error(request, 'Consultation not found.')
-
-                return redirect('portfolio_details', portfolio_id=portfolio_id)
-
-        # Check for existing consultation status
-        consultation_status = Consultation.objects.filter(
-            design_id=portfolio_id,
-            customer_id=user,
-            designer_id=portfolio.designer_id
-        ).values_list('consultation_status', flat=True).first()
+    if request.method == 'POST':
+        if 'reject' in request.POST:
+            # Handle rejection logic here
+            cancelled_consultations = Consultation.objects.filter(
+                customer_id=user,
+                design_id=portfolio,
+                consultation_status='Requested'
+            ).update(consultation_status='Cancelled')
+            logger.debug(f"Cancelled {cancelled_consultations} consultations")
+            
+            # Refresh the latest consultation after cancellation
+            latest_consultation = Consultation.objects.filter(
+                customer_id=user,
+                design_id=portfolio,
+                consultation_status__in=['Requested', 'Scheduled', 'Completed']
+            ).order_by('-created_at').first()
+            
+            consultation_status = latest_consultation.consultation_status if latest_consultation else None
+            logger.debug(f"Updated consultation status after cancellation: {consultation_status}")
 
     context = {
         'portfolio': portfolio,
@@ -714,7 +713,6 @@ def get_chat_messages(request):
 def consultation_booking(request, portfolio_id):
     portfolio = get_object_or_404(Design.objects.select_related('designer_id', 'amount'), id=portfolio_id)
     
-    # Fetch available consultation dates for the designer
     available_dates = ConsultationDate.objects.filter(
         designer=portfolio.designer_id,
         date_time__gte=timezone.now(),
@@ -722,59 +720,76 @@ def consultation_booking(request, portfolio_id):
     ).order_by('date_time')
 
     if request.method == 'POST':
-        schedule_date_time = request.POST.get('schedule_date')
-        room_length = Decimal(request.POST.get('room_length', '0'))
-        room_width = Decimal(request.POST.get('room_width', '0'))
-        room_height = Decimal(request.POST.get('room_height', '0'))
-        design_preferences = request.POST.get('design_preferences')
-
-        # Create or get the Amount instance
-        consultation_amount = Amount.objects.create(amount=Decimal('500.00'))  # 500 INR as the consultation fee
-
-        # Parse the schedule_date_time
+        errors = {}
         try:
+            schedule_date_time = request.POST.get('schedule_date')
+            room_length = request.POST.get('room_length', '')
+            room_width = request.POST.get('room_width', '')
+            room_height = request.POST.get('room_height', '')
+            design_preferences = request.POST.get('design_preferences')
+
+            # Validate input data
+            if not schedule_date_time:
+                errors['schedule_date'] = 'Please select a consultation date.'
+            
+            for field, value in [('room_length', room_length), ('room_width', room_width), ('room_height', room_height)]:
+                try:
+                    decimal_value = Decimal(value)
+                    if decimal_value <= 0:
+                        errors[field] = f'{field.replace("_", " ").title()} must be a positive number.'
+                except InvalidOperation:
+                    errors[field] = f'Please enter a valid number for {field.replace("_", " ")}.'
+
+            if not design_preferences:
+                errors['design_preferences'] = 'Please enter your design preferences.'
+
+            if errors:
+                return JsonResponse({'status': 'error', 'errors': errors})
+
+            # If we've made it this far, all inputs are valid
+            consultation_amount = Amount.objects.create(amount=Decimal('500.00'))
+
             schedule_date_time = parse_datetime(schedule_date_time)
-        except ValueError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+            if not schedule_date_time:
+                return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
 
-        if not schedule_date_time:
-            return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
+            consultation_date = ConsultationDate.objects.filter(
+                designer=portfolio.designer_id,
+                date_time=schedule_date_time,
+                is_booked=False
+            ).first()
 
-        # Find the ConsultationDate object for the selected date and time
-        consultation_date = ConsultationDate.objects.filter(
-            designer=portfolio.designer_id,
-            date_time=schedule_date_time,
-            is_booked=False
-        ).first()
+            if not consultation_date:
+                return JsonResponse({'status': 'error', 'message': 'Selected date and time is not available'})
 
-        if not consultation_date:
-            return JsonResponse({'status': 'error', 'message': 'Selected date and time is not available'})
+            consultation = Consultation(
+                customer_id=request.user,
+                designer_id=portfolio.designer_id,
+                design_id=portfolio,
+                date_time=consultation_date.date_time,
+                consultation_status='Requested',
+                proposal='Pending',
+                schedule_date_time=consultation_date.date_time,
+                room_length=Decimal(room_length),
+                room_width=Decimal(room_width),
+                room_height=Decimal(room_height),
+                design_preferences=design_preferences,
+                payment_type=Payment_Type.objects.get(payment_type='online'),
+                payment_status='Paid',
+                amount=consultation_amount,
+                created_at=timezone.now()
+            )
+            consultation.save()
 
-        # Create consultation object
-        consultation = Consultation(
-            customer_id=request.user,
-            designer_id=portfolio.designer_id,
-            design_id=portfolio,
-            date_time=consultation_date.date_time,
-            consultation_status='Requested',
-            proposal='Pending',
-            schedule_date_time=consultation_date.date_time,
-            room_length=room_length,
-            room_width=room_width,
-            room_height=room_height,
-            design_preferences=design_preferences,
-            payment_type=Payment_Type.objects.get(payment_type='online'),
-            payment_status='Paid',
-            amount=consultation_amount
-        )
-        consultation.save()
+            consultation_date.is_booked = True
+            consultation_date.save()
 
-        # Mark the selected date as booked
-        consultation_date.is_booked = True
-        consultation_date.save()
+            return JsonResponse({'status': 'success', 'message': 'Consultation booked successfully'})
+        
+        except Exception as e:
+            logger.error(f"Unexpected error in consultation booking: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred. Please try again.'})
 
-        return JsonResponse({'status': 'success', 'message': 'Consultation booked successfully'})
-    
     context = {
         'portfolio': portfolio,
         'user_type': request.user.user_type_id.user_type if request.user.user_type_id else None,
@@ -1240,6 +1255,13 @@ def consultations(request):
     user_type = user.user_type_id.user_type if user.user_type_id else None
     designer = Users.objects.get(username=user.username)
     consultations = Consultation.objects.filter(designer_id=designer).select_related('customer_id', 'design_id').order_by('-id')
+
+    for consultation in consultations:
+        # Combine room dimensions into a single string
+        consultation.room_dimensions = f"{consultation.room_length}L x {consultation.room_width}W x {consultation.room_height}H"
+        
+        # Localize and format the date_time
+        consultation.schedule_date_time = timezone.localtime(consultation.schedule_date_time)
     
     if request.method == 'POST':
         if 'consultation_id' in request.POST:
@@ -1254,8 +1276,11 @@ def consultations(request):
                 
                 # Format the date and time
                 formatted_datetime = consultation.schedule_date_time.astimezone(timezone.get_current_timezone())
-                formatted_date = date_format(formatted_datetime, format="l, F j, Y")  # e.g., "Monday, October 17, 2024"
-                formatted_time = date_format(formatted_datetime, format="g:i A")  # e.g., "2:00 PM"
+                formatted_date = date_format(formatted_datetime, format="l, F j, Y")
+                formatted_time = date_format(formatted_datetime, format="g:i A")
+
+                # Recalculate room_dimensions here
+                room_dimensions = f"{consultation.room_length}L x {consultation.room_width}W x {consultation.room_height}H"
 
                 # Send email to the customer
                 subject = 'Consultation Approved - ElegantDecor'
@@ -1270,7 +1295,7 @@ def consultations(request):
                 - Designer: {designer.name}
                 - Designer's Contact Number: {designer.phone}
                 - Design: {consultation.design_id.name}
-                - Room Dimensions: {consultation.room_length} x {consultation.room_width} x {consultation.room_height}
+                - Room Dimensions: {room_dimensions}
                 - Your Design Preferences: {consultation.design_preferences}
 
                 If you need to make any changes or have any questions, please don't hesitate to contact us.
@@ -1285,7 +1310,7 @@ def consultations(request):
                 recipient_list = [consultation.customer_id.email]
 
                 logger.info(f"Attempting to send email to {recipient_list}")
-
+                
                 try:
                     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
                     logger.info("Email sent successfully")
@@ -1323,6 +1348,15 @@ from django.db import transaction
 def my_consultations(request):
     user = request.user
     user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    consultations = Consultation.objects.filter(customer_id=user).select_related('design_id', 'designer_id').order_by('-id')
+    
+    for consultation in consultations:
+        # Format room dimensions
+        consultation.room_dimensions = f"{consultation.room_length}L x {consultation.room_width}W x {consultation.room_height}H"
+        
+        # Localize and format the date_time
+        consultation.schedule_date_time = timezone.localtime(consultation.schedule_date_time)
     
     if request.method == 'POST':
         consultation_id = request.POST.get('consultation_id')
@@ -1364,9 +1398,6 @@ def my_consultations(request):
             messages.error(request, 'Invalid form submission.')
         
         return redirect('my_consultations')
-    
-    # Fetch consultations for the current user
-    consultations = Consultation.objects.filter(customer_id=user).select_related('designer_id', 'design_id').order_by('-id')
     
     context = {
         'consultations': consultations,

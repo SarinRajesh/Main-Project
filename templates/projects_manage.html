@@ -423,31 +423,6 @@
                         },
                         success: function(response) {
                             if (response.status === 'success') {
-                                // Format the date string
-                                var formattedDate = new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                                
-                                // Update the date display
-                                $('#start-date-' + projectId).text(formattedDate);
-
-                                // Update the controls
-                                var controlsDiv = $('#update-controls-' + projectId);
-                                controlsDiv.html(`
-                                    <button class="btn update-status" data-project-id="${projectId}" data-status="In Progress" style="background-color: #b8daff; color: #004085; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
-                                        <i class="fas fa-spinner fa-spin"></i> In Progress
-                                    </button>
-                                    <button class="btn update-status" data-project-id="${projectId}" data-status="On Hold" style="background-color: #f5c6cb; color: #721c24; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 10px;">
-                                        <i class="fas fa-pause-circle"></i> On Hold
-                                    </button>
-                                    <button class="btn update-status" data-project-id="${projectId}" data-status="Completed" style="background-color: #c3e6cb; color: #155724; border: none; padding: 10px 15px; border-radius: 25px; font-weight: bold; transition: all 0.3s ease; cursor: pointer;">
-                                        <i class="fas fa-check-circle"></i> Completed
-                                    </button>
-                                `);
-
-                                // Reattach click event to new buttons
-                                controlsDiv.find('.update-status').click(function() {
-                                    $('.update-status').click();
-                                });
-
                                 // Show a success message
                                 Swal.fire({
                                     icon: 'success',
@@ -455,6 +430,9 @@
                                     text: response.message,
                                     timer: 2000,
                                     showConfirmButton: false
+                                }).then(() => {
+                                    // Refresh the page after the modal is closed
+                                    window.location.reload();
                                 });
                             } else {
                                 // Show an error message

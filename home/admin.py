@@ -14,7 +14,7 @@ class FeedbackAdmin(admin.ModelAdmin):
     search_fields = ('feedback',)
 
 class ConsultationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'customer_id', 'designer_id', 'design_id', 'date_time', 'consultation_status', 'room_length', 'room_width', 'room_height','design_preferences','feedback', 'proposal','payment_type','payment_status','amount')
+    list_display = ('id', 'customer_id', 'designer_id', 'design_id', 'date_time', 'consultation_status', 'room_length', 'room_width', 'room_height','design_preferences', 'proposal','payment_type','payment_status','amount','created_at')
     search_fields = ('customer_id__username', 'designer_id__username', 'consultation_status')
   
 

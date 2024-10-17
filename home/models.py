@@ -51,7 +51,6 @@ class Consultation(models.Model):
     design_id = models.ForeignKey('Design', on_delete=models.CASCADE)
     date_time = models.DateTimeField()  # Change this to DateTimeField without auto_now_add
     consultation_status = models.CharField(max_length=100)
-    feedback = models.ForeignKey(Feedback, on_delete=models.SET_NULL, null=True, blank=True)
     proposal = models.CharField(max_length=100)
     schedule_date_time = models.DateTimeField(null=True, blank=True)
     room_length = models.DecimalField(max_digits=5, decimal_places=2)
@@ -61,7 +60,8 @@ class Consultation(models.Model):
     payment_type = models.ForeignKey(Payment_Type, on_delete=models.CASCADE,default=0)
     payment_status = models.CharField(max_length=100, default='pending')
     amount = models.ForeignKey(Amount, on_delete=models.CASCADE, null=True, blank=True) 
-
+    created_at = models.DateTimeField(default=timezone.now)
+    
     def __str__(self):
         return f'Consultation {self.id}'
 

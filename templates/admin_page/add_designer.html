@@ -54,8 +54,33 @@
                 </div>
                 <!-- mobile nav end--> 
                 <!--  navigation --> 
-                <div class="nav-holder">
-                
+                <div class="nav-holder" style="display: none;">
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li>
+                            <a href="{% url 'users_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Users Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'designs_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designs Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'consultations_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Consultations Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'projects_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Projects Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'products_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Products Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'orders_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Orders Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_designer' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Designer</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_product' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Products</a>
+                        </li>
+                    </ul>
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -76,11 +101,13 @@
                                
                                 <div class="contact-details-wrap fl-wrap" style="margin-top: -5%;">
                                     <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="small-sec-title">
-                                            </div>
+                                        <div class="col-md-12">
+                                            <h2 style="text-align: center; font-size: 36px; margin-bottom: 30px; color: #333; font-weight: 300;">Add New Designer</h2>
                                         </div>
-                                        <div class="col-md-9">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3"></div>
+                                        <div class="col-md-6" style="margin-top: -3%;">
                                             <!-- contact form -->
                                             <div class="contact-form-holder fl-wrap">
                                                 <div id="contact-form">
@@ -89,39 +116,38 @@
                                                         {% csrf_token %}
                                                         
                                                         <!-- Username Field -->
-                                                        <div style="margin-bottom: 20px; position: relative;">
+                                                        <div style="margin-bottom: 25px; position: relative;">
                                                             <input name="username" type="text" id="username" placeholder="Username" required 
-                                                                   style="width: 100%; height: 41px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
-                                                            <div id="usernameError" style="color: red; position: absolute; top: 100%; left: 12px; margin-top: 43px; font-size: 12px;"></div>
+                                                                   style="width: 100%; height: 50px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;">
+                                                            <div id="usernameError" style="color: #e74c3c; position: absolute; top: 100%; left: 0; margin-top: 5px; font-size: 14px;"></div>
                                                         </div>    
                                                     
                                                         <!-- Email Field -->
-                                                        <div style="margin-bottom: 20px; position: relative;">
+                                                        <div style="margin-bottom: 25px; position: relative;">
                                                             <input name="email" type="email" id="email" placeholder="Email" required 
-                                                                   style="width: 100%; height: 41px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
-                                                            <div id="emailError" style="color: red; position: absolute; top: 100%; left: 12px; margin-top: 5px; font-size: 12px;"></div>
+                                                                   style="width: 100%; height: 50px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;">
+                                                            <div id="emailError" style="color: #e74c3c; position: absolute; top: 100%; left: 0; margin-top: 5px; font-size: 14px;"></div>
                                                         </div>
                                                         
                                                         <!-- Password Field -->
-                                                        <div style="margin-bottom: 20px; position: relative;">
+                                                        <div style="margin-bottom: 25px; position: relative;">
                                                             <input name="password" type="password" id="password" placeholder="Password" required 
-                                                                   style="width: 100%; height: 41px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
-                                                            <div id="passwordError" style="color: red; position: absolute; top: 100%; left: 0; margin-top: 5px; font-size: 12px;"></div>
+                                                                   style="width: 100%; height: 50px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;">
+                                                            <div id="passwordError" style="color: #e74c3c; position: absolute; top: 100%; left: 0; margin-top: 5px; font-size: 14px;"></div>
                                                         </div>
                                                         
                                                         <!-- Confirm Password Field -->
-                                                        <div style="margin-bottom: 20px; position: relative;">
+                                                        <div style="margin-bottom: 25px; position: relative;">
                                                             <input name="confirm_password" type="password" id="confirm_password" placeholder="Confirm Password" required 
-                                                                   style="width: 100%; height: 41px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
-                                                            <div id="confirmPasswordError" style="color: red; position: absolute; top: 100%; left: 12px; margin-top: 5px; font-size: 12px;"></div>
+                                                                   style="width: 100%; height: 50px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;">
+                                                            <div id="confirmPasswordError" style="color: #e74c3c; position: absolute; top: 100%; left: 0; margin-top: 5px; font-size: 14px;"></div>
                                                         </div>
                                                         
                                                         <!-- Submit Button -->
-                                                        <button type="submit" id="submit" style="padding: 10px 20px; border: none; background-color: #000; color: #fff; border-radius: 5px;">
+                                                        <button type="submit" id="submit" style="width: 100%; padding: 15px 20px; border: none; background-color: #333; color: #fff; border-radius: 5px; font-size: 18px; cursor: pointer; transition: background-color 0.3s ease;">
                                                             <span>Add Designer</span>
                                                         </button>
                                                     </form>
-                                                    
                                                     
                                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                                     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -286,6 +312,7 @@
                                             </div>
                                             <!-- contact form  end-->
                                         </div>
+                                        <div class="col-md-3"></div>
                                     </div>
                                 </div>
                             </div>
@@ -356,23 +383,7 @@
             </div>
             <!-- wrapper end -->
             <!--search-form-holder -->
-            <div class="search-form-holder fixed-search">
-                <div class="search-form-bg"></div>
-                <div class="search-form-wrap">
-                    <div class="container">
-                        <form class="searchform" method="get"  >
-                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
-                        </form>
-                        <div class="close-fixed-search"></div>
-                    </div>
-                    <div class="dublicated-text"></div>
-                </div>
-            </div>
-            <!--search-form-holder  end-->
-            <!-- Share container  -->
-            <div class="share-wrapper isShare">
-                <div class="share-container"></div>
-            </div>
+          
             <!-- Share container  end-->
 <footer class="main-footer" style="width: 15%;    background-color: #000000f2; padding: 20px; height: 100vh; position: fixed;">
 

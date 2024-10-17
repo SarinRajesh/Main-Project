@@ -52,8 +52,33 @@
                 </div>
                 <!-- mobile nav end--> 
                 <!--  navigation --> 
-                <div class="nav-holder">
-                
+                <div class="nav-holder" style="display: none;">
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li>
+                            <a href="{% url 'users_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Users Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'designs_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designs Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'consultations_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Consultations Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'projects_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Projects Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'products_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Products Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'orders_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Orders Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_designer' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Designers</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_product' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Products</a>
+                        </li>
+                    </ul>
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -74,11 +99,13 @@
                                
                                 <div class="contact-details-wrap fl-wrap" style="margin-top: -5%;">
                                     <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="small-sec-title">
-                                            </div>
+                                        <div class="col-md-12">
+                                            <h2 style="text-align: center; font-size: 36px; margin-bottom: 30px; color: #333; font-weight: 300;">Add New Product</h2>
                                         </div>
-                                        <div class="col-md-9">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3"></div>
+                                        <div class="col-md-6" style="margin-top: -3%;">
                                             <!-- contact form -->
                                             <div class="contact-form-holder fl-wrap">
                                                 <div id="contact-form">
@@ -87,47 +114,55 @@
                                                         {% csrf_token %}
                                                         <input name="designer_id" type="hidden" value="{{ request.user.id }}">
                                                     
-                                                        <div style="position: relative; margin-bottom: 20px;">
+                                                        <div style="margin-bottom: 25px; position: relative;">
                                                             <input name="name" type="text" id="name" placeholder="Product Name" required
-                                                                   style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
-                                                            <div id="nameValidation" style="color: red; font-size: 12px; margin-top: 5px;"></div>
+                                                                   style="width: 100%; height: 50px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;">
+                                                            <div id="nameValidation" style="color: #e74c3c; position: absolute; top: 100%; left: 0; margin-top: 5px; font-size: 14px;"></div>
                                                         </div>
                                                         
-                                                        <div style="position: relative; margin-bottom: 20px;">
+                                                        <div style="margin-bottom: 25px; position: relative;">
                                                             <textarea name="description" id="description" placeholder="Product Description" required
-                                                                      style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;"></textarea>
-                                                            <div id="descriptionValidation" style="color: red; font-size: 12px; margin-top: 5px;"></div>
+                                                                      style="width: 100%; height: 120px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;"></textarea>
+                                                            <div id="descriptionValidation" style="color: #e74c3c; position: absolute; top: 100%; left: 0; margin-top: 5px; font-size: 14px;"></div>
                                                         </div>
                                                         
-                                                        <input name="amount" type="number" id="amount" placeholder="Price" required min="0" step="0.01"
-                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        <div style="margin-bottom: 25px; position: relative;">
+                                                            <input name="amount" type="number" id="amount" placeholder="Price" required min="0" step="0.01"
+                                                                   style="width: 100%; height: 50px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;">
+                                                        </div>
                                                         
-                                                               <select name="category" id="category" required
-                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
-                                                           <option value="">Select Category</option>
-                                                           <option value="Lighting">Lighting</option>
-                                                           <option value="Appliances">Appliances</option>
-                                                           <option value="Accessories"> Accessories</option>
-                                                           <option value="Furniture">Furniture</option>
-                                                           <option value="Home decor">Home decor</option>
-                                                       </select>
+                                                        <div style="margin-bottom: 25px; position: relative;">
+                                                            <select name="category" id="category" required
+                                                                    style="width: 100%; height: 50px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;">
+                                                                <option value="">Select Category</option>
+                                                                <option value="Lighting">Lighting</option>
+                                                                <option value="Appliances">Appliances</option>
+                                                                <option value="Accessories">Accessories</option>
+                                                                <option value="Furniture">Furniture</option>
+                                                                <option value="Home decor">Home decor</option>
+                                                            </select>
+                                                        </div>
                                                         
-                                                        <input name="stock" type="number" id="stock" placeholder="Stock Quantity" required min="0"
-                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        <div style="margin-bottom: 25px; position: relative;">
+                                                            <input name="stock" type="number" id="stock" placeholder="Stock Quantity" required min="0"
+                                                                   style="width: 100%; height: 50px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;">
+                                                        </div>
                                                         
-                                                        <input name="image" type="file" id="image" required
-                                                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; background-color: #f9f9f9;">
+                                                        <div style="margin-bottom: 25px; position: relative;">
+                                                            <input name="image" type="file" id="image" required
+                                                                   style="width: 100%; height: 50px; padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; font-size: 16px; transition: all 0.3s ease;">
+                                                        </div>
                                                         
-                                                        <div style="margin-bottom: 20px; background-color: #f8f9fa; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                                           
+                                                        <div style="margin-bottom: 25px; background-color: #f8f9fa; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                                                             <div style="display: flex; align-items: center; background-color: white; border-radius: 25px; padding: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                                                <input type="text" id="color-input" name="color" placeholder="Enter color....." required style="flex-grow: 1; padding: 10px 15px; border: none; border-radius: 20px 0 0 20px; font-size: 16px; outline: none;">
+                                                                <input type="text" id="color-input" name="color" placeholder="Enter color....." required 
+                                                                       style="flex-grow: 1; padding: 10px 15px; border: none; border-radius: 20px 0 0 20px; font-size: 16px; outline: none;">
                                                                 <div id="color-preview" style="width: 40px; height: 40px; border-radius: 50%; margin: 0 10px;"></div>
                                                             </div>
                                                             <input type="color" id="custom-color" style="display: none;">
                                                         </div>
                                                         
-                                                        <button type="submit" id="submit" style="padding: 10px 20px; border: none; background-color: #000; color: #fff; border-radius: 5px;">
+                                                        <button type="submit" id="submit" style="width: 100%; padding: 15px 20px; border: none; background-color: #333; color: #fff; border-radius: 5px; font-size: 18px; cursor: pointer; transition: background-color 0.3s ease;">
                                                             <span>Add Product</span>
                                                         </button>
                                                     </form>
@@ -274,6 +309,7 @@
                                             </div>
                                             <!-- contact form  end-->
                                         </div>
+                                        <div class="col-md-3"></div>
                                     </div>
                                 </div>
                             </div>
@@ -343,24 +379,7 @@
                 <!-- content-holder end -->
             </div>
             <!-- wrapper end -->
-            <!--search-form-holder -->
-            <div class="search-form-holder fixed-search">
-                <div class="search-form-bg"></div>
-                <div class="search-form-wrap">
-                    <div class="container">
-                        <form class="searchform" method="get"  >
-                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
-                        </form>
-                        <div class="close-fixed-search"></div>
-                    </div>
-                    <div class="dublicated-text"></div>
-                </div>
-            </div>
-            <!--search-form-holder  end-->
-            <!-- Share container  -->
-            <div class="share-wrapper isShare">
-                <div class="share-container"></div>
-            </div>
+           
             <!-- Share container  end-->
 <footer class="main-footer" style="width: 15%;    background-color: #000000f2; padding: 20px; height: 100vh; position: fixed;">
 

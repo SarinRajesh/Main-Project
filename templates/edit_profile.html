@@ -105,6 +105,42 @@
             font-size: 14px;
         }
        
+        /* Add these new responsive styles */
+        @media (max-width: 768px) {
+            .contact-form-holder {
+                margin-left: 0 !important;
+                margin-top: 0 !important;
+            }
+
+            #contact-form {
+                margin-left: 0 !important;
+                margin-top: 0 !important;
+                width: 100% !important;
+            }
+
+            .bold-title {
+                font-size: 1.5em !important;
+            }
+
+            input[type="text"],
+            input[type="email"],
+            textarea {
+                width: 100% !important;
+                box-sizing: border-box;
+            }
+
+            .btn {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+
+            .error {
+                position: static !important;
+                margin-left: 0 !important;
+                margin-top: 5px !important;
+                display: block !important;
+            }
+        }
     </style>
 </head>
 
@@ -472,9 +508,9 @@
 
         function toggleSubmitButton() {
             if (mod1 === 0 && mod2 === 0 && mod3 === 0 && mod4 === 0 && mod5 === 0 && mod6 === 0 && mod7 === 0 && mod8 === 0 && mod9 === 0) {
-                $('.btn').attr("disabled", false);
+                $('.btn').prop("disabled", false).css("opacity", 1);
             } else {
-                $('.btn').attr("disabled", true);
+                $('.btn').prop("disabled", true).css("opacity", 0.5);
             }
         }
 

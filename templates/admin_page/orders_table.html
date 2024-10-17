@@ -52,8 +52,33 @@
                 </div>
                 <!-- mobile nav end--> 
                 <!--  navigation --> 
-                <div class="nav-holder">
-                
+                <div class="nav-holder" style="display: none;">
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li>
+                            <a href="{% url 'users_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Users Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'designs_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designs Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'consultations_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Consultations Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'projects_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Projects Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'products_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Products Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'orders_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Orders Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_designer' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Designers</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_product' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Products</a>
+                        </li>
+                    </ul>
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -69,88 +94,75 @@
                         <!--  section  end-->
                         <!--  section  -->
                         <section >
-                            <div class="container" >
-                              
-                               
-                                <div class="contact-details-wrap fl-wrap" style="margin-top: -5%;">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="small-sec-title">
+                            <div class="container" style="width: 100%; max-width: none; padding: 0;">
+                                <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                                    <!-- Centered Tables Container -->
+                                    <div style="width: 80%; max-width: 1200px; margin: 40px auto;">
+                                        
+                                        <!-- Orders Table -->
+                                        <div style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 20px; margin-top: -9%; border-radius: 8px; background-color: white;">
+                                            <h2 style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; color: #34495e; margin-bottom: 20px;">Orders</h2>
+                                            
+                                            <div style="text-align: right; margin-bottom: 20px;">
+                                                <a href="{% url 'orders_table' %}?download=pdf" class="btn" style="background-color: #e74c3c; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Download as PDF</a>
+                                                <a href="{% url 'orders_table' %}?download=excel" class="btn" style="background-color: #27ae60; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Download as Excel</a>
+                                            </div>
+                                            <div style="overflow-x: auto; width: 100%;">
+                                                <table style="width: 100%; border-collapse: collapse;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order ID</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">User</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Product</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Quantity</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Amount</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order Date</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order Status</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Payment Type</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Payment Status</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Delivery Date</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for order in orders %}
+                                                        <tr>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.id }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.user.username }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.product.name }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.quantity }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.amount.amount }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_date|date:"Y-m-d H:i" }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_status }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_type.payment_type }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_status }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_date|date:"Y-m-d H:i" }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                {% if order.order_status == 'Pending' %}
+                                                                    <form method="post" style="display: inline;">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                                        <input type="hidden" name="action" value="approve">
+                                                                        <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; margin-right: 5px;">
+                                                                            Approve
+                                                                        </button>
+                                                                    </form>
+                                                                    <form method="post" style="display: inline;">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                                        <input type="hidden" name="action" value="cancel">
+                                                                        <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
+                                                                            Cancel
+                                                                        </button>
+                                                                    </form>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
-                                        <div class="col-md-9" style="margin-left: 25vh;">
-                                            <!-- Customers Table -->
-                                      <!-- Centered Tables Container -->
-<!-- ... existing code ... -->
-
-<div style="display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 30px; margin: 40px -145px;">
-    
-    <!-- Orders Table -->
-    <div style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 20px; border-radius: 8px; width: 80%; background-color: white;">
-        <h2 style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; color: #34495e; margin-bottom: -10px;">Orders</h2>
-        <div style="text-align: right; margin-bottom: 10px;">
-            <a href="{% url 'orders_table' %}?download=pdf" class="btn" style="background-color: #e74c3c; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Download as PDF</a>
-            <a href="{% url 'orders_table' %}?download=excel" class="btn" style="background-color: #27ae60; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Download as Excel</a>
-        </div>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-            <thead>
-                <tr>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-left-radius: 8px;">Order ID</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">User</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Product</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Quantity</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Amount</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order Date</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order Status</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Payment Type</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 1px;">Payment Status</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 1px;">Delivery Date</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 1px;">Actions</th>
-                    <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-top-right-radius: 1px;"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order in orders %}
-                <tr>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.id }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.user.username }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.product.name }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.quantity }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.amount.amount }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_date|date:"Y-m-d H:i" }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_status }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_type.payment_type }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_status }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_date|date:"Y-m-d H:i" }}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">
-                        {% if order.order_status == 'Pending' %}
-                            <form method="post" style="display: inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="order_id" value="{{ order.id }}">
-                                <input type="hidden" name="action" value="approve">
-                                <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; margin-right: 5px;">
-                                    Approve
-                                </button>
-                            </form></td>
-                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
-                            <form method="post" style="display: inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="order_id" value="{{ order.id }}">
-                                <input type="hidden" name="action" value="cancel">
-                                <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
-                                    Cancel
-                                </button>
-                            </form>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- ... existing code ... -->
                                     </div>
                                 </div>
                             </div>
@@ -221,24 +233,7 @@
             </div>
             <!-- wrapper end -->
             <!--search-form-holder -->
-            <div class="search-form-holder fixed-search">
-                <div class="search-form-bg"></div>
-                <div class="search-form-wrap">
-                    <div class="container">
-                        <form class="searchform" method="get"  >
-                            <input type="text" autocomplete="off"   name="s" placeholder="Type and Enter to Search">
-                        </form>
-                        <div class="close-fixed-search"></div>
-                    </div>
-                    <div class="dublicated-text"></div>
-                </div>
-            </div>
-            <!--search-form-holder  end-->
-            <!-- Share container  -->
-            <div class="share-wrapper isShare">
-                <div class="share-container"></div>
-            </div>
-            <!-- Share container  end-->
+          
 <footer class="main-footer" style="width: 15%;    background-color: #000000f2; padding: 20px; height: 100vh; position: fixed;">
 
     <!-- Admin links moved to the top with inline CSS and white underline border -->
