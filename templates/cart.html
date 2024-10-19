@@ -147,7 +147,7 @@
                                                                 <!-- ... existing code ... -->
                                                                 <td>
                                                                     <label for="quantity_{{ item.id }}">Quantity</label>
-                                                                    <input id="quantity_{{ item.id }}" type="number" name="Quantity" value="{{ item.quantity }}" max="50" min="1" class="order-count" data-item-id="{{ item.id }}">
+                                                                    <input id="quantity_{{ item.id }}" type="number" name="Quantity" value="{{ item.quantity }}" max="50" min="1" class="order-count" data-item-id="{{ item.id }}" data-stock="{{ item.product_id.stock }}">
                                                                 </td>
                                                                 <td>
                                                                     <h5 class="order-money">Rs. {{ item.amount|floatformat:2 }}</h5>
@@ -161,9 +161,9 @@
                                                 <div class="cart-item-footer fl-wrap">
                                                     <div class="row">
                                                         <div class="col-md-10">
-                                                            <p> {% if item.product_id.stock < item.quantity %}
-                                                                <button class="btn btn-sm" style="background-color:#ff0000;color:#ffffff;cursor:not-allowed;padding:5px 10px;font-size:12px;border:none;" disabled>Out of Stock</button>
-                                                            {% endif %}</p>
+                                                            <p>
+                                                                <button class="btn btn-sm out-of-stock-btn" style="background-color:#ff0000;color:#ffffff;cursor:not-allowed;padding:5px 10px;font-size:12px;border:none;{% if item.product_id.stock == 0 %}display:inline-block;{% else %}display:none;{% endif %}" disabled>Out of Stock</button>
+                                                            </p>
                                                         </div>
                                                         <div class="col-md-2"><a href="{% url 'remove_from_cart' item.id %}" class="pr-remove"><i class="fa fa-times"></i></a></div>
                                                     </div>
@@ -298,6 +298,33 @@
                                   <script>
                                     document.addEventListener('DOMContentLoaded', function() {
                                         const quantityInputs = document.querySelectorAll('.order-count');
+                                        const checkoutBtn = document.getElementById('checkoutBtn');
+
+                                        // Function to check if any item is out of stock
+                                        function checkOutOfStock() {
+                                            let anyOutOfStock = false;
+                                            quantityInputs.forEach(input => {
+                                                const stock = parseInt(input.dataset.stock);
+                                                const quantity = parseInt(input.value);
+                                                const outOfStockBtn = input.closest('.cart-item').querySelector('.out-of-stock-btn');
+                                                
+                                                if (stock === 0 || quantity > stock) {
+                                                    outOfStockBtn.style.display = 'inline-block';
+                                                    anyOutOfStock = true;
+                                                } else {
+                                                    outOfStockBtn.style.display = 'none';
+                                                }
+                                            });
+
+                                            // Update checkout button visibility
+                                            if (checkoutBtn) {
+                                                checkoutBtn.style.display = anyOutOfStock ? 'none' : 'block';
+                                            }
+                                        }
+
+                                        // Check initial out-of-stock status
+                                        checkOutOfStock();
+
                                         quantityInputs.forEach(input => {
                                             input.addEventListener('change', function() {
                                                 const itemId = this.dataset.itemId;
@@ -310,17 +337,7 @@
                                                 }
                                             });
                                         });
-                                
-                                        // Add event listeners for remove buttons
-                                        const removeButtons = document.querySelectorAll('.pr-remove');
-                                        removeButtons.forEach(button => {
-                                            button.addEventListener('click', function(e) {
-                                                e.preventDefault();
-                                                const itemId = this.closest('.cart-item').querySelector('.order-count').dataset.itemId;
-                                                removeCartItem(itemId);
-                                            });
-                                        });
-                                
+
                                         function updateCartQuantity(itemId, quantity) {
                                             $.ajax({
                                                 url: '{% url "update_cart_quantity" %}',
@@ -340,7 +357,7 @@
                                                         if (totalPriceElement) {
                                                             totalPriceElement.innerHTML = `Rs. ${parseFloat(data.total_price).toFixed(2)} <span>Total</span>`;
                                                         }
-                                
+
                                                         // Update the item total
                                                         const itemElement = document.querySelector(`#quantity_${itemId}`).closest('.cart-item');
                                                         if (itemElement) {
@@ -348,21 +365,35 @@
                                                             if (orderMoneyElement) {
                                                                 orderMoneyElement.textContent = `Rs. ${parseFloat(data.item_total).toFixed(2)}`;
                                                             }
+
+                                                            // Update the "Out of Stock" button
+                                                            const outOfStockBtn = itemElement.querySelector('.out-of-stock-btn');
+                                                            const quantityInput = itemElement.querySelector('.order-count');
+                                                            quantityInput.dataset.stock = data.available_stock;
+                                                            
+                                                            if (data.is_out_of_stock) {
+                                                                outOfStockBtn.style.display = 'inline-block';
+                                                            } else {
+                                                                outOfStockBtn.style.display = 'none';
+                                                            }
                                                         }
-                                
+
                                                         // Update the total items count
                                                         const totalItemsElement = document.querySelector('.tottal-items');
                                                         if (totalItemsElement) {
                                                             totalItemsElement.textContent = `${data.total_items} item${data.total_items !== 1 ? 's' : ''}`;
                                                         }
-                                
+
                                                         // Update the cart icon count if it exists
                                                         const cartIconCount = document.querySelector('.show-cart span');
                                                         if (cartIconCount) {
                                                             cartIconCount.textContent = data.total_items;
                                                         }
+
+                                                        // Check out-of-stock status after update
+                                                        checkOutOfStock();
                                                     } else {
-                                                        alert('Failed to update cart. Please try again.');
+                                                        console.error('Failed to update cart:', data.message);
                                                     }
                                                 },
                                                 error: function(error) {
@@ -370,6 +401,16 @@
                                                 }
                                             });
                                         }
+                                
+                                        // Add event listeners for remove buttons
+                                        const removeButtons = document.querySelectorAll('.pr-remove');
+                                        removeButtons.forEach(button => {
+                                            button.addEventListener('click', function(e) {
+                                                e.preventDefault();
+                                                const itemId = this.closest('.cart-item').querySelector('.order-count').dataset.itemId;
+                                                removeCartItem(itemId);
+                                            });
+                                        });
                                 
                                         function removeCartItem(itemId) {
                                             $.ajax({

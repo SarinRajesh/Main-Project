@@ -930,7 +930,8 @@ def update_cart_quantity(request):
 
     try:
         cart_item = get_object_or_404(Cart, id=item_id, user_id=request.user)
-        
+        product = cart_item.product_id
+
         # Calculate unit price if `amount` was previously calculated as total amount
         unit_price = cart_item.amount / cart_item.quantity
         cart_item.quantity = quantity
@@ -943,14 +944,20 @@ def update_cart_quantity(request):
         cart_items = Cart.objects.filter(user_id=request.user)
         total_price = sum(item.amount for item in cart_items)
 
+        # Check if any item in the cart is out of stock
+        any_out_of_stock = any(item.quantity > item.product_id.stock for item in cart_items)
+
         return JsonResponse({
             'success': True,
             'total_price': float(total_price),
             'item_total': float(cart_item.amount),
-            'total_items': sum(item.quantity for item in cart_items)
+            'total_items': sum(item.quantity for item in cart_items),
+            'is_out_of_stock': quantity > product.stock,
+            'available_stock': product.stock,
+            'any_out_of_stock': any_out_of_stock
         })
     except Cart.DoesNotExist:
-        return JsonResponse({'success': False}, status=400)
+        return JsonResponse({'success': False, 'message': 'Cart item not found'}, status=400)
 
 @login_required
 @never_cache
