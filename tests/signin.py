@@ -62,11 +62,10 @@ def perform_signin(driver):
         logger.info("Redirected to home page, checking for login indicators")
         try:
             # Look for the username display in the header
-            WebDriverWait(driver, 10).until(
+            username_element = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "div.show-share span"))
             )
-            username_element = driver.find_element(By.CSS_SELECTOR, "div.show-share span")
-            if username_element.text.lower() == "sarin":  # Convert to lowercase for comparison
+            if username_element.text.lower() == "sarin".lower():  # Case-insensitive comparison
                 logger.info("Signin process completed successfully. Username found in header.")
                 return True
             else:
