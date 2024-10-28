@@ -7,7 +7,7 @@ from django.contrib import admin
 
 urlpatterns = [
     # your existing URL patterns
-    path('', views.index, name='index'),
+    path('', views.index, name='index'),  # Make index the root URL
     path('cart/', views.cart, name='cart'),
     path('consultations/', views.consultations, name='consultations'),
     path('my_consultations/', views.my_consultations, name='my_consultations'),

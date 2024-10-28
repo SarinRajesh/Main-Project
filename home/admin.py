@@ -30,7 +30,7 @@ class ConsultationAdmin(admin.ModelAdmin):
         }),
     )
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'description', 'amount', 'category', 'image','stock','color')
+    list_display = ('id','name', 'description', 'amount', 'category', 'image','stock','color')
     search_fields = ('name', 'category')
 
 class DesignAdmin(admin.ModelAdmin):
@@ -115,7 +115,7 @@ class MoodBoardItemAdmin(admin.ModelAdmin):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('id', 'customer', 'designer', 'design', 'start_date', 'completed_date', 'status', 'room_dimensions','payment')
+    list_display = ('id','consultation', 'customer', 'designer', 'design', 'start_date', 'completed_date', 'status', 'room_dimensions','payment')
     list_filter = ('status', 'start_date', 'completed_date')
     search_fields = ('customer__username', 'designer__username', 'design__name')
     date_hierarchy = 'start_date'

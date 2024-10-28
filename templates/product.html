@@ -45,13 +45,11 @@
                 <!-- logo -->
                 <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
-                {% if user.is_authenticated %}
-                            
                 <div class="show-share-wrap">
-                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em; position: relative; z-index: 100;">
+                        <span style="display: inline-block; padding: 5px;">{{ user.username }}</span>
+                    </div>
                 </div>
-                {% else %}
-                {% endif %}
                 <!-- share button end-->  		
                 <!-- search button--> 	 
                 <!-- search button end --> 

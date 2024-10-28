@@ -6,14 +6,21 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.common.action_chains import ActionChains
-from signin import perform_signin  # Ensure this import is correct
+from signin import perform_signin
+import sys
+import os
 
+# Set logging level to WARNING
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
+
+# Redirect stderr to devnull
+stderr = sys.stderr
+sys.stderr = open(os.devnull, 'w')
 
 def add_to_cart(driver):
     try:
-        # Perform signin before proceeding to add to cart
-        if not perform_signin(driver):
+        if not perform_signin(driver, "Sarin", "Sarin@12"):
             logger.error("Signin failed, cannot proceed to add to cart")
             return
 
@@ -32,7 +39,7 @@ def add_to_cart(driver):
         current_url = driver.current_url
         logger.info(f"Current URL after clicking 'Shop': {current_url}")
 
-        if "/shop" in current_url:
+        if "/shop" in driver.current_url:
             logger.info("Successfully redirected to shop page")
             
             # Wait for product items to load
@@ -109,24 +116,18 @@ def add_to_cart(driver):
 
     except TimeoutException as e:
         logger.warning(f"Failed to interact with product or add to cart: {str(e)}")
-        # Log the page source for debugging
-        logger.debug(f"Page source: {driver.page_source}")
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
 
 def test_add_to_cart():
     driver = None
     try:
-        # Setup WebDriver (Chrome in this example)
-        logger.info("Initializing Chrome WebDriver")
         driver = webdriver.Chrome()
         driver.maximize_window()
         
         add_to_cart(driver)
 
-        # Keep the browser open for a specific duration
-        logger.info("Test completed. Browser will remain open for 10 seconds.")
-        time.sleep(10)  # Keep the browser open for 10 seconds
+        time.sleep(10)
 
     except WebDriverException as e:
         logger.error(f"WebDriver error: {str(e)}")
@@ -134,8 +135,10 @@ def test_add_to_cart():
         logger.error(f"Add to cart test failed: {str(e)}")
     finally:
         if driver:
-            logger.info("Closing the browser")
             driver.quit()
+
+# Restore stderr
+sys.stderr = stderr
 
 if __name__ == "__main__":
     test_add_to_cart()

@@ -4,105 +4,62 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def perform_signin(driver):
-    url = "http://127.0.0.1:8000/signin"
-    logger.info(f"Attempting to connect to {url}")
+def perform_signin(driver, username, password):
+    signin_url = "http://127.0.0.1:8000/signin"
+    index_url = "http://127.0.0.1:8000/"
     
-    driver.get(url)
-    logger.info("Successfully loaded the page")
+    logger.info("Attempting signin...")
+    driver.get(signin_url)
     
-    # Wait for the form to be present
     try:
         form = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "signin-form"))
         )
-        logger.info("Signin form found on the page")
-    except TimeoutException:
-        logger.error("Timed out waiting for the signin form to load")
-        return False
-
-    # Fill out the form
-    fields = [
-        ("username", "sarin"),
-        ("password", "Sarin@12")
-    ]
-
-    for field_name, value in fields:
-        try:
-            input_field = driver.find_element(By.NAME, field_name)
-            input_field.send_keys(value)
-            logger.info(f"Entered {value} into field with NAME: {field_name}")
-        except NoSuchElementException:
-            logger.warning(f"Could not find field for: {field_name}")
+        
+        form.find_element(By.NAME, "username").send_keys(username)
+        form.find_element(By.NAME, "password").send_keys(password)
+        form.find_element(By.XPATH, "//button[@type='submit']").click()
+        
+        # Wait for URL to change
+        WebDriverWait(driver, 10).until(EC.url_changes(signin_url))
+        
+        # Add a small delay to ensure the page has fully loaded
+        time.sleep(2)
+        
+        current_url = driver.current_url
+        logger.info(f"Current URL after signin: {current_url}")
+        
+        if current_url == index_url:
+            logger.info("Signin successful: Redirected to index page")
+            return True
+        else:
+            logger.warning("Signin failed: Not redirected to index page")
             return False
-
-    # Find and click the submit button
-    try:
-        submit_button = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
-        submit_button.click()
-        logger.info("Clicked the submit button")
-    except NoSuchElementException:
-        logger.error("Could not find the submit button")
-        return False
-
-    # Wait to see if we're redirected
-    time.sleep(5)
-    
-    # Log the current URL
-    current_url = driver.current_url
-    logger.info(f"Current URL after form submission: {current_url}")
-
-    if current_url == "http://127.0.0.1:8000/":
-        logger.info("Redirected to home page, checking for login indicators")
-        try:
-            # Look for the username display in the header
-            username_element = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div.show-share span"))
-            )
-            if username_element.text.lower() == "sarin".lower():  # Case-insensitive comparison
-                logger.info("Signin process completed successfully. Username found in header.")
-                return True
-            else:
-                logger.warning(f"Username in header doesn't match. Found: {username_element.text}")
-                return False
-        except TimeoutException:
-            logger.warning("Redirected to home page, but couldn't find login indicators")
-            return False
-
-    elif "success" in current_url.lower() or "dashboard" in current_url.lower():
-        logger.info("Signin process completed successfully")
-        return True
-    else:
-        logger.warning("Signin process might not have completed as expected")
+    except (TimeoutException, NoSuchElementException) as e:
+        logger.error(f"Signin failed: {str(e)}")
         return False
 
 def test_signin():
+    logger.info("Starting signin test")
     driver = None
     try:
-        # Setup WebDriver (Chrome in this example)
-        logger.info("Initializing Chrome WebDriver")
         driver = webdriver.Chrome()
         driver.maximize_window()
+        result = perform_signin(driver, "Sarin", "Sarin@12")
+        logger.info(f"Signin test {'passed' if result else 'failed'}")
         
-        if perform_signin(driver):
-            logger.info("Signin test passed")
-        else:
-            logger.error("Signin test failed")
-
-    except WebDriverException as e:
-        logger.error(f"WebDriver error: {str(e)}")
-    except Exception as e:
-        logger.error(f"Signin test failed: {str(e)}")
+        time.sleep(5)
     finally:
         if driver:
             logger.info("Closing the browser")
             driver.quit()
+    logger.info("Signin test completed")
 
 if __name__ == "__main__":
     test_signin()

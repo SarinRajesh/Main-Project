@@ -66,13 +66,11 @@
                 <!-- logo -->
                 <a class="logo-holder"href="{% url 'index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
                 <!-- logo end -->  
-                {% if user.is_authenticated %}
-                            
                 <div class="show-share-wrap">
-                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em;"><span>{{ user.username }}</span></div>
+                    <div class="show-share" style="color: #f39c12; font-weight: bold; font-size: 1.2em; position: relative; z-index: 100;">
+                        <span style="display: inline-block; padding: 5px;">{{ user.username }}</span>
+                    </div>
                 </div>
-                {% else %}
-                {% endif %}
                 <!-- share button end-->  		
                 <!-- search button--> 	 
                 <!-- search button end --> 
@@ -206,7 +204,7 @@
                                     
                                         
                                             {% if user_type == 'Designer' %}
-                                            <div class="col-md-8"  style="margin-left: 58%;margin-top: -43%;width:47%">
+                                            <div class="col-md-8"  style="margin-left: 58%;margin-top: -41%;width:47%">
                                                 <form method="post" action="{% url 'edit_portfolio' portfolio.id %}" enctype="multipart/form-data" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                                                     {% csrf_token %}
                                                     <h3 class="bold-title" style="padding-bottom: 14px; color: #333; border-bottom: 2px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
@@ -257,7 +255,7 @@
                                                 </form>
                                             </div>
                                             {% else %}
-                                        <div class="col-md-8"  style="margin-left: 58%;margin-top: -40%;width:47%">
+                                        <div class="col-md-8"  style="margin-left: 58%;margin-top: -43%;width:47%">
                                             <h3 class="bold-title" style="padding-bottom: 14px;">{{ portfolio.name }}</h3>
                                             <p>{{ portfolio.description }}</p>
                                             <div class="clearfix"></div>
@@ -291,7 +289,7 @@
                                                 <a href="{% url 'signin' %}" class="btn float-btn flat-btn" style="margin-top: 10px;">Sign in to book consultation</a>
                                             {% endif %}
                                             {% endif %}
-                                            </div>
+                                            </div>  </div>
                                         <!-- Hidden Consultation Form -->
                                       
                                         {% block extra_js %}

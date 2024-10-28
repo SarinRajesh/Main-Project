@@ -43,7 +43,15 @@ def index(request):
     if request.user.is_authenticated:
         user = request.user
         user_type = user.user_type_id.user_type if user.user_type_id else None
-        context = {'user': user, 'user_type': user_type}
+        context = {
+            'user': user, 
+            'user_type': user_type,
+            'is_authenticated': True
+        }
+    else:
+        context = {
+            'is_authenticated': False
+        }
     return render(request, 'index.html', context)
 
 
