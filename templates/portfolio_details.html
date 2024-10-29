@@ -204,7 +204,7 @@
                                     
                                         
                                             {% if user_type == 'Designer' %}
-                                            <div class="col-md-8"  style="margin-left: 58%;margin-top: -41%;width:47%">
+                                            <div class="col-md-8"  style="margin-left: 58%;margin-top: -40%;width:47%">
                                                 <form method="post" action="{% url 'edit_portfolio' portfolio.id %}" enctype="multipart/form-data" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                                                     {% csrf_token %}
                                                     <h3 class="bold-title" style="padding-bottom: 14px; color: #333; border-bottom: 2px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
@@ -253,9 +253,9 @@
                                                     <button type="submit" class="btn float-btn flat-btn" style="margin-top: -106px;margin-left: 52%;">Save Changes</button>
                                                     
                                                 </form>
-                                            </div>
+                                            </div></div>
                                             {% else %}
-                                        <div class="col-md-8"  style="margin-left: 58%;margin-top: -43%;width:47%">
+                                        <div class="col-md-8"  style="margin-left: 58%;margin-top: -40%;width:47%">
                                             <h3 class="bold-title" style="padding-bottom: 14px;">{{ portfolio.name }}</h3>
                                             <p>{{ portfolio.description }}</p>
                                             <div class="clearfix"></div>
@@ -289,7 +289,7 @@
                                                 <a href="{% url 'signin' %}" class="btn float-btn flat-btn" style="margin-top: 10px;">Sign in to book consultation</a>
                                             {% endif %}
                                             {% endif %}
-                                            </div>  </div>
+                                            </div>  
                                         <!-- Hidden Consultation Form -->
                                       
                                         {% block extra_js %}

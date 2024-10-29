@@ -298,10 +298,10 @@
                                             <div class="quantity fl-wrap">
                                                 {% if user.is_authenticated %}
                                                 {% if product.stock > 0 %}
-                                                <a href="#" class="btn float-btn flat-btn" style="margin-top: 12%; margin-left: -1%" id="buyProductBtn">Buy Product</a>
+                                                <a href="#" class="btn float-btn flat-btn" style="margin-top: 0%; margin-left: -1%" id="buyProductBtn">Buy Product</a>
                                                 {% else %}
                                                 <a href="#" class="btn float-btn flat-btn" style="margin-top:12%;margin-left:-1%;background-color:#ff0000;color:#ffffff;cursor:not-allowed;" onclick="return false;">Out of Stock</a>
-                                            {% endif %} <a href="#" class="btn float-btn flat-btn" style="margin-top:12%;margin-left:2%" id="addToCartBtn"><i class="fa fa-shopping-cart"></i> Add to cart</a>
+                                            {% endif %} <a href="#" class="btn float-btn flat-btn" style="margin-top:0%;margin-left:2%" id="addToCartBtn"><i class="fa fa-shopping-cart"></i> Add to cart</a>
                                                 {% if messages %}
                                                 {% for message in messages %}
                                                     {% if forloop.last %}
@@ -312,7 +312,7 @@
                                                 {% endfor %}
                                                 {% endif %}
                                             {% else %}
-                                                <a href="{% url 'signin' %}" class="btn float-btn flat-btn" style="margin-top: 12%;">Sign Into purchase or add to cart.</a>
+                                                <a href="{% url 'signin' %}" class="btn float-btn flat-btn" style="margin-top: 0%;">Sign Into purchase or add to cart.</a>
                                             {% endif %}
                                                 <div class="clearfix"></div>
                                             </div>
