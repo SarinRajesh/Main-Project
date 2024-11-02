@@ -98,11 +98,11 @@
                 <div class="content-holder">
                     <!--  content -->
                     <div class="content">
-                        <section class="color-detection-section" style="padding: 50px 0; background-color: #f9f9f9;">
+                        <section class="color-detection-section" style="padding: 20px 0; background-color: #f9f9f9;">
                             <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 15px;">
-                                <h2 style="text-align: center; margin-bottom: 30px; font-size: 32px; color: #333;">Color Detection and Product Recommendation</h2>
+                                <h2 style="text-align: center; margin-bottom: 30px; font-size: clamp(24px, 5vw, 32px); color: #333;">Color Detection and Product Recommendation</h2>
 
-                                <div class="upload-form-container" style="max-width: 600px; margin: 0 auto 40px; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <div class="upload-form-container" style="max-width: 600px; width: 90%; margin: 0 auto 40px; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                                     <form method="post" enctype="multipart/form-data" class="custom-form" style="display: flex; flex-direction: column;">
                                         {% csrf_token %}
                                         <input type="file" name="image" accept="image/*" required style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
@@ -116,34 +116,34 @@
 
                                 {% if form_submitted %}
                                 {% if error %}
-                                    <p class="error-message" style="color: #e74c3c; text-align: center; font-size: 18px; margin-top: 20px;">Error: {{ error }}</p>
+                                    <p class="error-message" style="color: #e74c3c; text-align: center; font-size: clamp(16px, 4vw, 18px); margin-top: 20px;">Error: {{ error }}</p>
                                 {% else %}
-                                    <div class="detection-results" style="background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 40px;">
-                                        <div class="result-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+                                    <div class="detection-results" style="background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 40px;">
+                                        <div class="result-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: start;">
                                             <div class="uploaded-image" style="text-align: center;">
-                                                <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Uploaded Image</h3>
-                                                <img src="{{ image_url }}" alt="Uploaded Image" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                <h3 style="font-size: clamp(20px, 4vw, 24px); color: #333; margin-bottom: 15px;">Uploaded Image</h3>
+                                                <img src="{{ image_url }}" alt="Uploaded Image" style="max-width: 100%; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                             </div>
                                             <div class="color-info-and-products" style="display: flex; flex-direction: column;">
                                                 <div class="color-info" style="margin-bottom: 20px;">
-                                                    <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Detected Color</h3>
-                                                    <div class="color-display" style="display: flex; align-items: center; margin-bottom: 20px;">
-                                                        <span style="font-size: 18px; color: #333; margin-left: 225px;">{{ detected_color }}</span>
+                                                    <h3 style="font-size: clamp(20px, 4vw, 24px); color: #333; margin-bottom: 15px;">Detected Color</h3>
+                                                    <div class="color-display" style="display: flex; align-items: center; margin-bottom: 20px; justify-content: center;">
+                                                        <span style="font-size: clamp(16px, 4vw, 18px); color: #333;">{{ detected_color }}</span>
                                                     </div>
                                                 </div>
                                                 {% if recommended_products %}
                                                     <div class="recommended-products">
-                                                        <h3 style="font-size: 24px; color: #333; margin-bottom: 15px;">Recommended Products ({{ products_count }})</h3>
+                                                        <h3 style="font-size: clamp(20px, 4vw, 24px); color: #333; margin-bottom: 15px;">Recommended Products ({{ products_count }})</h3>
                                                         <div class="products-list" style="max-height: 400px; overflow-y: auto;">
                                                             {% for product in recommended_products %}
-                                                                <div class="product-card" style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 8px;">
-                                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px;">
-                                                                    <div class="product-info" style="flex-grow: 1;">
-                                                                        <h4 style="margin-bottom: 5px; font-size: 16px;"><a href="{% url 'product' product.id %}" style="color: #333; text-decoration: none;">{{ product.name }}</a></h4>
-                                                                        <p style="color: #666; margin-bottom: 5px; font-size: 14px;">{{ product.category }}</p>
-                                                                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                                            <span class="product-price" style="font-weight: bold; color: #0188b1; font-size: 14px;">Rs. {{ product.amount.amount }}</span>
-                                                                            <a href="{% url 'product' product.id %}" class="view-button" style="font-size: 12px; padding: 5px 10px; background-color: #000000; color: #fff; text-decoration: none; border-radius: 4px; transition: background-color 0.3s ease;">View</a>
+                                                                <div class="product-card" style="display: flex; flex-direction: column; margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 8px;">
+                                                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 10px;">
+                                                                    <div class="product-info">
+                                                                        <h4 style="margin-bottom: 5px; font-size: clamp(14px, 3vw, 16px);"><a href="{% url 'product' product.id %}" style="color: #333; text-decoration: none;">{{ product.name }}</a></h4>
+                                                                        <p style="color: #666; margin-bottom: 5px; font-size: clamp(12px, 3vw, 14px);">{{ product.category }}</p>
+                                                                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                                                            <span class="product-price" style="font-weight: bold; color: #0188b1; font-size: clamp(12px, 3vw, 14px);">Rs. {{ product.amount.amount }}</span>
+                                                                            <a href="{% url 'product' product.id %}" class="view-button" style="font-size: clamp(12px, 3vw, 14px); padding: 5px 10px; background-color: #000000; color: #fff; text-decoration: none; border-radius: 4px; transition: background-color 0.3s ease;">View</a>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -151,7 +151,7 @@
                                                         </div>
                                                     </div>
                                                 {% else %}
-                                                    <p style="font-size: 18px; color: #666;">No products recommended for the current photo.</p>
+                                                    <p style="font-size: clamp(16px, 4vw, 18px); color: #666;">No products recommended for the current photo.</p>
                                                 {% endif %}
                                             </div>
                                         </div>
