@@ -7,7 +7,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.hashers import make_password
-from .models import UserType, Consultation, Users, Design, Amount, Product, Cart, Review, Order, Payment_Type, ConsultationDate
+from .models import UserType, Consultation, Users, Design, Amount, Product, Cart, Review, Order, Payment_Type, ConsultationDate, VirtualRoom, RoomItem
 from .decorators import nocache
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -2457,3 +2457,93 @@ def projects_manage(request):
         'user_type': user_type,
     }
     return render(request, 'projects_manage.html', context)
+
+@login_required
+def virtual_room_designer(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    rooms = VirtualRoom.objects.filter(user=request.user)
+    
+    context = {
+        'rooms': rooms,
+        'user_type': user_type,
+    }
+    return render(request, 'virtual_room/designer.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def create_room(request):
+    try:
+        data = json.loads(request.body)
+        room = VirtualRoom.objects.create(
+            user=request.user,
+            name=data['name'],
+            width=float(data['width']),
+            length=float(data['length']),
+            height=float(data['height'])
+        )
+        return JsonResponse({
+            'status': 'success',
+            'room_id': room.id
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+@login_required
+@require_http_methods(["POST"])
+def add_room_item(request):
+    try:
+        room_id = request.POST.get('room_id')
+        model_file = request.FILES.get('model_file')
+        
+        room = get_object_or_404(VirtualRoom, id=room_id, user=request.user)
+        
+        item = RoomItem.objects.create(
+            room=room,
+            model_file=model_file,
+            position_x=float(request.POST.get('position_x', 0)),
+            position_y=float(request.POST.get('position_y', 0)),
+            position_z=float(request.POST.get('position_z', 0)),
+            rotation_x=float(request.POST.get('rotation_x', 0)),
+            rotation_y=float(request.POST.get('rotation_y', 0)),
+            rotation_z=float(request.POST.get('rotation_z', 0)),
+            scale=float(request.POST.get('scale', 1)),
+            item_type=request.POST.get('item_type')
+        )
+        
+        return JsonResponse({
+            'status': 'success',
+            'item_id': item.id
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+@login_required
+@require_http_methods(["POST"])
+def update_item_position(request):
+    try:
+        data = json.loads(request.body)
+        item = get_object_or_404(RoomItem, id=data['item_id'], room__user=request.user)
+        
+        item.position_x = float(data['position_x'])
+        item.position_y = float(data['position_y'])
+        item.position_z = float(data['position_z'])
+        item.rotation_x = float(data.get('rotation_x', item.rotation_x))
+        item.rotation_y = float(data.get('rotation_y', item.rotation_y))
+        item.rotation_z = float(data.get('rotation_z', item.rotation_z))
+        item.scale = float(data.get('scale', item.scale))
+        item.save()
+        
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)

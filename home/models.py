@@ -233,3 +233,24 @@ class ProjectFeedback(models.Model):
 
     def __str__(self):
         return f"Feedback for {self.project} by {self.customer.username}"
+
+class VirtualRoom(models.Model):
+    user = models.ForeignKey('Users', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    width = models.FloatField()
+    length = models.FloatField()
+    height = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class RoomItem(models.Model):
+    room = models.ForeignKey(VirtualRoom, on_delete=models.CASCADE, related_name='items')
+    model_file = models.FileField(upload_to='room_items/models/')
+    position_x = models.FloatField()
+    position_y = models.FloatField()
+    position_z = models.FloatField()
+    rotation_x = models.FloatField(default=0)
+    rotation_y = models.FloatField(default=0)
+    rotation_z = models.FloatField(default=0)
+    scale = models.FloatField(default=1)
+    item_type = models.CharField(max_length=50)  # e.g., 'sofa', 'chair', 'table'

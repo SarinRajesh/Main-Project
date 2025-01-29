@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Room Designer</title>
+    
+    <!-- Add Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        #room-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        #item-library {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 250px;
+        }
+        
+        .btn-custom {
+            margin: 5px 0;
+            width: 100%;
+        }
+        
+        .input-group {
+            margin: 10px 0;
+        }
+        
+        #room-dimensions {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .control-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+        
+        #loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+
+    <!-- Main Container -->
+    <div id="room-container">
+        <!-- Controls Panel -->
+        <div id="controls">
+            <button id="new-room" class="btn btn-primary btn-custom">New Room</button>
+            <button id="save-room" class="btn btn-success btn-custom">Save Room</button>
+            
+            <div id="room-dimensions" style="display: none;">
+                <div class="mb-3">
+                    <label class="control-label">Room Width (meters)</label>
+                    <input type="number" id="room-width" class="form-control" min="1" step="0.1">
+                </div>
+                <div class="mb-3">
+                    <label class="control-label">Room Length (meters)</label>
+                    <input type="number" id="room-length" class="form-control" min="1" step="0.1">
+                </div>
+                <div class="mb-3">
+                    <label class="control-label">Room Height (meters)</label>
+                    <input type="number" id="room-height" class="form-control" min="1" step="0.1">
+                </div>
+                <div class="mb-3">
+                    <label class="control-label">Wall Color</label>
+                    <input type="color" id="wall-color" class="form-control form-control-color" value="#E8E8E8">
+                </div>
+                <div class="mb-3">
+                    <label class="control-label">Floor Color</label>
+                    <input type="color" id="floor-color" class="form-control form-control-color" value="#CCCCCC">
+                </div>
+                <div class="mb-3">
+                    <label class="control-label">Ceiling Color</label>
+                    <input type="color" id="ceiling-color" class="form-control form-control-color" value="#FFFFFF">
+                </div>
+                <button id="create-room" class="btn btn-primary btn-custom">Create Room</button>
+            </div>
+        </div>
+        
+        <!-- Item Library Panel -->
+        <div id="item-library">
+            <h5 class="mb-3">Furniture Library</h5>
+            <div id="furniture-items" class="mb-3">
+                <!-- Items will be loaded dynamically -->
+            </div>
+            <input type="file" id="model-upload" accept=".glb,.gltf" style="display: none;">
+            <button id="upload-model" class="btn btn-outline-primary btn-custom">Upload 3D Model</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+
+    <script>
+        let scene, camera, renderer, controls;
+        let currentRoom = null;
+        let selectedObject = null;
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let isDragging = false;
+
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f0f0);
+            
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(5, 5, 5);
+            
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1;
+            document.getElementById('room-container').appendChild(renderer.domElement);
+            
+            // Controls setup
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Grid helper
+            const gridHelper = new THREE.GridHelper(20, 20);
+            scene.add(gridHelper);
+            
+            // Event listeners
+            window.addEventListener('resize', onWindowResize, false);
+            renderer.domElement.addEventListener('mousedown', onMouseDown, false);
+            renderer.domElement.addEventListener('mousemove', onMouseMove, false);
+            renderer.domElement.addEventListener('mouseup', onMouseUp, false);
+            
+            animate();
+            
+            addControlsToHTML();
+            addControlListeners();
+        }
+
+        function createRoom(width, length, height) {
+            if (currentRoom) {
+                scene.remove(currentRoom);
+            }
+            
+            // Create a group to hold all room components
+            currentRoom = new THREE.Group();
+            
+            const wallThickness = 0.2; // 20cm wall thickness
+            
+            // Get colors from input elements
+            const wallColor = new THREE.Color(document.getElementById('wall-color').value);
+            const floorColor = new THREE.Color(document.getElementById('floor-color').value);
+            const ceilingColor = new THREE.Color(document.getElementById('ceiling-color').value);
+            
+            // Create materials with some texture
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                color: wallColor,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: floorColor,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            
+            const ceilingMaterial = new THREE.MeshStandardMaterial({
+                color: ceilingColor,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+
+            // Floor
+            const floorGeometry = new THREE.BoxGeometry(width, wallThickness, length);
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.position.y = -wallThickness/2;
+            floor.receiveShadow = true;
+            currentRoom.add(floor);
+
+            // Ceiling
+            const ceilingGeometry = new THREE.BoxGeometry(width, wallThickness, length);
+            const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+            ceiling.position.y = height + wallThickness/2;
+            ceiling.receiveShadow = true;
+            currentRoom.add(ceiling);
+
+            // Back wall
+            const backWallGeometry = new THREE.BoxGeometry(width, height, wallThickness);
+            const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
+            backWall.position.set(0, height/2, -length/2);
+            backWall.receiveShadow = true;
+            currentRoom.add(backWall);
+
+            // Front wall
+            const frontWallGeometry = new THREE.BoxGeometry(width, height, wallThickness);
+            const frontWall = new THREE.Mesh(frontWallGeometry, wallMaterial);
+            frontWall.position.set(0, height/2, length/2);
+            frontWall.receiveShadow = true;
+            currentRoom.add(frontWall);
+
+            // Left wall
+            const leftWallGeometry = new THREE.BoxGeometry(wallThickness, height, length);
+            const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+            leftWall.position.set(-width/2, height/2, 0);
+            leftWall.receiveShadow = true;
+            currentRoom.add(leftWall);
+
+            // Right wall
+            const rightWallGeometry = new THREE.BoxGeometry(wallThickness, height, length);
+            const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial);
+            rightWall.position.set(width/2, height/2, 0);
+            rightWall.receiveShadow = true;
+            currentRoom.add(rightWall);
+
+            // Add room to scene
+            scene.add(currentRoom);
+            
+            // Adjust camera position and target
+            camera.position.set(width * 1.2, height * 1.2, length * 1.2);
+            controls.target.set(0, height/2, 0);
+            controls.update();
+
+            // Add better lighting
+            // Remove existing lights
+            scene.children.forEach(child => {
+                if (child.isLight) scene.remove(child);
+            });
+
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            // Add main directional light (simulating sun/window light)
+            const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            mainLight.position.set(width, height * 1.5, length);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            mainLight.shadow.camera.near = 0.5;
+            mainLight.shadow.camera.far = 50;
+            scene.add(mainLight);
+
+            // Add point lights in corners for better illumination
+            const intensity = 0.3;
+            const pointLights = [
+                { pos: [width/3, height-1, length/3], color: 0xffffff },
+                { pos: [-width/3, height-1, length/3], color: 0xffffff },
+                { pos: [width/3, height-1, -length/3], color: 0xffffff },
+                { pos: [-width/3, height-1, -length/3], color: 0xffffff }
+            ];
+
+            pointLights.forEach(light => {
+                const pointLight = new THREE.PointLight(light.color, intensity);
+                pointLight.position.set(...light.pos);
+                currentRoom.add(pointLight);
+            });
+
+            // Update renderer
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        }
+
+        function showLoadingIndicator() {
+            document.getElementById('loading-indicator').style.display = 'block';
+        }
+
+        function hideLoadingIndicator() {
+            document.getElementById('loading-indicator').style.display = 'none';
+        }
+
+        function loadModel(file) {
+            showLoadingIndicator();
+            
+            const loader = new THREE.GLTFLoader();
+            const dracoLoader = new THREE.DRACOLoader();
+            dracoLoader.setDecoderPath('/static/draco/');
+            loader.setDRACOLoader(dracoLoader);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                loader.parse(e.target.result, '', function(gltf) {
+                    const model = gltf.scene;
+                    
+                    // First, compute the bounding box before any transformations
+                    const box = new THREE.Box3().setFromObject(model);
+                    const size = box.getSize(new THREE.Vector3());
+                    const center = box.getCenter(new THREE.Vector3());
+                    
+                    // Calculate scale
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 2 / maxDim;
+                    model.scale.set(scale, scale, scale);
+                    
+                    // Store scales for reference
+                    model.userData.originalScale = { x: scale, y: scale, z: scale };
+                    model.userData.baseScale = scale;
+                    
+                    // Recalculate bounding box after scaling
+                    const scaledBox = new THREE.Box3().setFromObject(model);
+                    
+                    // Position the model
+                    // Center horizontally and place exactly on the floor
+                    model.position.x = -center.x * scale;
+                    model.position.z = -center.z * scale;
+                    model.position.y = -scaledBox.min.y; // This ensures bottom is at y=0
+                    
+                    // Add other properties
+                    model.userData.id = 'model_' + Date.now();
+                    model.userData.name = file.name.split('.')[0];
+                    model.userData.draggable = true;
+                    
+                    // Set up shadows
+                    model.traverse((child) => {
+                        child.userData.draggable = true;
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    
+                    scene.add(model);
+                    updateModelList();
+                    selectObject(model);
+                    hideLoadingIndicator();
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function updateModelList() {
+            const selector = document.getElementById('model-selector');
+            // Clear current options except the first one
+            while (selector.options.length > 1) {
+                selector.remove(1);
+            }
+            
+            // Add all models to the selector
+            scene.traverse((object) => {
+                if (object.userData && object.userData.draggable && object.userData.id) {
+                    const option = document.createElement('option');
+                    option.value = object.userData.id;
+                    option.text = object.userData.name || 'Unnamed Model';
+                    if (selectedObject && selectedObject.userData.id === object.userData.id) {
+                        option.selected = true;
+                    }
+                    selector.add(option);
+                }
+            });
+        }
+
+        function selectObject(object) {
+            // Deselect previous object
+            if (selectedObject) {
+                selectedObject.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.emissive = new THREE.Color(0x000000);
+                    }
+                });
+            }
+            
+            // Select new object
+            selectedObject = object;
+            if (selectedObject) {
+                selectedObject.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.emissive = new THREE.Color(0x666666);
+                    }
+                });
+                document.getElementById('furniture-controls').style.display = 'block';
+                document.getElementById('scale-slider').value = selectedObject.scale.x;
+                document.getElementById('rotation-slider').value = (selectedObject.rotation.y * 180 / Math.PI) % 360;
+                
+                // Update model selector
+                const selector = document.getElementById('model-selector');
+                selector.value = selectedObject.userData.id;
+            } else {
+                document.getElementById('furniture-controls').style.display = 'none';
+                document.getElementById('model-selector').value = '';
+            }
+        }
+
+        function onMouseDown(event) {
+            event.preventDefault();
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            
+            // Click on empty space
+            if (intersects.length === 0) {
+                deselectObject();
+                isDragging = false;
+                return;
+            }
+            
+            let clickedObject = intersects[0].object;
+            let draggableParent = clickedObject;
+            
+            // Find draggable parent
+            while (draggableParent && !draggableParent.userData.draggable) {
+                draggableParent = draggableParent.parent;
+            }
+            
+            // If clicked on non-draggable object (like walls or floor)
+            if (!draggableParent) {
+                deselectObject();
+                isDragging = false;
+                return;
+            }
+            
+            if (draggableParent) {
+                selectObject(draggableParent);
+                isDragging = true;
+                controls.enabled = false;
+            }
+        }
+
+        function onMouseMove(event) {
+            if (selectedObject && isDragging) {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+                const intersectPoint = new THREE.Vector3();
+                
+                if (raycaster.ray.intersectPlane(dragPlane, intersectPoint)) {
+                    updateObjectPosition(selectedObject, intersectPoint.x, intersectPoint.z);
+                }
+            }
+        }
+
+        function onMouseUp(event) {
+            isDragging = false;
+            controls.enabled = true;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Initialize the scene
+        init();
+
+        // Event listeners for UI controls
+        document.getElementById('new-room').addEventListener('click', function() {
+            document.getElementById('room-dimensions').style.display = 'block';
+        });
+
+        document.getElementById('create-room').addEventListener('click', function() {
+            const width = parseFloat(document.getElementById('room-width').value);
+            const length = parseFloat(document.getElementById('room-length').value);
+            const height = parseFloat(document.getElementById('room-height').value);
+            
+            if (width && length && height) {
+                createRoom(width, length, height);
+                document.getElementById('room-dimensions').style.display = 'none';
+            } else {
+                alert('Please enter valid room dimensions');
+            }
+        });
+
+        document.getElementById('upload-model').addEventListener('click', function() {
+            document.getElementById('model-upload').click();
+        });
+
+        document.getElementById('model-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')) {
+                    loadModel(file);
+                } else {
+                    alert('Please upload a .glb or .gltf file');
+                }
+            }
+        });
+
+        document.getElementById('save-room').addEventListener('click', function() {
+            // TODO: Implement room saving functionality
+            alert('Room saving functionality will be implemented soon!');
+        });
+
+        function addControlsToHTML() {
+            const controlsDiv = document.getElementById('controls');
+            const furnitureControls = `
+                <div id="model-list" class="mb-3" style="margin-top: 15px;">
+                    <h6>Placed Models</h6>
+                    <select id="model-selector" class="form-select mb-2">
+                        <option value="">Select a model</option>
+                    </select>
+                    <button id="deselect-model" class="btn btn-outline-secondary btn-sm w-100 mb-2">Deselect Model</button>
+                </div>
+                <div id="furniture-controls" style="display: none; margin-top: 15px;">
+                    <h6>Furniture Controls</h6>
+                    <div class="mb-2">
+                        <label class="control-label">Size</label>
+                        <input type="range" id="scale-slider" class="form-range" min="0.5" max="5.0" step="0.1" value="2.0">
+                        <div class="d-flex justify-content-between">
+                            <small>Smaller</small>
+                            <small>Larger</small>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="control-label">Rotation</label>
+                        <input type="range" id="rotation-slider" class="form-range" min="0" max="360" step="1" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <h6>Position</h6>
+                        <div class="btn-group w-100 mb-2">
+                            <button id="move-left" class="btn btn-sm btn-secondary">←</button>
+                            <button id="move-forward" class="btn btn-sm btn-secondary">↑</button>
+                            <button id="move-backward" class="btn btn-sm btn-secondary">↓</button>
+                            <button id="move-right" class="btn btn-sm btn-secondary">→</button>
+                        </div>
+                        <div class="btn-group w-100 mb-2">
+                            <button id="move-up" class="btn btn-sm btn-secondary">Move Up</button>
+                            <button id="move-down" class="btn btn-sm btn-secondary">Move Down</button>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Movement Step</label>
+                            <input type="range" id="movement-step" class="form-range" min="0.1" max="1" step="0.1" value="0.5">
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <button id="scale-down" class="btn btn-sm btn-secondary">Scale Down</button>
+                        <button id="scale-up" class="btn btn-sm btn-secondary">Scale Up</button>
+                    </div>
+                    <button id="delete-furniture" class="btn btn-danger btn-custom">Delete Selected</button>
+                </div>
+            `;
+            controlsDiv.insertAdjacentHTML('beforeend', furnitureControls);
+        }
+
+        function addControlListeners() {
+            // Add deselect button listener
+            document.getElementById('deselect-model').addEventListener('click', function() {
+                deselectObject();
+            });
+
+            // Add model selector listener
+            document.getElementById('model-selector').addEventListener('change', function(e) {
+                const selectedId = e.target.value;
+                if (selectedId) {
+                    scene.traverse((object) => {
+                        if (object.userData && object.userData.id === selectedId) {
+                            selectObject(object);
+                        }
+                    });
+                } else {
+                    selectObject(null);
+                }
+            });
+
+            // Existing listeners
+            document.getElementById('scale-slider').addEventListener('input', function(e) {
+                handleScaleChange(parseFloat(e.target.value));
+            });
+
+            document.getElementById('scale-up').addEventListener('click', function() {
+                const currentScale = parseFloat(document.getElementById('scale-slider').value);
+                const newScale = Math.min(currentScale + 0.1, 5.0);
+                document.getElementById('scale-slider').value = newScale;
+                handleScaleChange(newScale);
+            });
+
+            document.getElementById('scale-down').addEventListener('click', function() {
+                const currentScale = parseFloat(document.getElementById('scale-slider').value);
+                const newScale = Math.max(currentScale - 0.1, 0.5);
+                document.getElementById('scale-slider').value = newScale;
+                handleScaleChange(newScale);
+            });
+
+            document.getElementById('rotation-slider').addEventListener('input', function(e) {
+                if (selectedObject) {
+                    const rotation = parseFloat(e.target.value) * Math.PI / 180;
+                    selectedObject.rotation.y = rotation;
+                }
+            });
+
+            // New movement control listeners
+            document.getElementById('move-left').addEventListener('click', function() {
+                moveSelectedObject('left');
+            });
+
+            document.getElementById('move-right').addEventListener('click', function() {
+                moveSelectedObject('right');
+            });
+
+            document.getElementById('move-forward').addEventListener('click', function() {
+                moveSelectedObject('forward');
+            });
+
+            document.getElementById('move-backward').addEventListener('click', function() {
+                moveSelectedObject('backward');
+            });
+
+            document.getElementById('delete-furniture').addEventListener('click', function() {
+                if (selectedObject) {
+                    scene.remove(selectedObject);
+                    selectedObject = null;
+                    updateModelList();
+                    document.getElementById('furniture-controls').style.display = 'none';
+                }
+            });
+
+            // Add vertical movement listeners
+            document.getElementById('move-up').addEventListener('click', function() {
+                moveSelectedObject('up');
+            });
+
+            document.getElementById('move-down').addEventListener('click', function() {
+                moveSelectedObject('down');
+            });
+
+            // Update keyboard controls
+            document.addEventListener('keydown', function(event) {
+                if (selectedObject) {
+                    switch(event.key) {
+                        case 'ArrowLeft':
+                            moveSelectedObject('left');
+                            break;
+                        case 'ArrowRight':
+                            moveSelectedObject('right');
+                            break;
+                        case 'ArrowUp':
+                            moveSelectedObject('forward');
+                            break;
+                        case 'ArrowDown':
+                            moveSelectedObject('backward');
+                            break;
+                        case 'PageUp':
+                            moveSelectedObject('up');
+                            break;
+                        case 'PageDown':
+                            moveSelectedObject('down');
+                            break;
+                    }
+                }
+            });
+
+            // Add color change listeners
+            document.getElementById('wall-color').addEventListener('input', updateRoomColors);
+            document.getElementById('floor-color').addEventListener('input', updateRoomColors);
+            document.getElementById('ceiling-color').addEventListener('input', updateRoomColors);
+        }
+
+        function moveSelectedObject(direction) {
+            if (!selectedObject) return;
+            
+            const step = parseFloat(document.getElementById('movement-step').value);
+            
+            // Get the object's bounding box
+            const boundingBox = new THREE.Box3().setFromObject(selectedObject);
+            const objectHeight = boundingBox.max.y - boundingBox.min.y;
+            
+            // Store original position
+            const originalPosition = selectedObject.position.clone();
+            
+            switch(direction) {
+                case 'left':
+                    selectedObject.position.x -= step;
+                    break;
+                case 'right':
+                    selectedObject.position.x += step;
+                    break;
+                case 'forward':
+                    selectedObject.position.z -= step;
+                    break;
+                case 'backward':
+                    selectedObject.position.z += step;
+                    break;
+                case 'up':
+                    selectedObject.position.y += step;
+                    break;
+                case 'down':
+                    // Calculate the minimum Y position based on the object's height
+                    const minY = objectHeight / 2;
+                    selectedObject.position.y = Math.max(minY, selectedObject.position.y - step);
+                    break;
+            }
+
+            // Keep object within room bounds if a room exists
+            if (currentRoom) {
+                // Get room dimensions from the input fields
+                const roomWidth = parseFloat(document.getElementById('room-width').value) || 0;
+                const roomLength = parseFloat(document.getElementById('room-length').value) || 0;
+                const roomHeight = parseFloat(document.getElementById('room-height').value) || 0;
+                
+                // Calculate boundaries with some padding
+                const padding = 0.1; // Reduced padding for tighter wall alignment
+                const maxX = (roomWidth / 2) - padding;
+                const maxZ = (roomLength / 2) - padding;
+                const maxY = roomHeight - padding;
+                
+                // Special handling for windows (checking object name)
+                if (selectedObject.userData.name && selectedObject.userData.name.toLowerCase().includes('window')) {
+                    // Adjust position to align with walls if close enough
+                    const wallThreshold = 0.5; // Distance to snap to wall
+                    
+                    if (Math.abs(Math.abs(selectedObject.position.x) - maxX) < wallThreshold) {
+                        // Snap to side walls
+                        selectedObject.position.x = Math.sign(selectedObject.position.x) * maxX;
+                    }
+                    if (Math.abs(Math.abs(selectedObject.position.z) - maxZ) < wallThreshold) {
+                        // Snap to front/back walls
+                        selectedObject.position.z = Math.sign(selectedObject.position.z) * maxZ;
+                    }
+                    
+                    // Ensure window stays within valid height range
+                    const minWindowHeight = objectHeight / 2;
+                    const maxWindowHeight = roomHeight - (objectHeight / 2);
+                    selectedObject.position.y = Math.max(minWindowHeight, Math.min(maxWindowHeight, selectedObject.position.y));
+                } else {
+                    // Regular object bounds checking
+                    selectedObject.position.x = Math.max(-maxX, Math.min(maxX, selectedObject.position.x));
+                    selectedObject.position.z = Math.max(-maxZ, Math.min(maxZ, selectedObject.position.z));
+                    selectedObject.position.y = Math.max(objectHeight / 2, Math.min(maxY - (objectHeight / 2), selectedObject.position.y));
+                }
+            }
+        }
+
+        function deselectObject() {
+            if (selectedObject) {
+                selectedObject.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.emissive = new THREE.Color(0x000000);
+                    }
+                });
+            }
+            selectedObject = null;
+            document.getElementById('furniture-controls').style.display = 'none';
+            document.getElementById('model-selector').value = '';
+        }
+
+        // Update the scale change handler
+        function handleScaleChange(value) {
+            if (selectedObject) {
+                const baseScale = selectedObject.userData.baseScale || 1;
+                const newScale = baseScale * value;
+                selectedObject.scale.set(newScale, newScale, newScale);
+            }
+        }
+
+        // Update position when moving objects
+        function updateObjectPosition(object, x, z) {
+            if (object) {
+                // Get the current bounding box
+                const box = new THREE.Box3().setFromObject(object);
+                const size = box.getSize(new THREE.Vector3());
+                
+                // Update position while maintaining y position at floor level
+                object.position.x = x;
+                object.position.z = z;
+                object.position.y = size.y / 2; // Keep object on floor
+                
+                // If there's a room, enforce boundaries
+                if (currentRoom) {
+                    const roomWidth = currentRoom.children[0].geometry.parameters.width;
+                    const roomLength = currentRoom.children[0].geometry.parameters.depth;
+                    
+                    // Calculate boundaries with padding
+                    const padding = 0.5;
+                    const maxX = (roomWidth / 2) - padding;
+                    const maxZ = (roomLength / 2) - padding;
+                    
+                    // Enforce boundaries
+                    object.position.x = Math.max(-maxX, Math.min(maxX, object.position.x));
+                    object.position.z = Math.max(-maxZ, Math.min(maxZ, object.position.z));
+                }
+            }
+        }
+
+        // Add this function to handle color changes
+        function updateRoomColors() {
+            if (!currentRoom) return;
+            
+            const wallColor = new THREE.Color(document.getElementById('wall-color').value);
+            const floorColor = new THREE.Color(document.getElementById('floor-color').value);
+            const ceilingColor = new THREE.Color(document.getElementById('ceiling-color').value);
+            
+            currentRoom.children.forEach(child => {
+                if (child.isMesh) {
+                    // Floor is the first child
+                    if (child === currentRoom.children[0]) {
+                        child.material.color = floorColor;
+                    }
+                    // Ceiling is the second child
+                    else if (child === currentRoom.children[1]) {
+                        child.material.color = ceilingColor;
+                    }
+                    // Walls are the rest
+                    else {
+                        child.material.color = wallColor;
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

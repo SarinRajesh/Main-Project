@@ -499,47 +499,80 @@
                 </div>
             </div>
             <!--search-form-holder  end-->  
-<!-- Share container  -->
-<div class="share-wrapper isShare">
-    <div class="share-container" style="padding: 20px;">
-        <ul style="list-style-type: none; padding: 0; margin: 0;">
-            {% if user_type == 'Customer' %}
-            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
-            </li>
-            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                <a href="{% url 'my_projects' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Projects</a>
-            </li>
-            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Consultations</a>
-            </li>
-            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Orders</a>
-            </li>
-            
-        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-            <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
-        </li>
-        </ul>
-        {% endif %}
-        {% if user_type == 'Designer' %}
-                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                    <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
-                </li>
+
+            <!-- Chatbot Integration -->
+            <div class="chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+                <!-- Chat Button -->
+                <button id="chat-button" style="width: 60px; height: 60px; border-radius: 50%; background-color: #000000; border: none; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
+                    <i class="fa fa-comments" style="color: white; font-size: 24px;"></i>
+                </button>
+
+                <!-- Chat Interface -->
+                <div id="chat-interface" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; height: 500px; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); overflow: hidden;">
+                    <!-- Chat Header -->
+                    <div style="background: #000000; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0;">AI Assistant</h4>
+                        <button id="close-chat" style="background: none; border: none; color: white; cursor: pointer;">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                    <!-- Chat Messages -->
+                    <div id="chat-messages" style="height: 380px; overflow-y: auto; padding: 15px;"></div>
+                    <!-- Chat Input -->
+                    <div style="padding: 15px; border-top: 1px solid #eee;">
+                        <form id="chat-form" style="display: flex; gap: 10px;">
+                            <input type="text" id="chat-input" placeholder="Ask me anything..." 
+                                   style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            <button type="submit" 
+                                    style="background: #000000; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                                <i class="fa fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Share container  -->
+            <div class="share-wrapper isShare">
+                <div class="share-container" style="padding: 20px;">
+                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                        {% if user_type == 'Customer' %}
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_projects' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Projects</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Consultations</a>
+                        </li>
+                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Orders</a>
+                        </li>
+                        
                     <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                        <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                        <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
                     </li>
-                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                        <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
-                    </li>
-                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                    <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
-                </li>
-                </ul>
-        {% endif %}
-    </div>
-</div>
-<!-- Share container  end-->
+                    </ul>
+                    {% endif %}
+                    {% if user_type == 'Designer' %}
+                            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                                <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
+                            </li>
+                                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                                    <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
+                                </li>
+                                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                                    <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                                </li>
+                            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                                <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                            </li>
+                            </ul>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
                 <div class="fixed-title"><span>Home Slider</span></div>
@@ -560,5 +593,232 @@
         <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+
+            <!-- Add this before the closing body tag -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const API_KEY = 'AIzaSyDS4jx4S-2cgUnBM6Ouc5D6Xwzj-Dorf-E';
+                    const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+                    
+                    const chatButton = document.getElementById('chat-button');
+                    const chatInterface = document.getElementById('chat-interface');
+                    const closeChat = document.getElementById('close-chat');
+                    const chatForm = document.getElementById('chat-form');
+                    const chatInput = document.getElementById('chat-input');
+                    const chatMessages = document.getElementById('chat-messages');
+
+                    // Add initial welcome message
+                    function showWelcomeMessage() {
+                        const welcomeHTML = `
+                            <div style="background-color: #f8f8f8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                                <h3 style="margin: 0 0 10px 0; color: #000000;">Welcome to ElegantDecor! 👋</h3>
+                                <p style="margin: 0; color: #333;">Quick links to our main features:</p>
+                                <ul style="margin: 10px 0; color: #333; padding-left: 20px;">
+                                    <li><a href="/portfolio" style="color: #000; text-decoration: underline;">Browse Design Portfolio</a></li>
+                                    <li><a href="/shop" style="color: #000; text-decoration: underline;">Shop Furniture & Decor</a></li>
+                                    <li><a href="/consultations" style="color: #000; text-decoration: underline;">Book Design Consultation</a></li>
+                                    <li><a href="/mood_board_list" style="color: #000; text-decoration: underline;">Create Mood Boards</a></li>
+                                </ul>
+                                <p style="margin: 10px 0; color: #333;">I'm your AI assistant and can help you with:</p>
+                                <ul style="margin: 10px 0; color: #333; padding-left: 20px;">
+                                    <li>Design recommendations</li>
+                                    <li>Product information</li>
+                                    <li>Service inquiries</li>
+                                    <li>General assistance</li>
+                                </ul>
+                                <p style="margin: 0; color: #333;">How can I assist you today?</p>
+                            </div>
+                        `;
+                        addMessage('ai', welcomeHTML, true);
+                    }
+
+                    // Show welcome message on initial load
+                    showWelcomeMessage();
+
+                    async function generateResponse(message) {
+                        try {
+                            const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    contents: [{
+                                        parts: [{
+                                            text: `You are a helpful AI assistant. Please respond to: ${message}
+
+                                            Guidelines:
+                                            - Be helpful and informative
+                                            - Keep responses concise and clear
+                                            - Be friendly but professional
+                                            - If you're unsure, say so
+                                            - Don't make up information
+                                            
+                                            User query: ${message}`
+                                        }]
+                                    }]
+                                })
+                            });
+
+                            const data = await response.json();
+                            return data.candidates[0].content.parts[0].text;
+                        } catch (error) {
+                            console.error('API Error:', error);
+                            return getFallbackResponse(message);
+                        }
+                    }
+
+                    // Fallback response function
+                    function getFallbackResponse(message) {
+                        message = message.toLowerCase();
+                        
+                        if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+                            return "Hello! How can I help you today?";
+                        }
+                        
+                        if (message.includes('thank')) {
+                            return "You're welcome! Let me know if you need anything else.";
+                        }
+                        
+                        if (message.includes('help') || message.includes('can you')) {
+                            return "I'm here to help! I can answer questions, provide information, and assist with various topics. What would you like to know?";
+                        }
+                        
+                        return "I apologize, but I'm having trouble connecting right now. Could you please rephrase your question or try again later?";
+                    }
+
+                    // Handle message submission
+                    chatForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const message = chatInput.value.trim();
+                        if (!message) return;
+
+                        // Add user message
+                        addMessage('user', message);
+                        chatInput.value = '';
+
+                        // Show typing indicator
+                        const typingIndicator = addTypingIndicator();
+
+                        try {
+                            // Generate response
+                            const response = await generateResponse(message);
+                            
+                            // Remove typing indicator
+                            typingIndicator.remove();
+                            
+                            // Add AI response
+                            addMessage('ai', response);
+                        } catch (error) {
+                            console.error('Error:', error);
+                            typingIndicator.remove();
+                            addMessage('ai', getFallbackResponse(message));
+                        }
+                    });
+
+                    // Toggle chat interface
+                    chatButton.addEventListener('click', () => {
+                        chatInterface.style.display = chatInterface.style.display === 'none' ? 'block' : 'none';
+                        if (chatInterface.style.display === 'block') {
+                            chatInput.focus();
+                        }
+                    });
+
+                    // Close chat interface
+                    closeChat.addEventListener('click', () => {
+                        chatInterface.style.display = 'none';
+                    });
+
+                    // Modified addMessage function to handle HTML content
+                    function addMessage(sender, content, isHTML = false) {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.style.marginBottom = '10px';
+                        messageDiv.style.display = 'flex';
+                        messageDiv.style.flexDirection = sender === 'user' ? 'row-reverse' : 'row';
+
+                        const bubble = document.createElement('div');
+                        bubble.style.maxWidth = '70%';
+                        bubble.style.padding = '10px';
+                        bubble.style.borderRadius = '10px';
+                        bubble.style.backgroundColor = sender === 'user' ? '#000000' : '#f8f8f8';
+                        bubble.style.color = sender === 'user' ? 'white' : '#000000';
+                        
+                        if (isHTML) {
+                            bubble.innerHTML = content;
+                        } else {
+                            bubble.textContent = content;
+                        }
+
+                        messageDiv.appendChild(bubble);
+                        chatMessages.appendChild(messageDiv);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+
+                    // Modified typing indicator
+                    function addTypingIndicator() {
+                        const typingDiv = document.createElement('div');
+                        typingDiv.style.marginBottom = '10px';
+                        typingDiv.style.display = 'flex';
+
+                        const bubble = document.createElement('div');
+                        bubble.style.maxWidth = '70%';
+                        bubble.style.padding = '10px';
+                        bubble.style.borderRadius = '10px';
+                        bubble.style.backgroundColor = '#f8f8f8';
+                        bubble.innerHTML = `
+                            <div class="processing-indicator">
+                                <span>Processing your request</span>
+                                <div class="processing-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>`;
+
+                        typingDiv.appendChild(bubble);
+                        chatMessages.appendChild(typingDiv);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        return typingDiv;
+                    }
+                });
+            </script>
+
+            <!-- Add this CSS for typing indicator -->
+            <style>
+                .processing-indicator {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 14px;
+                    color: #333;
+                }
+
+                .processing-dots {
+                    display: flex;
+                    gap: 4px;
+                }
+
+                .processing-dots span {
+                    width: 6px;
+                    height: 6px;
+                    background-color: #000000;
+                    border-radius: 50%;
+                    animation: pulse 1.5s infinite;
+                }
+
+                .processing-dots span:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+
+                .processing-dots span:nth-child(3) {
+                    animation-delay: 0.4s;
+                }
+
+                @keyframes pulse {
+                    0% { transform: scale(0.8); opacity: 0.5; }
+                    20% { transform: scale(1.2); opacity: 1; }
+                    100% { transform: scale(0.8); opacity: 0.5; }
+                }
+            </style>
  </body>
 </html>

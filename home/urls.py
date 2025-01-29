@@ -74,7 +74,10 @@ path('download_receipt/<int:order_id>/', views.download_receipt, name='download_
 path('projects_manage/', views.projects_manage, name='projects_manage'),
 
 
-
+path('virtual-room/', views.virtual_room_designer, name='virtual_room_designer'),
+path('virtual-room/create/', views.create_room, name='create_room'),
+path('virtual-room/add-item/', views.add_room_item, name='add_room_item'),
+path('virtual-room/update-item/', views.update_item_position, name='update_item_position'),
 ]
 
 # Serve media files during development
