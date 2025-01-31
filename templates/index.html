@@ -45,7 +45,7 @@
                 {% else %}
                 {% endif %}
                 <!-- share button end-->  		
-                <!-- search button--> 	 
+                <!-- search button--> 
                 <!-- search button end --> 
                 <!-- mobile nav --> 
                 <div class="nav-button-wrap">
@@ -499,80 +499,47 @@
                 </div>
             </div>
             <!--search-form-holder  end-->  
-
-            <!-- Chatbot Integration -->
-            <div class="chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-                <!-- Chat Button -->
-                <button id="chat-button" style="width: 60px; height: 60px; border-radius: 50%; background-color: #000000; border: none; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
-                    <i class="fa fa-comments" style="color: white; font-size: 24px;"></i>
-                </button>
-
-                <!-- Chat Interface -->
-                <div id="chat-interface" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; height: 500px; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); overflow: hidden;">
-                    <!-- Chat Header -->
-                    <div style="background: #000000; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="margin: 0;">AI Assistant</h4>
-                        <button id="close-chat" style="background: none; border: none; color: white; cursor: pointer;">
-                            <i class="fa fa-times"></i>
-                        </button>
-                    </div>
-                    <!-- Chat Messages -->
-                    <div id="chat-messages" style="height: 380px; overflow-y: auto; padding: 15px;"></div>
-                    <!-- Chat Input -->
-                    <div style="padding: 15px; border-top: 1px solid #eee;">
-                        <form id="chat-form" style="display: flex; gap: 10px;">
-                            <input type="text" id="chat-input" placeholder="Ask me anything..." 
-                                   style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
-                            <button type="submit" 
-                                    style="background: #000000; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                                <i class="fa fa-paper-plane"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Share container  -->
-            <div class="share-wrapper isShare">
-                <div class="share-container" style="padding: 20px;">
-                    <ul style="list-style-type: none; padding: 0; margin: 0;">
-                        {% if user_type == 'Customer' %}
-                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
-                        </li>
-                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'my_projects' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Projects</a>
-                        </li>
-                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Consultations</a>
-                        </li>
-                        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                            <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Orders</a>
-                        </li>
-                        
+<!-- Share container  -->
+<div class="share-wrapper isShare">
+    <div class="share-container" style="padding: 20px;">
+        <ul style="list-style-type: none; padding: 0; margin: 0;">
+            {% if user_type == 'Customer' %}
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
+            </li>
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'my_projects' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Projects</a>
+            </li>
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'my_consultations' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Consultations</a>
+            </li>
+            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                <a href="{% url 'my_orders' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Orders</a>
+            </li>
+            
+        <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+            <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+        </li>
+        </ul>
+        {% endif %}
+        {% if user_type == 'Designer' %}
+                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                    <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
+                </li>
                     <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                        <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                        <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
                     </li>
-                    </ul>
-                    {% endif %}
-                    {% if user_type == 'Designer' %}
-                            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                                <a href="{% url 'profile' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">My Profile</a>
-                            </li>
-                                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                                    <a href="{% url 'add_portfolio' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Add Designs</a>
-                                </li>
-                                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                                    <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
-                                </li>
-                            <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
-                                <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
-                            </li>
-                            </ul>
-                    {% endif %}
-                </div>
-            </div>
-            <!-- Share container  end-->
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                        <a href="{% url 'schedule_consultation' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Schedule Consultations</a>
+                    </li>
+                <li style="margin-bottom: 15px; border-bottom: 1px solid #fff;">
+                    <a href="{% url 'logout_view' %}" style="color: #fff; text-decoration: none; font-size: 16px; transition: all 0.3s ease; display: block; padding: 10px; border-radius: 5px;" onmouseover="this.style.backgroundColor='#fff'; this.style.color='#000';" onmouseout="this.style.backgroundColor='black'; this.style.color='#fff';">Logout</a>
+                </li>
+                </ul>
+        {% endif %}
+    </div>
+</div>
+<!-- Share container  end-->
             <!-- footer -->
             <footer class="main-footer">
                 <div class="fixed-title"><span>Home Slider</span></div>
@@ -594,231 +561,452 @@
             <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
 
-            <!-- Add this before the closing body tag -->
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const API_KEY = 'AIzaSyDS4jx4S-2cgUnBM6Ouc5D6Xwzj-Dorf-E';
-                    const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-                    
-                    const chatButton = document.getElementById('chat-button');
-                    const chatInterface = document.getElementById('chat-interface');
-                    const closeChat = document.getElementById('close-chat');
-                    const chatForm = document.getElementById('chat-form');
-                    const chatInput = document.getElementById('chat-input');
-                    const chatMessages = document.getElementById('chat-messages');
+<!-- Chatbot Integration -->
+<div id="chatbot" style="position: fixed; bottom: 20px; right: 20px; width: 300px; max-width: 90vw; border: 1px solid #000; border-radius: 10px; background-color: white; display: none; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 9999;">
+    <!-- Header -->
+    <div style="padding: 12px; background-color: #000000; color: white; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa fa-robot" style="font-size: 16px;"></i>
+            <span style="color: #ffffff;">ElegantDecor</span>
+            <span style="color: #ffffff; font-size: 12px;">AI</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            {% if user.is_authenticated %}
+                <span style="font-size: 12px; color: #ffffff;">Hi, {{ user.username }}</span>
+            {% endif %}
+            <button onclick="toggleChatbot()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+        </div>
+    </div>
 
-                    // Add initial welcome message
-                    function showWelcomeMessage() {
-                        const welcomeHTML = `
-                            <div style="background-color: #f8f8f8; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                                <h3 style="margin: 0 0 10px 0; color: #000000;">Welcome to ElegantDecor! 👋</h3>
-                                <p style="margin: 0; color: #333;">Quick links to our main features:</p>
-                                <ul style="margin: 10px 0; color: #333; padding-left: 20px;">
-                                    <li><a href="/portfolio" style="color: #000; text-decoration: underline;">Browse Design Portfolio</a></li>
-                                    <li><a href="/shop" style="color: #000; text-decoration: underline;">Shop Furniture & Decor</a></li>
-                                    <li><a href="/consultations" style="color: #000; text-decoration: underline;">Book Design Consultation</a></li>
-                                    <li><a href="/mood_board_list" style="color: #000; text-decoration: underline;">Create Mood Boards</a></li>
-                                </ul>
-                                <p style="margin: 10px 0; color: #333;">I'm your AI assistant and can help you with:</p>
-                                <ul style="margin: 10px 0; color: #333; padding-left: 20px;">
-                                    <li>Design recommendations</li>
-                                    <li>Product information</li>
-                                    <li>Service inquiries</li>
-                                    <li>General assistance</li>
-                                </ul>
-                                <p style="margin: 0; color: #333;">How can I assist you today?</p>
-                            </div>
-                        `;
-                        addMessage('ai', welcomeHTML, true);
-                    }
+    <!-- Chat Messages -->
+    <div id="chatbot-messages" style="height: 300px; overflow-y: auto; padding: 10px; font-family: Arial, sans-serif; font-size: 14px;">
+        <!-- Messages will appear here -->
+    </div>
 
-                    // Show welcome message on initial load
-                    showWelcomeMessage();
+    <!-- Input Area -->
+    <div style="padding: 10px; display: flex; gap: 5px;">
+        <input type="text" id="chatbot-input" placeholder="Type your message..." 
+               style="flex: 1; padding: 8px; border-radius: 20px; border: 1px solid #ccc; font-size: 14px;" />
+        <button onclick="sendMessage()" 
+                style="background-color: #000000; color: white; border: none; border-radius: 20px; padding: 8px 15px; cursor: pointer;">
+            Send
+        </button>
+    </div>
+</div>
 
-                    async function generateResponse(message) {
-                        try {
-                            const response = await fetch(`${API_URL}?key=${API_KEY}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    contents: [{
-                                        parts: [{
-                                            text: `You are a helpful AI assistant. Please respond to: ${message}
+<!-- Chat Toggle Button -->
+<button id="chat-toggle-btn" onclick="toggleChatbot()" 
+        style="position: fixed; bottom: 20px; right: 20px; 
+               background-color: #000000; 
+               color: #ffffff; 
+               border: none; 
+               border-radius: 50%; 
+               width: 60px; 
+               height: 60px; 
+               cursor: pointer; 
+               z-index: 9999;
+               box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+               display: flex;
+               flex-direction: column;
+               align-items: center;
+               justify-content: center;
+               padding: 8px;">
+    <i class="fa fa-robot" style="font-size: 24px; margin-bottom: 2px;"></i>
+    <span style="font-size: 10px; font-weight: bold;">AI Chat</span>
+</button>
 
-                                            Guidelines:
-                                            - Be helpful and informative
-                                            - Keep responses concise and clear
-                                            - Be friendly but professional
-                                            - If you're unsure, say so
-                                            - Don't make up information
-                                            
-                                            User query: ${message}`
-                                        }]
-                                    }]
-                                })
-                            });
+<!-- Add this script right before the closing </body> tag -->
+<script>
+// Make sure these variables are defined
+const API_KEY = 'AIzaSyCcldFUfZNm4jRcDeWhj64mUfvqx7l3t18';
+const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
 
-                            const data = await response.json();
-                            return data.candidates[0].content.parts[0].text;
-                        } catch (error) {
-                            console.error('API Error:', error);
-                            return getFallbackResponse(message);
-                        }
-                    }
+// First, let's add the welcome message function
+function showWelcomeMessage() {
+    const messagesDiv = document.getElementById('chatbot-messages');
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+    
+    const welcomeMessage = isAuthenticated ? 
+        `👋 Welcome back to ElegantDecor Chat!<br>I'm here to help you with your orders, consultations, and projects. How can I assist you today?` :
+        `👋 Welcome to ElegantDecor Chat!<br>I'm here to provide information about our services and interior design guidance. For personalized assistance, please sign in.`;
+    
+    messagesDiv.innerHTML = `
+        <div style="display: flex; justify-content: flex-start; margin: 8px 0;">
+            <div style="max-width: 100%;">
+                <div style="background-color: #f5f5f5; padding: 15px; border-radius: 12px 12px 12px 0;">
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-size: 16px; font-weight: bold; color: #000000; margin-bottom: 5px;">
+                            ${welcomeMessage}
+                        </div>
+                    </div>
+                </div>
+                <div style="font-size: 10px; color: #666;">
+                    ${timestamp}
+                </div>
+            </div>
+        </div>`;
+}
 
-                    // Fallback response function
-                    function getFallbackResponse(message) {
-                        message = message.toLowerCase();
-                        
-                        if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
-                            return "Hello! How can I help you today?";
-                        }
-                        
-                        if (message.includes('thank')) {
-                            return "You're welcome! Let me know if you need anything else.";
-                        }
-                        
-                        if (message.includes('help') || message.includes('can you')) {
-                            return "I'm here to help! I can answer questions, provide information, and assist with various topics. What would you like to know?";
-                        }
-                        
-                        return "I apologize, but I'm having trouble connecting right now. Could you please rephrase your question or try again later?";
-                    }
+// Update the profile card formatting
+function formatProfileCard(userInfo) {
+    if (!userInfo) return "Profile information not available.";
+    return `
+        <div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; margin-bottom: 10px; max-width: 300px;">
+            <!-- Header -->
+            <div style="background-color: #000000; color: white; padding: 12px; text-align: center;">
+                <div style="font-size: 18px; font-weight: bold;">${userInfo.name || 'User'}</div>
+                <div style="font-size: 14px;">${userInfo.user_type || 'Customer'}</div>
+            </div>
+            
+            <!-- Contact Details -->
+            <div style="padding: 12px;">
+                <div style="margin-bottom: 12px;">
+                    <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                        <tr>
+                            <td style="padding: 4px 0; color: #666; font-size: 13px; width: 55px; vertical-align: top;">Email:</td>
+                            <td style="padding: 4px 0; font-size: 13px; color: #333; word-break: break-all;">
+                                ${userInfo.email || 'N/A'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 4px 0; color: #666; font-size: 13px; vertical-align: top;">Phone:</td>
+                            <td style="padding: 4px 0; font-size: 13px; color: #333;">
+                                ${userInfo.phone || 'N/A'}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Stats Summary -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; border-top: 1px solid #eee; padding-top: 12px; gap: 5px;">
+                    <div>
+                        <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
+                            ${userInfo.orders ? userInfo.orders.length : 0}
+                        </div>
+                        <div style="font-size: 11px; color: #666; text-transform: uppercase;">Orders</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
+                            ${userInfo.consultations ? userInfo.consultations.length : 0}
+                        </div>
+                        <div style="font-size: 11px; color: #666; text-transform: uppercase;">Consults</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
+                            ${userInfo.projects ? userInfo.projects.length : 0}
+                        </div>
+                        <div style="font-size: 11px; color: #666; text-transform: uppercase;">Projects</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
-                    // Handle message submission
-                    chatForm.addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const message = chatInput.value.trim();
-                        if (!message) return;
+// Update the toggleChatbot function to show welcome message
+function toggleChatbot() {
+    const chatbot = document.getElementById('chatbot');
+    const toggleBtn = document.getElementById('chat-toggle-btn');
+    
+    if (chatbot.style.display === 'none') {
+        chatbot.style.display = 'block';
+        toggleBtn.style.display = 'none';
+        // Show welcome message when chat is opened
+        showWelcomeMessage();
+    } else {
+        chatbot.style.display = 'none';
+        toggleBtn.style.display = 'flex';
+    }
+}
 
-                        // Add user message
-                        addMessage('user', message);
-                        chatInput.value = '';
+async function getUserInfo() {
+    try {
+        const response = await fetch('/api/user-info/');
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        return null;
+    }
+}
 
-                        // Show typing indicator
-                        const typingIndicator = addTypingIndicator();
+async function sendMessage() {
+    const input = document.getElementById('chatbot-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
 
-                        try {
-                            // Generate response
-                            const response = await generateResponse(message);
-                            
-                            // Remove typing indicator
-                            typingIndicator.remove();
-                            
-                            // Add AI response
-                            addMessage('ai', response);
-                        } catch (error) {
-                            console.error('Error:', error);
-                            typingIndicator.remove();
-                            addMessage('ai', getFallbackResponse(message));
-                        }
-                    });
+    const messagesDiv = document.getElementById('chatbot-messages');
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                    // Toggle chat interface
-                    chatButton.addEventListener('click', () => {
-                        chatInterface.style.display = chatInterface.style.display === 'none' ? 'block' : 'none';
-                        if (chatInterface.style.display === 'block') {
-                            chatInput.focus();
-                        }
-                    });
+    // Clear input
+    input.value = '';
 
-                    // Close chat interface
-                    closeChat.addEventListener('click', () => {
-                        chatInterface.style.display = 'none';
-                    });
+    // Add user message
+    messagesDiv.innerHTML += `
+        <div style="display: flex; justify-content: flex-end; margin: 8px 0;">
+            <div style="max-width: 80%;">
+                <div style="background-color: #000000; color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px;">
+                    ${message}
+                </div>
+                <div style="text-align: right; font-size: 10px; color: #666;">
+                    ${timestamp}
+                </div>
+            </div>
+        </div>`;
 
-                    // Modified addMessage function to handle HTML content
-                    function addMessage(sender, content, isHTML = false) {
-                        const messageDiv = document.createElement('div');
-                        messageDiv.style.marginBottom = '10px';
-                        messageDiv.style.display = 'flex';
-                        messageDiv.style.flexDirection = sender === 'user' ? 'row-reverse' : 'row';
+    try {
+        // Check if user is authenticated
+        const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+        let userInfo = null;
 
-                        const bubble = document.createElement('div');
-                        bubble.style.maxWidth = '70%';
-                        bubble.style.padding = '10px';
-                        bubble.style.borderRadius = '10px';
-                        bubble.style.backgroundColor = sender === 'user' ? '#000000' : '#f8f8f8';
-                        bubble.style.color = sender === 'user' ? 'white' : '#000000';
-                        
-                        if (isHTML) {
-                            bubble.innerHTML = content;
-                        } else {
-                            bubble.textContent = content;
-                        }
+        if (isAuthenticated) {
+            // Get user info for authenticated users
+            const userResponse = await fetch('/api/user-info/');
+            userInfo = await userResponse.json();
+        }
 
-                        messageDiv.appendChild(bubble);
-                        chatMessages.appendChild(messageDiv);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                    }
+        // Show typing indicator
+        messagesDiv.innerHTML += `
+            <div id="typing-indicator" style="display: flex; justify-content: flex-start; margin: 8px 0;">
+                <div style="background-color: #f5f5f5; padding: 8px 12px; border-radius: 12px 12px 12px 0;">
+                    <div class="typing-dots">
+                        <span>.</span><span>.</span><span>.</span>
+                    </div>
+                </div>
+            </div>`;
 
-                    // Modified typing indicator
-                    function addTypingIndicator() {
-                        const typingDiv = document.createElement('div');
-                        typingDiv.style.marginBottom = '10px';
-                        typingDiv.style.display = 'flex';
+        const promptText = isAuthenticated ? 
+            `
+                You are an AI assistant for ElegantDecor. The current user's information is:
+                - Name: ${userInfo.name}
+                - Email: ${userInfo.email}
+                - Phone: ${userInfo.phone}
+                - User Type: ${userInfo.user_type}
+                
+                Their current status:
+                - Orders: ${JSON.stringify(userInfo.orders)}
+                - Consultations: ${JSON.stringify(userInfo.consultations)}
+                - Projects: ${JSON.stringify(userInfo.projects)}
+                
+                Website URLs:
+                - Main website: https://elegantdecor.com
+                - Shop: https://elegantdecor.com/shop
+                - Portfolio: https://elegantdecor.com/portfolio
+                - Book Consultation: https://elegantdecor.com/consultations
+                - Customer Dashboard: https://elegantdecor.com/dashboard
+                - Contact: https://elegantdecor.com/contact
+                
+                User query: ${message}
+                
+                Provide a helpful, specific response based on their actual data. When referring to website sections, include the relevant URLs.
+            ` :
+            `
+                You are an AI assistant for ElegantDecor, a creative interior design and architecture studio. 
+                You help users with information about our services, designs, and general interior design advice.
+                
+                Key information about ElegantDecor:
+                - We offer interior design and architecture services
+                - We have an online shop for furniture and decor items
+                - We provide design consultations with professional designers
+                - We create custom mood boards for design inspiration
+                - We handle complete interior design projects
+                
+                Website URLs:
+                - Main website: https://elegantdecor.com
+                - Shop: https://elegantdecor.com/shop
+                - Portfolio: https://elegantdecor.com/portfolio
+                - Book Consultation: https://elegantdecor.com/consultations
+                - Sign In: https://elegantdecor.com/signin
+                - Contact: https://elegantdecor.com/contact
+                
+                For personalized information about orders, consultations, or projects, please encourage users to sign in at https://elegantdecor.com/signin
+                
+                User query: ${message}
+                
+                Provide a helpful response focused on general information and guidance. When referring to website sections, include the relevant URLs.
+            `;
 
-                        const bubble = document.createElement('div');
-                        bubble.style.maxWidth = '70%';
-                        bubble.style.padding = '10px';
-                        bubble.style.borderRadius = '10px';
-                        bubble.style.backgroundColor = '#f8f8f8';
-                        bubble.innerHTML = `
-                            <div class="processing-indicator">
-                                <span>Processing your request</span>
-                                <div class="processing-dots">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
-                            </div>`;
+        const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: promptText
+                    }]
+                }]
+            })
+        });
 
-                        typingDiv.appendChild(bubble);
-                        chatMessages.appendChild(typingDiv);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                        return typingDiv;
-                    }
-                });
-            </script>
+        // Remove typing indicator
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
 
-            <!-- Add this CSS for typing indicator -->
-            <style>
-                .processing-indicator {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    font-size: 14px;
-                    color: #333;
-                }
+        const data = await response.json();
+        let botResponse = data.candidates[0].content.parts[0].text;
 
-                .processing-dots {
-                    display: flex;
-                    gap: 4px;
-                }
+        // Format the data into tables when needed
+        function formatOrdersTable(orders) {
+            if (!orders || orders.length === 0) return "No orders found.";
+            return `
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 12px; table-layout: fixed; min-width: 400px;">
+                        <thead>
+                            <tr style="background-color: #000000; color: white; position: sticky; top: 0; z-index: 1;">
+                                <th style="padding: 6px; text-align: left; width: 35%;">Product</th>
+                                <th style="padding: 6px; text-align: left; width: 25%;">Status</th>
+                                <th style="padding: 6px; text-align: right; width: 40%;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orders.map(order => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 6px;">${order.product || 'N/A'}</td>
+                                    <td style="padding: 6px;">${order.status || 'Pending'}</td>
+                                    <td style="padding: 6px; text-align: right; white-space: nowrap;">Rs. ${order.amount || '0.00'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
 
-                .processing-dots span {
-                    width: 6px;
-                    height: 6px;
-                    background-color: #000000;
-                    border-radius: 50%;
-                    animation: pulse 1.5s infinite;
-                }
+        function formatConsultationsTable(consultations) {
+            if (!consultations || consultations.length === 0) return "No consultations found.";
+            return `
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 12px; table-layout: fixed; min-width: 400px;">
+                        <thead>
+                            <tr style="background-color: #000000; color: white; position: sticky; top: 0; z-index: 1;">
+                                <th style="padding: 8px; text-align: left; width: 25%;">Date</th>
+                                <th style="padding: 8px; text-align: left; width: 35%;">Design</th>
+                                <th style="padding: 8px; text-align: left; width: 25%;">Designer</th>
+                                <th style="padding: 8px; text-align: left; width: 15%;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${consultations.map(consultation => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px; white-space: nowrap;">${consultation.date.split(' ')[0] || 'N/A'}</td>
+                                    <td style="padding: 8px; white-space: nowrap;">${consultation.design || 'N/A'}</td>
+                                    <td style="padding: 8px; white-space: nowrap;">SR Designs</td>
+                                    <td style="padding: 8px;">${consultation.status || 'Pending'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
 
-                .processing-dots span:nth-child(2) {
-                    animation-delay: 0.2s;
-                }
+        function formatProjectsTable(projects) {
+            if (!projects || projects.length === 0) return "No projects found.";
+            return `
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 12px; table-layout: fixed; min-width: 400px;">
+                        <thead>
+                            <tr style="background-color: #000000; color: white; position: sticky; top: 0; z-index: 1;">
+                                <th style="padding: 8px; text-align: left; width: 35%;">Design</th>
+                                <th style="padding: 8px; text-align: left; width: 25%;">Designer</th>
+                                <th style="padding: 8px; text-align: left; width: 20%;">Status</th>
+                                <th style="padding: 8px; text-align: left; width: 20%;">Payment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${projects.map(project => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px; white-space: nowrap;">${project.design || 'N/A'}</td>
+                                    <td style="padding: 8px; white-space: nowrap;">SR Designs</td>
+                                    <td style="padding: 8px;">${project.status || 'Pending'}</td>
+                                    <td style="padding: 8px;">${project.payment || 'Pending'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
 
-                .processing-dots span:nth-child(3) {
-                    animation-delay: 0.4s;
-                }
+        // Process the response based on the query
+        let formattedResponse = botResponse;
+        
+        // Check if the message is asking about profile
+        if (message.toLowerCase().includes('profile') || message.toLowerCase().includes('my info')) {
+            formattedResponse = `Here's your profile:\n${formatProfileCard(userInfo)}`;
+        } else if (message.toLowerCase().includes('order')) {
+            formattedResponse = `Here are your orders:\n${formatOrdersTable(userInfo.orders)}`;
+        } else if (message.toLowerCase().includes('consultation')) {
+            formattedResponse = `Here are your consultations:\n${formatConsultationsTable(userInfo.consultations)}`;
+        } else if (message.toLowerCase().includes('project')) {
+            formattedResponse = `Here are your projects:\n${formatProjectsTable(userInfo.projects)}`;
+        }
 
-                @keyframes pulse {
-                    0% { transform: scale(0.8); opacity: 0.5; }
-                    20% { transform: scale(1.2); opacity: 1; }
-                    100% { transform: scale(0.8); opacity: 0.5; }
-                }
-            </style>
+        // Add bot response with formatted content
+        messagesDiv.innerHTML += `
+            <div style="display: flex; justify-content: flex-start; margin: 8px 0;">
+                <div style="max-width: 100%; width: 100%;">
+                    <div style="background-color: #f5f5f5; padding: 8px 12px; border-radius: 12px 12px 12px 0;">
+                        ${formattedResponse}
+                    </div>
+                    <div style="font-size: 10px; color: #666;">
+                        ${timestamp}
+                    </div>
+                </div>
+            </div>`;
+
+    } catch (error) {
+        console.error('Error:', error);
+        messagesDiv.innerHTML += `
+            <div style="display: flex; justify-content: flex-start; margin: 8px 0;">
+                <div style="max-width: 80%;">
+                    <div style="background-color: #fff0f0; color: #d32f2f; padding: 8px 12px; border-radius: 12px 12px 12px 0;">
+                        I apologize, but I'm having trouble processing your request right now. Please try again.
+                    </div>
+                    <div style="font-size: 10px; color: #666;">
+                        ${timestamp}
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    // Scroll to bottom
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Add Enter key handler
+document.getElementById('chatbot-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+// Add some CSS for the typing animation
+const style = document.createElement('style');
+style.textContent = `
+    .typing-dots span {
+        animation: typing 1.4s infinite;
+        opacity: 0.3;
+    }
+    .typing-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    .typing-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    @keyframes typing {
+        0%, 100% {
+            opacity: 0.3;
+        }
+        50% {
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
  </body>
 </html>

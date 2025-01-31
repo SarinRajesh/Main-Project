@@ -19,7 +19,7 @@ from decimal import Decimal, InvalidOperation
 from django.views.decorators.http import require_POST, require_http_methods
 from django.utils import timezone
 from django.middleware.csrf import get_token
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from allauth.account.adapter import DefaultAccountAdapter
@@ -29,6 +29,17 @@ import re
 from datetime import datetime, time
 from django.views.decorators.cache import never_cache
 from django.utils.formats import date_format
+from datetime import timedelta
+import google.generativeai as genai
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+import json
+from django.http import JsonResponse
+from django.core.serializers import serialize
+from django.forms.models import model_to_dict
+
+
 
 
 class CustomTokenGenerator(PasswordResetTokenGenerator):
@@ -36,6 +47,7 @@ class CustomTokenGenerator(PasswordResetTokenGenerator):
         return str(user.pk) + str(timestamp)
 
 token_generator = CustomTokenGenerator()
+
 
 @nocache
 def index(request):
@@ -53,6 +65,7 @@ def index(request):
             'is_authenticated': False
         }
     return render(request, 'index.html', context)
+
 
 
 def signin(request):
@@ -2547,3 +2560,54 @@ def update_item_position(request):
             'status': 'error',
             'message': str(e)
         }, status=400)
+
+# Initialize Gemini with API key directly
+# GEMINI_API_KEY ="AIzaSyDS4jx4S-2cgUnBM6Ouc5D6Xwzj-Dorf-E"
+# GEMINI_API_KEY ="AIzaSyCcldFUfZNm4jRcDeWhj64mUfvqx7l3t18"
+
+@login_required
+def get_user_info(request):
+    user = request.user
+    
+    # Get user's orders
+    orders = Order.objects.filter(user=user).select_related('product', 'amount').order_by('-order_date')
+    orders_data = [{
+        'id': order.id,
+        'product': order.product.name,
+        'amount': str(order.amount.amount),
+        'status': order.order_status,
+        'date': order.order_date.strftime('%Y-%m-%d %H:%M')
+    } for order in orders]
+
+    # Get user's consultations
+    consultations = Consultation.objects.filter(customer_id=user).select_related('design_id', 'designer_id')
+    consultations_data = [{
+        'id': cons.id,
+        'design': cons.design_id.name,
+        'designer': cons.designer_id.name,
+        'status': cons.consultation_status,
+        'date': cons.schedule_date_time.strftime('%Y-%m-%d %H:%M') if cons.schedule_date_time else None
+    } for cons in consultations]
+
+    # Get user's projects
+    projects = Project.objects.filter(customer=user).select_related('design', 'designer')
+    projects_data = [{
+        'id': proj.id,
+        'design': proj.design.name,
+        'designer': proj.designer.name,
+        'status': proj.status,
+        'start_date': proj.start_date.strftime('%Y-%m-%d') if proj.start_date else None
+    } for proj in projects]
+
+    # Prepare user data
+    user_data = {
+        'name': user.name,
+        'email': user.email,
+        'phone': user.phone,
+        'user_type': user.user_type_id.user_type if user.user_type_id else None,
+        'orders': orders_data,
+        'consultations': consultations_data,
+        'projects': projects_data
+    }
+
+    return JsonResponse(user_data)
