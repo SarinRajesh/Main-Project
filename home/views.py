@@ -2611,3 +2611,73 @@ def get_user_info(request):
     }
 
     return JsonResponse(user_data)
+
+@nocache
+@login_required
+def product_sales_analytics(request):
+    # Get all orders
+    orders = Order.objects.select_related('product', 'amount').all()
+    
+    # Calculate total sales and revenue
+    total_sales = orders.count()
+    total_revenue = float(sum(order.amount.amount for order in orders))  # Convert to float
+    
+    # Get sales by product
+    product_sales = {}
+    for order in orders:
+        product_name = order.product.name
+        if product_name not in product_sales:
+            product_sales[product_name] = {
+                'count': 0,
+                'revenue': 0,
+                'image_url': order.product.image.url if order.product.image else None
+            }
+        product_sales[product_name]['count'] += order.quantity
+        product_sales[product_name]['revenue'] += float(order.amount.amount)  # Convert to float
+
+    # Calculate percentages and prepare data for charts
+    top_products = sorted(
+        [
+            {
+                'name': name,
+                'count': data['count'],
+                'revenue': data['revenue'],
+                'image_url': data['image_url'],
+                'percentage': float((data['count'] / total_sales * 100) if total_sales > 0 else 0)  # Convert to float
+            }
+            for name, data in product_sales.items()
+        ],
+        key=lambda x: x['revenue'],
+        reverse=True
+    )[:5]  # Get top 5 products
+
+    # Get monthly sales data for the last 12 months
+    monthly_sales = {}
+    today = timezone.now()
+    for i in range(12):
+        month_start = today - timedelta(days=today.day - 1) - timedelta(days=30 * i)
+        month_name = month_start.strftime('%B %Y')
+        monthly_sales[month_name] = {
+            'count': 0,
+            'revenue': 0
+        }
+
+    for order in orders:
+        month_name = order.order_date.strftime('%B %Y')
+        if month_name in monthly_sales:
+            monthly_sales[month_name]['count'] += order.quantity
+            monthly_sales[month_name]['revenue'] += float(order.amount.amount)  # Convert to float
+
+    # Convert monthly data to lists for Chart.js
+    monthly_labels = list(reversed(list(monthly_sales.keys())))
+    monthly_revenue = [float(monthly_sales[month]['revenue']) for month in monthly_labels]  # Convert to float
+
+    context = {
+        'total_sales': total_sales,
+        'total_revenue': total_revenue,
+        'top_products': top_products,
+        'monthly_labels': json.dumps(monthly_labels),
+        'monthly_revenue': json.dumps(monthly_revenue),
+    }
+    
+    return render(request, 'admin_page/product_sales_analytics.html', context)
