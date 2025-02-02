@@ -651,15 +651,60 @@ function showWelcomeMessage() {
 // Update the profile card formatting
 function formatProfileCard(userInfo) {
     if (!userInfo) return "Profile information not available.";
+    
+    const isDesigner = userInfo.user_type === 'Designer';
+    
+    // Stats section changes based on user type
+    const statsSection = isDesigner ? `
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; border-top: 1px solid #eee; padding-top: 12px; gap: 5px;">
+            <div>
+                <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
+                    ${userInfo.total_designs || 0}
+                </div>
+                <div style="font-size: 11px; color: #666; text-transform: uppercase;">Designs</div>
+            </div>
+            <div>
+                <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
+                    ${userInfo.consultations ? userInfo.consultations.length : 0}
+                </div>
+                <div style="font-size: 11px; color: #666; text-transform: uppercase;">Consults</div>
+            </div>
+            <div>
+                <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
+                    ${userInfo.projects ? userInfo.projects.length : 0}
+                </div>
+                <div style="font-size: 11px; color: #666; text-transform: uppercase;">Projects</div>
+            </div>
+        </div>
+    ` : `
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; border-top: 1px solid #eee; padding-top: 12px; gap: 5px;">
+            <div>
+                <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
+                    ${userInfo.orders ? userInfo.orders.length : 0}
+                </div>
+                <div style="font-size: 11px; color: #666; text-transform: uppercase;">Orders</div>
+            </div>
+            <div>
+                <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
+                    ${userInfo.consultations ? userInfo.consultations.length : 0}
+                </div>
+                <div style="font-size: 11px; color: #666; text-transform: uppercase;">Consults</div>
+            </div>
+            <div>
+                <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
+                    ${userInfo.projects ? userInfo.projects.length : 0}
+                </div>
+                <div style="font-size: 11px; color: #666; text-transform: uppercase;">Projects</div>
+            </div>
+        </div>
+    `;
+
     return `
         <div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; margin-bottom: 10px; max-width: 300px;">
-            <!-- Header -->
             <div style="background-color: #000000; color: white; padding: 12px; text-align: center;">
                 <div style="font-size: 18px; font-weight: bold;">${userInfo.name || 'User'}</div>
                 <div style="font-size: 14px;">${userInfo.user_type || 'Customer'}</div>
             </div>
-            
-            <!-- Contact Details -->
             <div style="padding: 12px;">
                 <div style="margin-bottom: 12px;">
                     <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
@@ -677,28 +722,7 @@ function formatProfileCard(userInfo) {
                         </tr>
                     </table>
                 </div>
-                
-                <!-- Stats Summary -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; border-top: 1px solid #eee; padding-top: 12px; gap: 5px;">
-                    <div>
-                        <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
-                            ${userInfo.orders ? userInfo.orders.length : 0}
-                        </div>
-                        <div style="font-size: 11px; color: #666; text-transform: uppercase;">Orders</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
-                            ${userInfo.consultations ? userInfo.consultations.length : 0}
-                        </div>
-                        <div style="font-size: 11px; color: #666; text-transform: uppercase;">Consults</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 18px; font-weight: bold; color: #000000; margin-bottom: 2px;">
-                            ${userInfo.projects ? userInfo.projects.length : 0}
-                        </div>
-                        <div style="font-size: 11px; color: #666; text-transform: uppercase;">Projects</div>
-                    </div>
-                </div>
+                ${statsSection}
             </div>
         </div>
     `;
@@ -879,15 +903,18 @@ async function sendMessage() {
 
         function formatConsultationsTable(consultations) {
             if (!consultations || consultations.length === 0) return "No consultations found.";
+            
+            const isDesigner = userInfo.user_type === 'Designer';
+            
             return `
                 <div style="max-height: 200px; overflow-y: auto;">
                     <table style="width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 12px; table-layout: fixed; min-width: 400px;">
                         <thead>
                             <tr style="background-color: #000000; color: white; position: sticky; top: 0; z-index: 1;">
-                                <th style="padding: 8px; text-align: left; width: 25%;">Date</th>
-                                <th style="padding: 8px; text-align: left; width: 35%;">Design</th>
-                                <th style="padding: 8px; text-align: left; width: 25%;">Designer</th>
-                                <th style="padding: 8px; text-align: left; width: 15%;">Status</th>
+                                <th style="padding: 8px; text-align: left; width: 20%;">Date</th>
+                                <th style="padding: 8px; text-align: left; width: 30%;">Design</th>
+                                <th style="padding: 8px; text-align: left; width: 30%;">${isDesigner ? 'Customer' : 'Designer'}</th>
+                                <th style="padding: 8px; text-align: left; width: 20%;">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -895,7 +922,7 @@ async function sendMessage() {
                                 <tr style="border-bottom: 1px solid #eee;">
                                     <td style="padding: 8px; white-space: nowrap;">${consultation.date.split(' ')[0] || 'N/A'}</td>
                                     <td style="padding: 8px; white-space: nowrap;">${consultation.design || 'N/A'}</td>
-                                    <td style="padding: 8px; white-space: nowrap;">SR Designs</td>
+                                    <td style="padding: 8px; white-space: nowrap;">${isDesigner ? (consultation.customer || 'N/A') : (consultation.designer || 'N/A')}</td>
                                     <td style="padding: 8px;">${consultation.status || 'Pending'}</td>
                                 </tr>
                             `).join('')}
@@ -906,13 +933,16 @@ async function sendMessage() {
 
         function formatProjectsTable(projects) {
             if (!projects || projects.length === 0) return "No projects found.";
+            
+            const isDesigner = userInfo.user_type === 'Designer';
+            
             return `
                 <div style="max-height: 200px; overflow-y: auto;">
                     <table style="width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 12px; table-layout: fixed; min-width: 400px;">
                         <thead>
                             <tr style="background-color: #000000; color: white; position: sticky; top: 0; z-index: 1;">
                                 <th style="padding: 8px; text-align: left; width: 35%;">Design</th>
-                                <th style="padding: 8px; text-align: left; width: 25%;">Designer</th>
+                                <th style="padding: 8px; text-align: left; width: 25%;">${isDesigner ? 'Customer' : 'Designer'}</th>
                                 <th style="padding: 8px; text-align: left; width: 20%;">Status</th>
                                 <th style="padding: 8px; text-align: left; width: 20%;">Payment</th>
                             </tr>
@@ -921,7 +951,7 @@ async function sendMessage() {
                             ${projects.map(project => `
                                 <tr style="border-bottom: 1px solid #eee;">
                                     <td style="padding: 8px; white-space: nowrap;">${project.design || 'N/A'}</td>
-                                    <td style="padding: 8px; white-space: nowrap;">SR Designs</td>
+                                    <td style="padding: 8px; white-space: nowrap;">${isDesigner ? (project.customer || 'N/A') : (project.designer || 'N/A')}</td>
                                     <td style="padding: 8px;">${project.status || 'Pending'}</td>
                                     <td style="padding: 8px;">${project.payment || 'Pending'}</td>
                                 </tr>
@@ -934,15 +964,164 @@ async function sendMessage() {
         // Process the response based on the query
         let formattedResponse = botResponse;
         
-        // Check if the message is asking about profile
-        if (message.toLowerCase().includes('profile') || message.toLowerCase().includes('my info')) {
-            formattedResponse = `Here's your profile:\n${formatProfileCard(userInfo)}`;
-        } else if (message.toLowerCase().includes('order')) {
-            formattedResponse = `Here are your orders:\n${formatOrdersTable(userInfo.orders)}`;
-        } else if (message.toLowerCase().includes('consultation')) {
-            formattedResponse = `Here are your consultations:\n${formatConsultationsTable(userInfo.consultations)}`;
-        } else if (message.toLowerCase().includes('project')) {
-            formattedResponse = `Here are your projects:\n${formatProjectsTable(userInfo.projects)}`;
+        // Check for designer-specific queries and format response accordingly
+        if (userInfo.user_type === 'Designer') {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('add design') || lowerMessage.includes('portfolio') || lowerMessage.includes('new design')) {
+                formattedResponse = `
+                    You can add new designs to your portfolio here:
+                    <div style="margin: 10px 0;">
+                        <a href="/add_portfolio/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            Add Design to Portfolio →
+                        </a>
+                    </div>`;
+            } 
+            else if (lowerMessage.includes('schedule') || lowerMessage.includes('availability') || lowerMessage.includes('time slot')) {
+                formattedResponse = `
+                    You can manage your consultation schedule here:
+                    <div style="margin: 10px 0;">
+                        <a href="/schedule-consultation/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            Manage Consultation Schedule →
+                        </a>
+                    </div>`;
+            }
+            else if (lowerMessage.includes('consultation') || lowerMessage.includes('consult')) {
+                formattedResponse = `
+                    Here are your consultations:
+                    ${formatConsultationsTable(userInfo.consultations)}
+                    <div style="margin: 10px 0;">
+                        <a href="/consultations/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            Manage Consultations →
+                        </a>
+                    </div>`;
+            }
+            else if (lowerMessage.includes('project')) {
+                formattedResponse = `
+                    Here are your projects:
+                    ${formatProjectsTable(userInfo.projects)}
+                    <div style="margin: 10px 0;">
+                        <a href="/projects_manage/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            Manage Projects →
+                        </a>
+                    </div>`;
+            }
+            else if (lowerMessage.includes('help') || lowerMessage.includes('what can you do') || lowerMessage.includes('menu')) {
+                formattedResponse = `
+                    As a designer, you can:
+                    <div style="margin: 10px 0; display: grid; gap: 10px;">
+                        <a href="/add_portfolio/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            📸 Add Designs to Portfolio
+                        </a>
+                        <a href="/schedule-consultation/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            📅 Schedule Consultations
+                        </a>
+                        <a href="/consultations/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            💬 Manage Consultations
+                        </a>
+                        <a href="/projects_manage/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            🏗️ Manage Projects
+                        </a>
+                    </div>
+                    You can ask me about any of these functions or click the links to access them directly.`;
+            }
+            else if (lowerMessage.includes('profile') || lowerMessage.includes('my info')) {
+                formattedResponse = `Here's your profile:\n${formatProfileCard(userInfo)}`;
+            }
+        } else {
+            // Customer response handling
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('book') || lowerMessage.includes('consultation')) {
+                formattedResponse = `
+                    Here are your current consultations:
+                    ${formatConsultationsTable(userInfo.consultations)}
+                    <div style="margin: 10px 0;">
+                        <a href="/portfolio/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            Book New Consultation →
+                        </a>
+                        <a href="/my_consultations/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-left: 10px;">
+                            View All Consultations →
+                        </a>
+                    </div>`;
+            }
+            else if (lowerMessage.includes('design') || lowerMessage.includes('portfolio')) {
+                formattedResponse = `
+                    You can explore our design portfolio here:
+                    <div style="margin: 10px 0;">
+                        <a href="/portfolio/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            View Design Portfolio →
+                        </a>
+                    </div>`;
+            }
+            else if (lowerMessage.includes('project')) {
+                formattedResponse = `
+                    Here are your current projects:
+                    ${formatProjectsTable(userInfo.projects)}
+                    <div style="margin: 10px 0;">
+                        <a href="/my_projects/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            View All Projects →
+                        </a>
+                    </div>`;
+            }
+            else if (lowerMessage.includes('shop') || lowerMessage.includes('product') || lowerMessage.includes('buy')) {
+                formattedResponse = `
+                    Visit our shop to explore our collection:
+                    <div style="margin: 10px 0;">
+                        <a href="/shop/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            🛍️ Shop Now →
+                        </a>
+                    </div>`;
+            }
+            else if (lowerMessage.includes('mood') || lowerMessage.includes('board')) {
+                formattedResponse = `
+                    Create and manage your mood boards:
+                    <div style="margin: 10px 0;">
+                        <a href="/mood-boards/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            ✨ Mood Boards →
+                        </a>
+                    </div>`;
+            }
+            else if (lowerMessage.includes('color') || lowerMessage.includes('recommend')) {
+                formattedResponse = `
+                    Get personalized product recommendations based on your color preferences:
+                    <div style="margin: 10px 0;">
+                        <a href="/recommend-products/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            🎨 Color Recommendations →
+                        </a>
+                    </div>`;
+            }
+            else if (lowerMessage.includes('help') || lowerMessage.includes('what can you do') || lowerMessage.includes('menu')) {
+                formattedResponse = `
+                    Welcome! Here's what you can do:
+                    <div style="margin: 10px 0; display: grid; gap: 10px;">
+                        <a href="/portfolio/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            🎨 Browse & Book Design Consultations
+                        </a>
+                        <a href="/my_consultations/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            📅 View Your Consultations
+                        </a>
+                        <a href="/my_projects/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            🏗️ View Your Projects
+                        </a>
+                        <a href="/shop/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            🛍️ Shop Products
+                        </a>
+                        <a href="/mood-boards/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            ✨ Create Mood Boards
+                        </a>
+                        <a href="/recommend-products/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            🎨 Get Color-based Recommendations
+                        </a>
+                    </div>
+                    You can ask me about any of these features or click the links to access them directly.`;
+            }
+            else if (lowerMessage.includes('profile') || lowerMessage.includes('my info')) {
+                formattedResponse = `Here's your profile:\n${formatProfileCard(userInfo)}`;
+            }
+            else if (lowerMessage.includes('order')) {
+                formattedResponse = `Here are your orders:\n${formatOrdersTable(userInfo.orders)}`;
+            }
         }
 
         // Add bot response with formatted content

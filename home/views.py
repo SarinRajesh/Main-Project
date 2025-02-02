@@ -730,6 +730,33 @@ def get_chat_messages(request):
 
 
 @login_required
+@require_POST
+def clear_chat_history(request):
+    """Clear chat history for a specific design between users"""
+    data = json.loads(request.body)
+    design_id = data.get('design_id')
+    
+    if not design_id:
+        return JsonResponse({'status': 'error', 'message': 'Design ID is required'})
+        
+    try:
+        design = Design.objects.get(id=design_id)
+        
+        # Clear messages where the user is either sender or receiver
+        ChatMessage.objects.filter(
+            design=design
+        ).filter(
+            Q(sender=request.user) | Q(receiver=request.user)
+        ).delete()
+        
+        return JsonResponse({'status': 'success', 'message': 'Chat history cleared successfully'})
+    except Design.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Design not found'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+@login_required
 @csrf_exempt
 def consultation_booking(request, portfolio_id):
     portfolio = get_object_or_404(Design.objects.select_related('designer_id', 'amount'), id=portfolio_id)
@@ -2568,47 +2595,80 @@ def update_item_position(request):
 @login_required
 def get_user_info(request):
     user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
     
-    # Get user's orders
-    orders = Order.objects.filter(user=user).select_related('product', 'amount').order_by('-order_date')
-    orders_data = [{
-        'id': order.id,
-        'product': order.product.name,
-        'amount': str(order.amount.amount),
-        'status': order.order_status,
-        'date': order.order_date.strftime('%Y-%m-%d %H:%M')
-    } for order in orders]
-
-    # Get user's consultations
-    consultations = Consultation.objects.filter(customer_id=user).select_related('design_id', 'designer_id')
-    consultations_data = [{
-        'id': cons.id,
-        'design': cons.design_id.name,
-        'designer': cons.designer_id.name,
-        'status': cons.consultation_status,
-        'date': cons.schedule_date_time.strftime('%Y-%m-%d %H:%M') if cons.schedule_date_time else None
-    } for cons in consultations]
-
-    # Get user's projects
-    projects = Project.objects.filter(customer=user).select_related('design', 'designer')
-    projects_data = [{
-        'id': proj.id,
-        'design': proj.design.name,
-        'designer': proj.designer.name,
-        'status': proj.status,
-        'start_date': proj.start_date.strftime('%Y-%m-%d') if proj.start_date else None
-    } for proj in projects]
-
-    # Prepare user data
+    # Base user data
     user_data = {
         'name': user.name,
         'email': user.email,
         'phone': user.phone,
-        'user_type': user.user_type_id.user_type if user.user_type_id else None,
-        'orders': orders_data,
-        'consultations': consultations_data,
-        'projects': projects_data
+        'user_type': user_type,
     }
+    
+    if user_type == 'Designer':
+        # Designer data logic (keep as is)
+        consultations = Consultation.objects.filter(designer_id=user).select_related('design_id', 'customer_id')
+        consultations_data = [{
+            'id': cons.id,
+            'date': cons.schedule_date_time.strftime('%Y-%m-%d %H:%M') if cons.schedule_date_time else None,
+            'design': cons.design_id.name,
+            'customer': cons.customer_id.name,
+            'status': cons.consultation_status
+        } for cons in consultations]
+        
+        projects = Project.objects.filter(designer=user).select_related('design', 'customer')
+        projects_data = [{
+            'id': proj.id,
+            'design': proj.design.name,
+            'customer': proj.customer.name,
+            'status': proj.status,
+            'payment': proj.payment,
+            'start_date': proj.start_date.strftime('%Y-%m-%d') if proj.start_date else None
+        } for proj in projects]
+        
+        user_data.update({
+            'consultations': consultations_data,
+            'projects': projects_data,
+            'total_designs': Design.objects.filter(designer_id=user).count()
+        })
+    else:
+        # Customer data logic
+        # Get orders
+        orders = Order.objects.filter(user=user).select_related('product', 'amount')
+        orders_data = [{
+            'id': order.id,
+            'product': order.product.name,
+            'amount': str(order.amount.amount),
+            'status': order.order_status,
+            'date': order.order_date.strftime('%Y-%m-%d %H:%M')
+        } for order in orders]
+        
+        # Get customer's consultations
+        consultations = Consultation.objects.filter(customer_id=user).select_related('design_id', 'designer_id')
+        consultations_data = [{
+            'id': cons.id,
+            'date': cons.schedule_date_time.strftime('%Y-%m-%d %H:%M') if cons.schedule_date_time else None,
+            'design': cons.design_id.name,
+            'designer': cons.designer_id.name,
+            'status': cons.consultation_status
+        } for cons in consultations]
+        
+        # Get customer's projects
+        projects = Project.objects.filter(customer=user).select_related('design', 'designer')
+        projects_data = [{
+            'id': proj.id,
+            'design': proj.design.name,
+            'designer': proj.designer.name,
+            'status': proj.status,
+            'payment': proj.payment,
+            'start_date': proj.start_date.strftime('%Y-%m-%d') if proj.start_date else None
+        } for proj in projects]
+        
+        user_data.update({
+            'orders': orders_data,
+            'consultations': consultations_data,
+            'projects': projects_data
+        })
 
     return JsonResponse(user_data)
 

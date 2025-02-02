@@ -52,6 +52,7 @@ path('delete-portfolio/<int:portfolio_id>/', views.delete_portfolio, name='delet
  path('remove_scheduled_date/', views.remove_scheduled_date, name='remove_scheduled_date'),  # New URL pattern
  path('send_chat_message/', views.send_chat_message, name='send_chat_message'),
     path('get_chat_messages/', views.get_chat_messages, name='get_chat_messages'),
+    path('clear-chat-history/', views.clear_chat_history, name='clear_chat_history'),
     
 path('admin_page/designs-table/', views.designs_table, name='designs_table'),
 path('admin_page/orders-table/', views.orders_table, name='orders_table'),
