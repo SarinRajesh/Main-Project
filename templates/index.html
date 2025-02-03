@@ -141,8 +141,8 @@
                                     <li><a href="{% url 'create_mood_board' %}">Create Mood Boards</a></li>
                                 </ul>
                             </li>
-                            {% endif %}
                            
+                            {% endif %}
                             {% endif %}
                         </ul>
                     </nav>
@@ -625,11 +625,6 @@ const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-
 function showWelcomeMessage() {
     const messagesDiv = document.getElementById('chatbot-messages');
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
-    
-    const welcomeMessage = isAuthenticated ? 
-        `👋 Welcome back to ElegantDecor Chat!<br>I'm here to help you with your orders, consultations, and projects. How can I assist you today?` :
-        `👋 Welcome to ElegantDecor Chat!<br>I'm here to provide information about our services and interior design guidance. For personalized assistance, please sign in.`;
     
     messagesDiv.innerHTML = `
         <div style="display: flex; justify-content: flex-start; margin: 8px 0;">
@@ -637,7 +632,7 @@ function showWelcomeMessage() {
                 <div style="background-color: #f5f5f5; padding: 15px; border-radius: 12px 12px 12px 0;">
                     <div style="margin-bottom: 10px;">
                         <div style="font-size: 16px; font-weight: bold; color: #000000; margin-bottom: 5px;">
-                            ${welcomeMessage}
+                            I'm here to provide information about our services and interior design guidance. For personalized assistance, please sign in.
                         </div>
                     </div>
                 </div>
@@ -705,24 +700,31 @@ function formatProfileCard(userInfo) {
                 <div style="font-size: 18px; font-weight: bold;">${userInfo.name || 'User'}</div>
                 <div style="font-size: 14px;">${userInfo.user_type || 'Customer'}</div>
             </div>
-            <div style="padding: 12px;">
+            <div style="padding: 12px; max-height: 300px; overflow-y: auto; overflow-x: hidden;">
                 <div style="margin-bottom: 12px;">
                     <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                         <tr>
-                            <td style="padding: 4px 0; color: #666; font-size: 13px; width: 55px; vertical-align: top;">Email:</td>
-                            <td style="padding: 4px 0; font-size: 13px; color: #333; word-break: break-all;">
+                            <td style="padding: 8px 0; color: #666; font-size: 13px; width: 70px; vertical-align: top;">Email:</td>
+                            <td style="padding: 8px 0; font-size: 13px; color: #333; word-break: break-all;">
                                 ${userInfo.email || 'N/A'}
                             </td>
                         </tr>
                         <tr>
-                            <td style="padding: 4px 0; color: #666; font-size: 13px; vertical-align: top;">Phone:</td>
-                            <td style="padding: 4px 0; font-size: 13px; color: #333;">
+                            <td style="padding: 8px 0; color: #666; font-size: 13px; vertical-align: top;">Phone:</td>
+                            <td style="padding: 8px 0; font-size: 13px; color: #333;">
                                 ${userInfo.phone || 'N/A'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; color: #666; font-size: 13px; vertical-align: top;">Address:</td>
+                            <td style="padding: 8px 0; font-size: 13px; color: #333; word-wrap: break-word;">
+                                ${userInfo.address ? 
+                                    `${userInfo.address}, ${userInfo.home_town}, ${userInfo.district}, ${userInfo.state} - ${userInfo.pincode}` : 
+                                    'N/A'}
                             </td>
                         </tr>
                     </table>
                 </div>
-                ${statsSection}
             </div>
         </div>
     `;
@@ -756,16 +758,16 @@ async function getUserInfo() {
 }
 
 async function sendMessage() {
-    const input = document.getElementById('chatbot-input');
-    const message = input.value.trim();
-    
-    if (!message) return;
-
+    const messageInput = document.getElementById('chatbot-input');
+    const message = messageInput.value.trim();
     const messagesDiv = document.getElementById('chatbot-messages');
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+
+    if (!message) return;
 
     // Clear input
-    input.value = '';
+    messageInput.value = '';
 
     // Add user message
     messagesDiv.innerHTML += `
@@ -774,83 +776,67 @@ async function sendMessage() {
                 <div style="background-color: #000000; color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px;">
                     ${message}
                 </div>
-                <div style="text-align: right; font-size: 10px; color: #666;">
+                <div style="font-size: 10px; color: #666; text-align: right;">
                     ${timestamp}
                 </div>
             </div>
         </div>`;
 
-    try {
-        // Check if user is authenticated
-        const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
-        let userInfo = null;
-
-        if (isAuthenticated) {
-            // Get user info for authenticated users
-            const userResponse = await fetch('/api/user-info/');
-            userInfo = await userResponse.json();
-        }
-
-        // Show typing indicator
-        messagesDiv.innerHTML += `
-            <div id="typing-indicator" style="display: flex; justify-content: flex-start; margin: 8px 0;">
-                <div style="background-color: #f5f5f5; padding: 8px 12px; border-radius: 12px 12px 12px 0;">
-                    <div class="typing-dots">
-                        <span>.</span><span>.</span><span>.</span>
-                    </div>
+    // Add typing indicator
+    messagesDiv.innerHTML += `
+        <div id="typing-indicator" style="display: flex; justify-content: flex-start; margin: 8px 0;">
+            <div style="background-color: #f5f5f5; padding: 8px 12px; border-radius: 12px; max-width: 80%;">
+                <div class="typing-dots">
+                    <span>.</span><span>.</span><span>.</span>
                 </div>
-            </div>`;
+            </div>
+        </div>`;
 
-        const promptText = isAuthenticated ? 
-            `
-                You are an AI assistant for ElegantDecor. The current user's information is:
-                - Name: ${userInfo.name}
-                - Email: ${userInfo.email}
-                - Phone: ${userInfo.phone}
-                - User Type: ${userInfo.user_type}
+    try {
+        let userInfo;
+        let promptText;
+        
+        if (isAuthenticated) {
+            // Fetch user info for authenticated users
+            userInfo = await getUserInfo();
+            
+            // Use the existing detailed prompt for authenticated users
+            promptText = `
+                You are an AI assistant for ElegantDecor. The user ${userInfo.name} is logged in as a ${userInfo.user_type}.
                 
-                Their current status:
-                - Orders: ${JSON.stringify(userInfo.orders)}
-                - Consultations: ${JSON.stringify(userInfo.consultations)}
-                - Projects: ${JSON.stringify(userInfo.projects)}
+                User Information:
+                ${JSON.stringify(userInfo)}
                 
-                Website URLs:
-                - Main website: https://elegantdecor.com
-                - Shop: https://elegantdecor.com/shop
-                - Portfolio: https://elegantdecor.com/portfolio
-                - Book Consultation: https://elegantdecor.com/consultations
-                - Customer Dashboard: https://elegantdecor.com/dashboard
-                - Contact: https://elegantdecor.com/contact
+                Provide personalized responses based on their user type and data.
+                For designers, include information about their portfolio, consultations, and projects.
+                For customers, include information about their orders, consultations, and projects.
                 
                 User query: ${message}
-                
-                Provide a helpful, specific response based on their actual data. When referring to website sections, include the relevant URLs.
-            ` :
-            `
+            `;
+        } else {
+            // Use simplified prompt for non-authenticated users
+            promptText = `
                 You are an AI assistant for ElegantDecor, a creative interior design and architecture studio. 
-                You help users with information about our services, designs, and general interior design advice.
+                You help users with information about our services and general interior design advice.
                 
                 Key information about ElegantDecor:
                 - We offer interior design and architecture services
                 - We have an online shop for furniture and decor items
                 - We provide design consultations with professional designers
                 - We create custom mood boards for design inspiration
-                - We handle complete interior design projects
                 
-                Website URLs:
-                - Main website: https://elegantdecor.com
-                - Shop: https://elegantdecor.com/shop
-                - Portfolio: https://elegantdecor.com/portfolio
-                - Book Consultation: https://elegantdecor.com/consultations
-                - Sign In: https://elegantdecor.com/signin
-                - Contact: https://elegantdecor.com/contact
+                For general interior design questions, provide helpful advice.
+                For personal information requests (orders, projects, etc), kindly direct users to sign in.
                 
-                For personalized information about orders, consultations, or projects, please encourage users to sign in at https://elegantdecor.com/signin
+                Available pages:
+                - Shop: /shop/
+                - Portfolio: /portfolio/
+                - Sign In: /signin/
+                - Contact: /contact/
                 
                 User query: ${message}
-                
-                Provide a helpful response focused on general information and guidance. When referring to website sections, include the relevant URLs.
             `;
+        }
 
         const response = await fetch(`${API_URL}?key=${API_KEY}`, {
             method: 'POST',
@@ -875,261 +861,291 @@ async function sendMessage() {
         const data = await response.json();
         let botResponse = data.candidates[0].content.parts[0].text;
 
-        // Format the data into tables when needed
-        function formatOrdersTable(orders) {
-            if (!orders || orders.length === 0) return "No orders found.";
-            return `
-                <div style="max-height: 200px; overflow-y: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 12px; table-layout: fixed; min-width: 400px;">
-                        <thead>
-                            <tr style="background-color: #000000; color: white; position: sticky; top: 0; z-index: 1;">
-                                <th style="padding: 6px; text-align: left; width: 35%;">Product</th>
-                                <th style="padding: 6px; text-align: left; width: 25%;">Status</th>
-                                <th style="padding: 6px; text-align: right; width: 40%;">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${orders.map(order => `
-                                <tr style="border-bottom: 1px solid #eee;">
-                                    <td style="padding: 6px;">${order.product || 'N/A'}</td>
-                                    <td style="padding: 6px;">${order.status || 'Pending'}</td>
-                                    <td style="padding: 6px; text-align: right; white-space: nowrap;">Rs. ${order.amount || '0.00'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>`;
-        }
-
-        function formatConsultationsTable(consultations) {
-            if (!consultations || consultations.length === 0) return "No consultations found.";
-            
-            const isDesigner = userInfo.user_type === 'Designer';
-            
-            return `
-                <div style="max-height: 200px; overflow-y: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 12px; table-layout: fixed; min-width: 400px;">
-                        <thead>
-                            <tr style="background-color: #000000; color: white; position: sticky; top: 0; z-index: 1;">
-                                <th style="padding: 8px; text-align: left; width: 20%;">Date</th>
-                                <th style="padding: 8px; text-align: left; width: 30%;">Design</th>
-                                <th style="padding: 8px; text-align: left; width: 30%;">${isDesigner ? 'Customer' : 'Designer'}</th>
-                                <th style="padding: 8px; text-align: left; width: 20%;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${consultations.map(consultation => `
-                                <tr style="border-bottom: 1px solid #eee;">
-                                    <td style="padding: 8px; white-space: nowrap;">${consultation.date.split(' ')[0] || 'N/A'}</td>
-                                    <td style="padding: 8px; white-space: nowrap;">${consultation.design || 'N/A'}</td>
-                                    <td style="padding: 8px; white-space: nowrap;">${isDesigner ? (consultation.customer || 'N/A') : (consultation.designer || 'N/A')}</td>
-                                    <td style="padding: 8px;">${consultation.status || 'Pending'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>`;
-        }
-
-        function formatProjectsTable(projects) {
-            if (!projects || projects.length === 0) return "No projects found.";
-            
-            const isDesigner = userInfo.user_type === 'Designer';
-            
-            return `
-                <div style="max-height: 200px; overflow-y: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 12px; table-layout: fixed; min-width: 400px;">
-                        <thead>
-                            <tr style="background-color: #000000; color: white; position: sticky; top: 0; z-index: 1;">
-                                <th style="padding: 8px; text-align: left; width: 35%;">Design</th>
-                                <th style="padding: 8px; text-align: left; width: 25%;">${isDesigner ? 'Customer' : 'Designer'}</th>
-                                <th style="padding: 8px; text-align: left; width: 20%;">Status</th>
-                                <th style="padding: 8px; text-align: left; width: 20%;">Payment</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${projects.map(project => `
-                                <tr style="border-bottom: 1px solid #eee;">
-                                    <td style="padding: 8px; white-space: nowrap;">${project.design || 'N/A'}</td>
-                                    <td style="padding: 8px; white-space: nowrap;">${isDesigner ? (project.customer || 'N/A') : (project.designer || 'N/A')}</td>
-                                    <td style="padding: 8px;">${project.status || 'Pending'}</td>
-                                    <td style="padding: 8px;">${project.payment || 'Pending'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>`;
-        }
-
-        // Process the response based on the query
-        let formattedResponse = botResponse;
-        
-        // Check for designer-specific queries and format response accordingly
-        if (userInfo.user_type === 'Designer') {
+        if (isAuthenticated) {
+            let formattedResponse = botResponse;
             const lowerMessage = message.toLowerCase();
-            
-            if (lowerMessage.includes('add design') || lowerMessage.includes('portfolio') || lowerMessage.includes('new design')) {
-                formattedResponse = `
-                    You can add new designs to your portfolio here:
-                    <div style="margin: 10px 0;">
-                        <a href="/add_portfolio/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            Add Design to Portfolio →
-                        </a>
-                    </div>`;
-            } 
-            else if (lowerMessage.includes('schedule') || lowerMessage.includes('availability') || lowerMessage.includes('time slot')) {
-                formattedResponse = `
-                    You can manage your consultation schedule here:
-                    <div style="margin: 10px 0;">
-                        <a href="/schedule-consultation/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            Manage Consultation Schedule →
-                        </a>
-                    </div>`;
+
+            if (lowerMessage.includes('profile') || lowerMessage.includes('my info')) {
+                formattedResponse = formatProfileCard(userInfo);
             }
-            else if (lowerMessage.includes('consultation') || lowerMessage.includes('consult')) {
+            else if (lowerMessage.includes('projects')) {
                 formattedResponse = `
-                    Here are your consultations:
-                    ${formatConsultationsTable(userInfo.consultations)}
-                    <div style="margin: 10px 0;">
-                        <a href="/consultations/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            Manage Consultations →
-                        </a>
-                    </div>`;
-            }
-            else if (lowerMessage.includes('project')) {
-                formattedResponse = `
-                    Here are your projects:
-                    ${formatProjectsTable(userInfo.projects)}
-                    <div style="margin: 10px 0;">
-                        <a href="/projects_manage/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            Manage Projects →
-                        </a>
-                    </div>`;
-            }
-            else if (lowerMessage.includes('help') || lowerMessage.includes('what can you do') || lowerMessage.includes('menu')) {
-                formattedResponse = `
-                    As a designer, you can:
-                    <div style="margin: 10px 0; display: grid; gap: 10px;">
-                        <a href="/add_portfolio/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            📸 Add Designs to Portfolio
-                        </a>
-                        <a href="/schedule-consultation/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            📅 Schedule Consultations
-                        </a>
-                        <a href="/consultations/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            💬 Manage Consultations
-                        </a>
-                        <a href="/projects_manage/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            🏗️ Manage Projects
-                        </a>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 10px 0; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <thead>
+                            <tr style="background-color: #000000; color: white;">
+                                <th style="padding: 12px; text-align: left;">Design</th>
+                                ${userInfo.user_type === 'Designer' ? 
+                                    '<th style="padding: 12px; text-align: left;">Customer</th>' : 
+                                    '<th style="padding: 12px; text-align: left;">Designer</th>'}
+                                <th style="padding: 12px; text-align: left;">Room Size</th>
+                                <th style="padding: 12px; text-align: left;">Status</th>
+                                <th style="padding: 12px; text-align: left;">Start Date</th>
+                                <th style="padding: 12px; text-align: left;">Completion Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${userInfo.projects ? userInfo.projects.map(project => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 12px;">${project.design ? project.design.name : 'N/A'}</td>
+                                    <td style="padding: 12px;">
+                                        ${userInfo.user_type === 'Designer' ? 
+                                            (project.customer ? project.customer.name : 'N/A') : 
+                                            (project.designer ? project.designer.name : 'N/A')}
+                                    </td>
+                                    <td style="padding: 12px;">
+                                        ${project.room_length}L x ${project.room_width}W x ${project.room_height}H
+                                    </td>
+                                    <td style="padding: 12px;">
+                                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; background-color: ${
+                                            project.status === 'Completed' ? '#e8f5e9' : 
+                                            project.status === 'In Progress' ? '#fff3e0' : 
+                                            project.status === 'Not Started' ? '#ffebee' : '#f5f5f5'
+                                        }; color: ${
+                                            project.status === 'Completed' ? '#2e7d32' : 
+                                            project.status === 'In Progress' ? '#ef6c00' : 
+                                            project.status === 'Not Started' ? '#c62828' : '#616161'
+                                        };">
+                                            ${project.status}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 12px;">${project.start_date || 'Not Started'}</td>
+                                    <td style="padding: 12px;">${project.completed_date || 'In Progress'}</td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="6" style="padding: 12px; text-align: center;">No projects found.</td></tr>'}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: flex-end;">
+                        <div style="background: #f5f5f5; padding: 8px 15px; border-radius: 8px;">
+                            Total Projects: ${userInfo.total_projects || 0}
+                        </div>
+                        <div style="background: #fff3e0; padding: 8px 15px; border-radius: 8px;">
+                            Active Projects: ${userInfo.active_projects || 0}
+                        </div>
                     </div>
-                    You can ask me about any of these functions or click the links to access them directly.`;
+                </div>`;
             }
-            else if (lowerMessage.includes('profile') || lowerMessage.includes('my info')) {
-                formattedResponse = `Here's your profile:\n${formatProfileCard(userInfo)}`;
-            }
-        } else {
-            // Customer response handling
-            const lowerMessage = message.toLowerCase();
-            
-            if (lowerMessage.includes('book') || lowerMessage.includes('consultation')) {
+            else if (lowerMessage.includes('orders')) {
                 formattedResponse = `
-                    Here are your current consultations:
-                    ${formatConsultationsTable(userInfo.consultations)}
-                    <div style="margin: 10px 0;">
-                        <a href="/portfolio/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            Book New Consultation →
-                        </a>
-                        <a href="/my_consultations/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-left: 10px;">
-                            View All Consultations →
-                        </a>
-                    </div>`;
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 10px 0; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <thead>
+                            <tr style="background-color: #000000; color: white;">
+                                <th style="padding: 12px; text-align: left;">Order ID</th>
+                                <th style="padding: 12px; text-align: left;">Product</th>
+                                <th style="padding: 12px; text-align: left;">Quantity</th>
+                                <th style="padding: 12px; text-align: left;">Amount</th>
+                                <th style="padding: 12px; text-align: left;">Order Date</th>
+                                <th style="padding: 12px; text-align: left;">Status</th>
+                                <th style="padding: 12px; text-align: left;">Payment Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${userInfo.orders ? userInfo.orders.map(order => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 12px;">#${order.order_id}</td>
+                                    <td style="padding: 12px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            ${order.product_image ? 
+                                                `<img src="${order.product_image}" alt="${order.product}" 
+                                                      style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">` : 
+                                                `<div style="width: 50px; height: 50px; background: #f5f5f5; border-radius: 4px; 
+                                                      display: flex; align-items: center; justify-content: center;">
+                                                    <span style="color: #999;">No image</span>
+                                                 </div>`
+                                            }
+                                            <span>${order.product}</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 12px;">${order.quantity}</td>
+                                    <td style="padding: 12px;">Rs ${order.amount}</td>
+                                    <td style="padding: 12px;">${order.order_date}</td>
+                                    <td style="padding: 12px;">
+                                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; background-color: ${
+                                            order.order_status === 'Completed' ? '#e8f5e9' : 
+                                            order.order_status === 'Pending' ? '#fff3e0' : 
+                                            order.order_status === 'Cancelled' ? '#ffebee' : '#f5f5f5'
+                                        }; color: ${
+                                            order.order_status === 'Completed' ? '#2e7d32' : 
+                                            order.order_status === 'Pending' ? '#ef6c00' : 
+                                            order.order_status === 'Cancelled' ? '#c62828' : '#616161'
+                                        };">
+                                            ${order.order_status}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 12px;">${order.payment_type}</td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="7" style="padding: 12px; text-align: center;">No orders found.</td></tr>'}
+                        </tbody>
+                    </table>
+                    ${userInfo.orders && userInfo.orders.length > 0 ? `
+                        <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: flex-end;">
+                            <div style="background: #f5f5f5; padding: 8px 15px; border-radius: 8px;">
+                                Total Orders: ${userInfo.total_orders || 0}
+                            </div>
+                            <div style="background: #fff3e0; padding: 8px 15px; border-radius: 8px;">
+                                Pending Orders: ${userInfo.pending_orders || 0}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>`;
             }
-            else if (lowerMessage.includes('design') || lowerMessage.includes('portfolio')) {
+            else if (lowerMessage.includes('consultations')) {
                 formattedResponse = `
-                    You can explore our design portfolio here:
-                    <div style="margin: 10px 0;">
-                        <a href="/portfolio/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            View Design Portfolio →
-                        </a>
-                    </div>`;
-            }
-            else if (lowerMessage.includes('project')) {
-                formattedResponse = `
-                    Here are your current projects:
-                    ${formatProjectsTable(userInfo.projects)}
-                    <div style="margin: 10px 0;">
-                        <a href="/my_projects/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            View All Projects →
-                        </a>
-                    </div>`;
-            }
-            else if (lowerMessage.includes('shop') || lowerMessage.includes('product') || lowerMessage.includes('buy')) {
-                formattedResponse = `
-                    Visit our shop to explore our collection:
-                    <div style="margin: 10px 0;">
-                        <a href="/shop/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            🛍️ Shop Now →
-                        </a>
-                    </div>`;
-            }
-            else if (lowerMessage.includes('mood') || lowerMessage.includes('board')) {
-                formattedResponse = `
-                    Create and manage your mood boards:
-                    <div style="margin: 10px 0;">
-                        <a href="/mood-boards/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            ✨ Mood Boards →
-                        </a>
-                    </div>`;
-            }
-            else if (lowerMessage.includes('color') || lowerMessage.includes('recommend')) {
-                formattedResponse = `
-                    Get personalized product recommendations based on your color preferences:
-                    <div style="margin: 10px 0;">
-                        <a href="/recommend-products/" style="display: inline-block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            🎨 Color Recommendations →
-                        </a>
-                    </div>`;
-            }
-            else if (lowerMessage.includes('help') || lowerMessage.includes('what can you do') || lowerMessage.includes('menu')) {
-                formattedResponse = `
-                    Welcome! Here's what you can do:
-                    <div style="margin: 10px 0; display: grid; gap: 10px;">
-                        <a href="/portfolio/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            🎨 Browse & Book Design Consultations
-                        </a>
-                        <a href="/my_consultations/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            📅 View Your Consultations
-                        </a>
-                        <a href="/my_projects/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            🏗️ View Your Projects
-                        </a>
-                        <a href="/shop/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            🛍️ Shop Products
-                        </a>
-                        <a href="/mood-boards/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            ✨ Create Mood Boards
-                        </a>
-                        <a href="/recommend-products/" style="display: block; background-color: #000000; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            🎨 Get Color-based Recommendations
-                        </a>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 10px 0; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <thead>
+                            <tr style="background-color: #000000; color: white;">
+                                <th style="padding: 12px; text-align: left;">Design</th>
+                                <th style="padding: 12px; text-align: left;">Contact</th>
+                                <th style="padding: 12px; text-align: left;">Status</th>
+                                <th style="padding: 12px; text-align: left;">Schedule</th>
+                                <th style="padding: 12px; text-align: left;">Room Size</th>
+                                <th style="padding: 12px; text-align: left;">Payment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${userInfo.consultations ? userInfo.consultations.map(consultation => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 12px;">${consultation.design_name}</td>
+                                    <td style="padding: 12px;">
+                                        <div>📧 ${consultation.designer_email}</div>
+                                        <div>📱 ${consultation.designer_phone}</div>
+                                    </td>
+                                    <td style="padding: 12px;">
+                                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; background-color: ${
+                                            consultation.status === 'Completed' ? '#e8f5e9' : 
+                                            consultation.status === 'Scheduled' ? '#fff3e0' : 
+                                            consultation.status === 'Pending' ? '#ffebee' : '#f5f5f5'
+                                        }; color: ${
+                                            consultation.status === 'Completed' ? '#2e7d32' : 
+                                            consultation.status === 'Scheduled' ? '#ef6c00' : 
+                                            consultation.status === 'Pending' ? '#c62828' : '#616161'
+                                        };">
+                                            ${consultation.status}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 12px;">${consultation.schedule_date}</td>
+                                    <td style="padding: 12px;">${consultation.room_dimensions}</td>
+                                    <td style="padding: 12px;">
+                                        <div>Amount: Rs ${consultation.amount}</div>
+                                        <div style="margin-top: 4px;">
+                                            <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; background-color: ${
+                                                consultation.payment_status === 'paid' ? '#e8f5e9' : '#ffebee'
+                                            }; color: ${
+                                                consultation.payment_status === 'paid' ? '#2e7d32' : '#c62828'
+                                            };">
+                                                ${consultation.payment_status}
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="6" style="padding: 12px; text-align: center;">No consultations found.</td></tr>'}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: flex-end;">
+                        <div style="background: #f5f5f5; padding: 8px 15px; border-radius: 8px;">
+                            Total Consultations: ${userInfo.total_consultations || 0}
+                        </div>
+                        <div style="background: #fff3e0; padding: 8px 15px; border-radius: 8px;">
+                            Pending Consultations: ${userInfo.pending_consultations || 0}
+                        </div>
                     </div>
-                    You can ask me about any of these features or click the links to access them directly.`;
+                </div>`;
             }
-            else if (lowerMessage.includes('profile') || lowerMessage.includes('my info')) {
-                formattedResponse = `Here's your profile:\n${formatProfileCard(userInfo)}`;
+            else if (lowerMessage.includes('designs')) {
+                formattedResponse = `
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 10px 0; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <thead>
+                            <tr style="background-color: #000000; color: white;">
+                                <th style="padding: 12px; text-align: left;">Design</th>
+                                <th style="padding: 12px; text-align: left;">Category</th>
+                                <th style="padding: 12px; text-align: left;">Description</th>
+                                <th style="padding: 12px; text-align: left;">Square Feet</th>
+                                <th style="padding: 12px; text-align: left;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${userInfo.designs && userInfo.designs.length > 0 ? userInfo.designs.map(design => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 12px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            ${design.image_url ? 
+                                                `<img src="${design.image_url}" alt="${design.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : 
+                                                '<div style="width: 40px; height: 40px; background: #f5f5f5; border-radius: 4px;"></div>'}
+                                            <span>${design.name || 'Untitled'}</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 12px;">${design.category || 'N/A'}</td>
+                                    <td style="padding: 12px; max-width: 150px;">
+                                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${design.description || 'No description'}">
+                                            ${design.description || 'No description'}
+                                        </div>
+                                    </td>
+                                    <td style="padding: 12px;">${design.sqft || 'N/A'} sq ft</td>
+                                    <td style="padding: 12px;">Rs ${parseFloat(design.amount || 0).toFixed(2)}</td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="5" style="padding: 12px; text-align: center;">No designs found.</td></tr>'}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: flex-end;">
+                        <div style="background: #f5f5f5; padding: 8px 15px; border-radius: 8px;">
+                            Total Designs: ${userInfo.total_designs || 0}
+                        </div>
+                    </div>
+                </div>`;
             }
-            else if (lowerMessage.includes('order')) {
-                formattedResponse = `Here are your orders:\n${formatOrdersTable(userInfo.orders)}`;
+            else if (lowerMessage.includes('products')) {
+                formattedResponse = `
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 10px 0; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <thead>
+                            <tr style="background-color: #000000; color: white;">
+                                <th style="padding: 12px; text-align: left;">Product</th>
+                                <th style="padding: 12px; text-align: left;">Category</th>
+                                <th style="padding: 12px; text-align: left;">Price</th>
+                                <th style="padding: 12px; text-align: left;">Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${userInfo.products ? userInfo.products.map(product => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 12px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <img src="${product.image}" alt="${product.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                            <span>${product.name}</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 12px;">${product.category}</td>
+                                    <td style="padding: 12px;">$${product.price}</td>
+                                    <td style="padding: 12px;">
+                                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; background-color: ${
+                                            product.stock > 10 ? '#e8f5e9' : 
+                                            product.stock > 0 ? '#fff3e0' : '#ffebee'
+                                        }; color: ${
+                                            product.stock > 10 ? '#2e7d32' : 
+                                            product.stock > 0 ? '#ef6c00' : '#c62828'
+                                        };">
+                                            ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="4" style="padding: 12px; text-align: center;">No products found.</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>`;
             }
+
+            botResponse = formattedResponse;
         }
 
-        // Add bot response with formatted content
+        // Display the response
         messagesDiv.innerHTML += `
             <div style="display: flex; justify-content: flex-start; margin: 8px 0;">
                 <div style="max-width: 100%; width: 100%;">
                     <div style="background-color: #f5f5f5; padding: 8px 12px; border-radius: 12px 12px 12px 0;">
-                        ${formattedResponse}
+                        ${botResponse}
                     </div>
                     <div style="font-size: 10px; color: #666;">
                         ${timestamp}
