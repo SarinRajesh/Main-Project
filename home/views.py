@@ -2701,6 +2701,23 @@ def get_user_info(request):
         user_data['total_orders'] = len(orders_data)
         user_data['pending_orders'] = sum(1 for o in orders_data if o['order_status'] == 'Pending')
 
+    # Add designs data for designers
+    if user_type == 'Designer':
+        designs = Design.objects.filter(designer_id=user).select_related('amount')
+        designs_data = [{
+            'name': design.name,
+            'description': design.description,
+            'category': design.category,
+            'sqft': float(design.sqft),
+            'amount': float(design.amount.amount),
+            'image_url': design.image.url if design.image else None
+        } for design in designs]
+
+        user_data.update({
+            'designs': designs_data,
+            'total_designs': len(designs_data)
+        })
+
     return JsonResponse(user_data)
 
 @nocache
