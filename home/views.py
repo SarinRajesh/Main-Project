@@ -1522,7 +1522,7 @@ def add_designer(request):
 
 @nocache
 @login_required
-def users_table(request):
+def customers_table(request):
     customers = Users.objects.filter(user_type_id__user_type='Customer')
     designers = Users.objects.filter(user_type_id__user_type='Designer')
 
@@ -1536,8 +1536,28 @@ def users_table(request):
         elif request.GET['download'] == 'excel':
             return download_excel(request, 'users', user_type)
 
-    return render(request, 'admin_page/users_table.html', {
+    return render(request, 'admin_page/customers_table.html', {
         'customers': customers,
+        'designers': designers,
+    })
+
+@nocache
+@login_required
+def designers_table(request):
+    # Get download parameter from URL
+    download_type = request.GET.get('download')
+    user_type = 'designer'  # Specify user type for download
+
+    if download_type:
+        if download_type == 'excel':
+            return download_excel(request, 'users', user_type)
+        elif download_type == 'pdf':
+            return download_pdf(request, 'users', user_type)
+
+    # Get all designers
+    designers = Users.objects.filter(user_type_id__user_type='Designer')
+    
+    return render(request, 'admin_page/designers_table.html', {  # Changed from users_table.html to designers_table.html
         'designers': designers,
     })
 

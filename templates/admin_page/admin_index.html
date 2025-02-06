@@ -70,7 +70,13 @@
                 <div class="nav-holder" style="display: none;">
                     <ul style="list-style-type: none; padding: 0;">
                         <li>
-                            <a href="{% url 'users_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Users Table</a>
+                            <a href="{% url 'admin_index' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Home</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'customers_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Customers Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'designers_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designers Table</a>
                         </li>
                         <li>
                             <a href="{% url 'designs_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designs Table</a>
@@ -207,72 +213,137 @@
 
             <!-- footer -->
         <!-- footer -->
-<footer class="main-footer" style="width: 15%;    background-color: #000000f2; padding: 20px; height: 100vh; position: fixed;">
-
-    <!-- Admin links moved to the top with inline CSS and white underline border -->
-    <div class="footer-admin-links">
-        <ul style="list-style: none; padding: 0; margin: 0;">
-            <li style="margin-bottom: 20px;">
-                <a href="{% url 'users_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                    Users Table
-                </a>
-            </li>
-            <li style="margin-bottom: 20px;">
-                <a href="{% url 'designs_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                    Designs Table
-                </a>
-            </li>
-            <li style="margin-bottom: 20px;">
-                <a href="{% url 'consultations_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                    Consultations Table
-                </a>
-            </li>
-            <li style="margin-bottom: 20px;">
-                <a href="{% url 'projects_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                    Projects Table
-                </a>
-            </li>
-            <li style="margin-bottom: 20px;">
-                <a href="{% url 'products_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                    Products Table
-                </a>
-            </li>
-            <li style="margin-bottom: 20px;">
-                <a href="{% url 'orders_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                    Orders Table
-                </a>
-            </li>
-            <li style="margin-bottom: 20px;">
-                <a href="{% url 'add_designer' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                    Add Designers
-                </a>
-            </li>
-            <li style="margin-bottom: 20px;">
-                <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                    Add Products
-                </a>
-            </li>
-        </ul>
+        <footer class="main-footer" style="width: 15%; background-color: #000000; padding: 20px 10px 20px 20px; height: calc(100vh - 80px); position: fixed; left: 0; top: 80px;">
+            <div class="footer-admin-links" style="
+                height: calc(100vh - 120px);
+                overflow-y: auto; 
+                overflow-x: hidden;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+                padding-right: 10px;
+            ">
+                <div style="width: 100%;">
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 30px; text-align: center;">
+                            <a href="{% url 'admin_index' %}" style="color: #000000; 
+                            text-decoration: none; 
+                            font-size: 18px; 
+                            font-weight: bold; 
+                            display: block; 
+                            padding: 15px 20px; 
+                            background-color: #ffffff;
+                            border-radius: 4px;">
+                                Home
+                            </a>
+                        </li>
+                        <div style="width: 100%;">
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="margin-bottom: 30px; text-align: center;">
+                                    <a href="{% url 'customers_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                            onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                            onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                        Customers Table
+                                    </a>
+                                </li>
+                        <li style="margin-bottom: 30px; text-align: center;">
+                            <a href="{% url 'designers_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                            onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                            onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                Designers Table
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 20px;">
+                            <a href="{% url 'designs_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                Designs Table
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 20px;">
+                            <a href="{% url 'consultations_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                Consultations Table
+                            </a>
+                        </li>
+                       
+            
+                        <li style="margin-bottom: 20px;">
+                            <a href="{% url 'projects_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                Projects Table
+                            </a>
+                        </li>
+            
+                        <li style="margin-bottom: 20px;">
+                            <a href="{% url 'products_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                Products Table
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 20px;">
+                            <a href="{% url 'orders_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                Orders Table
+                            </a>
+                        </li>
+                        
+                        <li style="margin-bottom: 20px;">
+                            <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                            onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                            onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                           Add Designer
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 20px;">
+                            <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                Add Products
+                            </a>
+                        </li>
+                    </ul>
+                    
+                </div>
+            </div>
+            </footer>
         
-    </div>
-
-</footer>
+        <style>
+            /* Modern, subtle scrollbar styling */
+            .footer-admin-links::-webkit-scrollbar {
+                width: 4px;
+                margin-right: 4px;
+            }
+            
+            .footer-admin-links::-webkit-scrollbar-track {
+                background: transparent;
+                margin: 4px 0;
+            }
+            
+            .footer-admin-links::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+                transition: background 0.3s;
+            }
+            
+            .footer-admin-links::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.4);
+            }
+            
+            /* Hide scrollbar when not scrolling */
+            .footer-admin-links {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            }
+            
+            /* Add smooth scrolling */
+            .footer-admin-links {
+                scroll-behavior: smooth;
+            }
+        </style>
 
             <!-- footer end-->
         </div>
