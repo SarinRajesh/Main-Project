@@ -101,10 +101,15 @@ def custom_login_redirect(request):
         request.session['custom_error_message'] = "User account is inactive."
         return redirect('signin')  # Redirect to sign-in page
 
-    if user.user_type_id and user.user_type_id.user_type == 'Admin':
-        return redirect('admin_index')
-    else:
-        return redirect('index')
+    # Check user type and redirect accordingly
+    if user.user_type_id:
+        if user.user_type_id.user_type == 'Admin':
+            return redirect('admin_index')
+        elif user.user_type_id.user_type == 'Delivery_boy':
+            return redirect('deliveryboy_index')  # Changed from 'delivery_boy/index' to 'deliveryboy_index'
+    
+    # Default redirect for other user types (e.g., Customer, Designer)
+    return redirect('index')
 
 
 
@@ -1520,6 +1525,165 @@ def add_designer(request):
 
 
 
+@login_required
+def add_deliveryboy(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        # Validate username existence
+        if Users.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists.')
+            return render(request, 'admin_page/add_deliveryboy.html')
+        
+        # Validate email existence
+        if Users.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists.')
+            return render(request, 'admin_page/add_deliveryboy.html')
+
+        # Validate password criteria
+        password_pattern = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
+        if not password_pattern.match(password):
+            messages.error(request, 'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.')
+            return render(request, 'admin_page/add_deliveryboy.html')
+        
+        # Check if passwords match
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'admin_page/add_deliveryboy.html')
+        
+        try:
+            # Get or create the Delivery_boy UserType
+            deliveryboy_type, created = UserType.objects.get_or_create(
+                user_type='Delivery_boy',
+                defaults={'user_type': 'Delivery_boy'}
+            )
+            
+            new_deliveryboy = Users.objects.create(
+                username=username,
+                email=email,
+                password=make_password(password),
+                user_type_id=deliveryboy_type
+            )
+            new_deliveryboy.save()
+            
+            # Send email with username and password
+            send_mail(
+                'Welcome to ElegantDecor',
+                f'Dear {username},\n\nYour account has been successfully created. Your login credentials are as follows:\nUsername: {username}\nPassword: {password}\n\nBest regards,\nThe ElegantDecor Team',
+                'your-email@gmail.com',  # Replace with your actual email
+                [email],
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Delivery boy added successfully.')
+            return redirect('tables')
+        except Exception as e:
+            messages.error(request, f'Error adding delivery boy: {str(e)}')
+    
+    return render(request, 'admin_page/add_deliveryboy.html')
+
+@login_required
+@never_cache
+def deliveryboy_index(request):
+    # Ensure the user is a delivery boy
+    if not request.user.user_type_id or request.user.user_type_id.user_type != 'Delivery_boy':
+        return redirect('signin')
+        
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    context = {
+        'user': user,
+        'user_type': user_type,
+    }
+    return render(request, 'delivery_boy/index.html', context)
+
+@login_required
+@never_cache
+def delivery(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        action = request.POST.get('action')
+        
+        order = get_object_or_404(Order, id=order_id)
+        if action == 'accept':
+            order.delivery_boy = request.user
+            order.delivery_status = 'Pending'
+            message = f'Order #{order_id} has been accepted for delivery.'
+        elif action == 'out_for_delivery':
+            order.delivery_status = 'Out for Delivery'
+            message = f'Order #{order_id} is out for delivery.'
+        elif action == 'delivered':
+            order.delivery_status = 'Delivered'
+            order.delivery_date = timezone.now()
+            message = f'Order #{order_id} has been marked as delivered.'
+        
+        order.save()
+        messages.success(request, message)
+        return redirect('delivery')
+
+    # Get delivery boy's district and hometown
+    delivery_boy_district = request.user.district
+    delivery_boy_hometown = request.user.home_town
+
+    # Get all orders from customers in the same district and hometown, excluding cancelled orders
+    my_orders = Order.objects.filter(
+        user__district=delivery_boy_district,
+        user__home_town=delivery_boy_hometown  # Added hometown matching
+    ).exclude(
+        order_status='Cancelled'
+    ).select_related(
+        'user',
+        'product',
+        'amount',
+        'payment_type'
+    ).order_by('-order_date')
+
+    context = {
+        'my_orders': my_orders,
+        'user': request.user
+    }
+    return render(request, 'delivery_boy/delivery.html', context)
+
+@login_required
+@never_cache
+def account(request):
+    if not request.user.user_type_id or request.user.user_type_id.user_type != 'Delivery_boy':
+        return redirect('signin')
+    
+    if request.method == 'POST':
+        try:
+            user = request.user
+            user.name = request.POST.get('name')
+            user.email = request.POST.get('email')
+            user.phone = request.POST.get('phone')
+            user.address = request.POST.get('address')
+            user.home_town = request.POST.get('home_town')
+            user.district = request.POST.get('district')
+            user.state = request.POST.get('state')
+            user.pincode = request.POST.get('pincode')
+            
+            if 'photo' in request.FILES:
+                user.photo = request.FILES['photo']
+            
+            user.save()
+            messages.success(request, 'Account details updated successfully.')
+            
+        except Exception as e:
+            messages.error(request, f'Error updating account: {str(e)}')
+        
+        return redirect('account')
+    
+    # For GET request, render the template with user data
+    context = {
+        'user': request.user,
+        'user_type': request.user.user_type_id.user_type if request.user.user_type_id else None
+    }
+    return render(request, 'delivery_boy/account.html', context)
+
 @nocache
 @login_required
 def customers_table(request):
@@ -1930,28 +2094,60 @@ def orders_table(request):
         action = request.POST.get('action')
         
         order = get_object_or_404(Order, id=order_id)
+        
         if action == 'approve':
-            order.order_status = 'Completed'
-            message = f'Order #{order_id} has been approved and marked as completed.'
+            # Get customer's district
+            customer_district = order.user.district
+            
+            # Find available delivery boy in the same district
+            delivery_boy = Users.objects.filter(
+                user_type_id__user_type='Delivery_boy',
+                district=customer_district,
+                status='active'
+            ).first()
+            
+            if delivery_boy:
+                order.delivery_boy = delivery_boy
+                order.order_status = 'Completed'
+                message = f'Order #{order_id} has been approved and assigned to delivery boy {delivery_boy.username}'
+            else:
+                # If no delivery boy found in the same district
+                order.order_status = 'Approved'
+                message = f'Order #{order_id} has been approved but no delivery boy available in district {customer_district}'
+            
+            order.save()
+            messages.success(request, message)
+            
         elif action == 'cancel':
             order.order_status = 'Cancelled'
-            message = f'Order #{order_id} has been cancelled.'
+            order.save()
+            messages.success(request, f'Order #{order_id} has been cancelled.')
         
-        order.save()
-        messages.success(request, message)
         return redirect('orders_table')
 
-    if 'download' in request.GET:
-        if request.GET['download'] == 'pdf':
-            return download_pdf(request, 'orders')
-        elif request.GET['download'] == 'excel':
-            return download_excel(request, 'orders')
+    # Get filter parameters
+    download = request.GET.get('download')
+    
+    orders = Order.objects.select_related(
+        'user',
+        'product',
+        'amount',
+        'payment_type',
+        'delivery_boy'
+    ).order_by('-order_date')
 
-    orders = Order.objects.all().select_related('user', 'product', 'amount', 'payment_type').order_by('-order_date')
+    if download == 'pdf':
+        # Handle PDF download
+        return generate_pdf(orders)
+    elif download == 'excel':
+        # Handle Excel download
+        return generate_excel(orders)
+
     context = {
-        'orders': orders
+        'orders': orders,
     }
     return render(request, 'admin_page/orders_table.html', context)
+
 @nocache
 @login_required
 @require_http_methods(["GET", "POST"])

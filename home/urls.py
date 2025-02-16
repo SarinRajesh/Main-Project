@@ -37,6 +37,12 @@ path('delete-portfolio/<int:portfolio_id>/', views.delete_portfolio, name='delet
     path('add_portfolio/', views.add_portfolio, name='add_portfolio'),
     path('admin_page/add_product/', views.add_product, name='add_product'),
     path('admin_page/add_designer/', views.add_designer, name='add_designer'),
+    path('admin_page/add_deliveryboy/', views.add_deliveryboy, name='add_deliveryboy'),
+
+    path('delivery_boy/index', views.deliveryboy_index, name='deliveryboy_index'),
+    path('delivery_boy/delivery', views.delivery, name='delivery'),
+    path('delivery_boy/account', views.account, name='account'),
+
     path('customers_table/', views.customers_table, name='customers_table'),
     path('designers_table/', views.designers_table, name='designers_table'),
     path('admin_page/designs_table/', views.designs_table, name='designs_table'),

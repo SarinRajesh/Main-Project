@@ -1,0 +1,791 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+    </head>
+
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
+            </div>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder"href="{% url 'admin_index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                <!-- share button-->  
+                <div class="show-share-wrap">
+                    <div class="show-share">
+                        <a href="{% url 'account' %}" style="text-decoration: none;">
+                            <span style="background-color: #1a5f7a; color: white; padding: 8px 15px; border-radius: 4px; font-weight: bold; letter-spacing: 1px; cursor: pointer;">{{ user.username }}</span>
+                        </a>
+                        <a href="{% url 'logout_view' %}"><img src="{% static 'index/images/logout.png' %}" alt=""></a>
+                    </div>
+                </div>
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
+                <div class="nav-holder" style="display: none;">
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li>
+                            <a href="{% url 'index' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Home</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'delivery' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Delivery</a>
+                        </li>
+                        <li>
+
+                            <a href="{% url 'account' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Account Details</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header  end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!--  content -->
+                    <div class="content">
+                        <!--  section  -->
+                     
+                        <!--  section  end-->
+                        <!--  section  -->
+                        <section class="profile-section" style="padding: 40px 0;margin-left:8%">
+                            <div class="container">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-11">
+                                        <!-- Main Profile Card -->
+                                        <div class="profile-container" style="background: #1E1E1E; border-radius: 20px; overflow: hidden;">
+                                            <!-- Left Sidebar -->
+                                            <div class="row g-0">
+                                                <div class="col-md-3" style="background: #2A2A2A; padding: 30px; border-right: 1px solid #333;">
+                                                    <!-- Profile Photo Section -->
+                                                    <div class="text-center">
+                                                        <div class="photo-wrapper" style="position: relative; width: 180px; height: 180px; margin: 0 auto;">
+                                                            <div class="photo-container" style="width: 100%; height: 100%; border-radius: 50%; border: 3px solid #4A90E2; padding: 3px;">
+                                                                {% if user.photo %}
+                                                                    <img src="{{ user.photo.url }}" alt="Profile Photo" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                                                {% else %}
+                                                                    <img src="{% static 'signup/images/profile.png' %}" alt="Default Profile Photo" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                                                {% endif %}
+                                                            </div>
+                                                            <label class="camera-btn" style="position: absolute; bottom: 0; right: 10px; background: #4A90E2; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(74, 144, 226, 0.3);">
+                                                                <i class="fa fa-camera" style="color: white; font-size: 16px;"></i>
+                                                            </label>
+                                                            <input type="file" id="photo-upload" style="display: none;" accept="image/*">
+                                                        </div>
+                                                        <h3 style="color: #fff; margin-top: 20px; font-size: 24px;">{{ user.username }}</h3>
+                                                        <p style="color: #4A90E2; font-size: 16px;">Delivery Partner</p>
+                                                    </div>
+
+                                                    <!-- Quick Stats -->
+                                                    <div class="stats-section" style="margin-top: 30px;">
+                                                        <div class="stat-item" style="background: #333; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                                                            <h4 style="color: #4A90E2; font-size: 14px; margin-bottom: 5px;">Total Deliveries</h4>
+                                                            <p style="color: #fff; font-size: 20px; margin: 0;">{{ total_deliveries|default:'0' }}</p>
+                                                        </div>
+                                                        <div class="stat-item" style="background: #333; padding: 15px; border-radius: 10px;">
+                                                            <h4 style="color: #4A90E2; font-size: 14px; margin-bottom: 5px;">Rating</h4>
+                                                            <p style="color: #fff; font-size: 20px; margin: 0;">{{ rating|default:'4.5' }} ⭐</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Right Content Area -->
+                                                <div class="col-md-9" style="padding: 30px;">
+                                                    <h2 style="color: #fff; margin-bottom: 30px; font-size: 24px;">Profile Information</h2>
+                                                    
+                                                    <form method="post" action="{% url 'account' %}" id="profileForm">
+                                                        {% csrf_token %}
+                                                        <div class="row">
+                                                            <!-- Personal Information -->
+                                                            <div class="col-md-6">
+                                                                <div class="form-group" style="margin-bottom: 25px;">
+                                                                    <label style="color: #4A90E2; display: block; margin-bottom: 8px; font-size: 14px;">Full Name</label>
+                                                                    <input type="text" name="name" id="name" value="{{ user.name|default:'' }}" required
+                                                                           style="width: 100%; padding: 12px 15px; background: #2A2A2A; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px;">
+                                                                    <span id="text1" class="error"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group" style="margin-bottom: 25px;">
+                                                                    <label style="color: #4A90E2; display: block; margin-bottom: 8px; font-size: 14px;">Email</label>
+                                                                    <input type="email" name="email" id="email" value="{{ user.email|default:'' }}" required
+                                                                           style="width: 100%; padding: 12px 15px; background: #2A2A2A; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px;">
+                                                                    <span id="text2" class="error"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group" style="margin-bottom: 25px;">
+                                                                    <label style="color: #4A90E2; display: block; margin-bottom: 8px; font-size: 14px;">Phone Number</label>
+                                                                    <input type="tel" name="phone" id="phone" value="{{ user.phone|default:'' }}" required
+                                                                           style="width: 100%; padding: 12px 15px; background: #2A2A2A; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px;">
+                                                                    <span id="text3" class="error"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group" style="margin-bottom: 25px;">
+                                                                    <label style="color: #4A90E2; display: block; margin-bottom: 8px; font-size: 14px;">Home Town</label>
+                                                                    <input type="text" name="home_town" id="home_town" value="{{ user.home_town|default:'' }}" required
+                                                                           style="width: 100%; padding: 12px 15px; background: #2A2A2A; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px;">
+                                                                    <span id="text5" class="error"></span>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Address Information -->
+                                                            <div class="col-12">
+                                                                <div class="form-group" style="margin-bottom: 25px;">
+                                                                    <label style="color: #4A90E2; display: block; margin-bottom: 8px; font-size: 14px;">Address</label>
+                                                                    <textarea name="address" id="address" rows="3" required
+                                                                              style="width: 100%; padding: 12px 15px; background: #2A2A2A; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px; resize: none;">{{ user.address|default:'' }}</textarea>
+                                                                    <span id="addressError" class="error"></span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-md-4">
+                                                                <div class="form-group" style="margin-bottom: 25px;">
+                                                                    <label style="color: #4A90E2; display: block; margin-bottom: 8px; font-size: 14px;">District</label>
+                                                                    <input type="text" name="district" id="district" value="{{ user.district|default:'' }}" required
+                                                                           style="width: 100%; padding: 12px 15px; background: #2A2A2A; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px;">
+                                                                    <span id="text6" class="error"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group" style="margin-bottom: 25px;">
+                                                                    <label style="color: #4A90E2; display: block; margin-bottom: 8px; font-size: 14px;">State</label>
+                                                                    <input type="text" name="state" id="state" value="{{ user.state|default:'' }}" required
+                                                                           style="width: 100%; padding: 12px 15px; background: #2A2A2A; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px;">
+                                                                    <span id="text7" class="error"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group" style="margin-bottom: 25px;">
+                                                                    <label style="color: #4A90E2; display: block; margin-bottom: 8px; font-size: 14px;">Pincode</label>
+                                                                    <input type="text" name="pincode" id="pincode" value="{{ user.pincode|default:'' }}" required
+                                                                           maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6)"
+                                                                           style="width: 100%; padding: 12px 15px; background: #2A2A2A; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px;">
+                                                                    <span id="pincodeError" class="error"></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Submit Button -->
+                                                        <div class="text-end" style="margin-top: 20px;">
+                                                            <button type="submit" class="btn" style="background: #4A90E2; color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.3s ease;">
+                                                                Save Changes
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <!--  section  end-->
+                        <!--  social-wrap  -->
+                        <div class="social-wrap fl-wrap">
+                            <ul>
+                                <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                            </ul>
+                        </div>
+                        <!--  social-wrap  end-->
+                    </div>
+                    <!-- content end -->
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+            <!--search-form-holder -->
+          
+                  
+              <footer class="main-footer" style="width: 15%; background-color: #000000; padding: 20px 10px 20px 20px; height: calc(100vh - 80px); position: fixed; left: 0; top: 80px;">
+                    <div class="footer-admin-links" style="
+                        height: calc(100vh - 120px);
+                        overflow-y: auto; 
+                        overflow-x: hidden;
+                        scrollbar-width: thin;
+                        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+                        padding-right: 10px;
+                    ">
+                        <div style="width: 100%;">
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="margin-bottom: 30px; text-align: center;">
+                                    <a href="{% url 'deliveryboy_index' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                             
+                                        Home
+                                    </a>
+                                </li>
+                                <div style="width: 100%;">
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li style="margin-bottom: 30px; text-align: center;">
+                                            <a href="{% url 'delivery' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                            onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                            onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                                     
+                                                Delivery
+                                            </a>
+                                        </li>
+                                <div style="width: 100%;">
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li style="margin-bottom: 30px; text-align: center;">
+                                            <a href="{% url 'account' %}"  style="color: #000000; 
+                                            text-decoration: none; 
+                                            font-size: 18px; 
+                                            font-weight: bold; 
+                                            display: block; 
+                                            padding: 15px 20px; 
+                                            background-color: #ffffff;
+                                            border-radius: 4px;">  Account Details
+                                            </a>
+                                        </li>
+                               
+                            
+                        </ul>
+                        
+                    </div>
+                </div>
+                </footer>
+            
+            <style>
+                /* Modern, subtle scrollbar styling */
+                .footer-admin-links::-webkit-scrollbar {
+                    width: 4px;
+                    margin-right: 4px;
+                }
+                
+                .footer-admin-links::-webkit-scrollbar-track {
+                    background: transparent;
+                    margin: 4px 0;
+                }
+                
+                .footer-admin-links::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 10px;
+                    transition: background 0.3s;
+                }
+                
+                .footer-admin-links::-webkit-scrollbar-thumb:hover {
+                    background: rgba(255, 255, 255, 0.4);
+                }
+                
+                /* Hide scrollbar when not scrolling */
+                .footer-admin-links {
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+                }
+                
+                /* Add smooth scrolling */
+                .footer-admin-links {
+                    scroll-behavior: smooth;
+                }
+            </style>
+
+            <!-- footer end-->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+        document.querySelector('.camera-btn').addEventListener('click', function() {
+            Swal.fire({
+                title: 'Update Profile Photo',
+                text: 'Choose how you want to update your profile photo',
+                showCancelButton: true,
+                confirmButtonText: 'Take Photo',
+                cancelButtonText: 'Choose File',
+                reverseButtons: true,
+                background: '#2A2A2A',
+                color: '#fff',
+                confirmButtonColor: '#4A90E2',
+                cancelButtonColor: '#333'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Handle take photo
+                    startCamera();
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Handle choose file
+                    document.getElementById('photo-upload').click();
+                }
+            });
+        });
+
+        document.getElementById('photo-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Show preview immediately
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Update all profile images on the page
+                    document.querySelectorAll('.photo-container img').forEach(img => {
+                        img.src = e.target.result;
+                    });
+                }
+                reader.readAsDataURL(file);
+
+                // Then upload to server
+                const formData = new FormData();
+                formData.append('photo', file);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                
+                fetch("{% url 'upload_photo' %}", {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Photo uploaded successfully',
+                            icon: 'success',
+                            background: '#2A2A2A',
+                            color: '#fff',
+                            confirmButtonColor: '#4A90E2'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to upload photo',
+                            icon: 'error',
+                            background: '#2A2A2A',
+                            color: '#fff',
+                            confirmButtonColor: '#4A90E2'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error uploading photo',
+                        icon: 'error',
+                        background: '#2A2A2A',
+                        color: '#fff',
+                        confirmButtonColor: '#4A90E2'
+                    });
+                });
+            }
+        });
+
+        // Optional: Add camera functionality if needed
+        function startCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                Swal.fire({
+                    title: 'Take Photo',
+                    html: `
+                        <div style="position: relative; height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <video id="video" style="width: 100%; height: 350px; object-fit: cover; border-radius: 10px;" autoplay></video>
+                            <button id="capture" class="swal2-confirm swal2-styled" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); margin-top: 10px; background-color: #4A90E2; color: white; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer;">
+                                <i class="fa fa-camera"></i> Capture
+                            </button>
+                        </div>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                    `,
+                    showCancelButton: true,
+                    showConfirmButton: false,
+                    background: '#2A2A2A',
+                    color: '#fff',
+                    cancelButtonColor: '#333',
+                    width: '600px',
+                    padding: '20px',
+                    customClass: {
+                        popup: 'camera-popup'
+                    },
+                    didOpen: () => {
+                        const video = document.getElementById('video');
+                        const canvas = document.getElementById('canvas');
+                        const captureButton = document.getElementById('capture');
+
+                        navigator.mediaDevices.getUserMedia({ video: true })
+                            .then(stream => {
+                                video.srcObject = stream;
+                            })
+                            .catch(err => {
+                                console.error("Error accessing camera:", err);
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'Unable to access camera',
+                                    icon: 'error',
+                                    background: '#2A2A2A',
+                                    color: '#fff',
+                                    confirmButtonColor: '#4A90E2'
+                                });
+                            });
+
+                        captureButton.addEventListener('click', () => {
+                            canvas.width = video.videoWidth;
+                            canvas.height = video.videoHeight;
+                            canvas.getContext('2d').drawImage(video, 0, 0);
+                            
+                            // Convert canvas to blob
+                            canvas.toBlob(blob => {
+                                const file = new File([blob], "camera-photo.jpg", { type: "image/jpeg" });
+                                
+                                // Update preview
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    document.querySelectorAll('.photo-container img').forEach(img => {
+                                        img.src = e.target.result;
+                                    });
+                                }
+                                reader.readAsDataURL(file);
+
+                                // Upload to server
+                                const formData = new FormData();
+                                formData.append('photo', file);
+                                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                                
+                                fetch("{% url 'upload_photo' %}", {
+                                    method: 'POST',
+                                    body: formData
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            title: 'Success!',
+                                            text: 'Photo uploaded successfully',
+                                            icon: 'success',
+                                            background: '#2A2A2A',
+                                            color: '#fff',
+                                            confirmButtonColor: '#4A90E2'
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                });
+
+                                // Stop camera stream
+                                video.srcObject.getTracks().forEach(track => track.stop());
+                                Swal.close();
+                            }, 'image/jpeg');
+                        });
+                    },
+                    willClose: () => {
+                        // Stop camera stream when modal is closed
+                        if (document.getElementById('video').srcObject) {
+                            document.getElementById('video').srcObject.getTracks().forEach(track => track.stop());
+                        }
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Camera not supported in this browser',
+                    icon: 'error',
+                    background: '#2A2A2A',
+                    color: '#fff',
+                    confirmButtonColor: '#4A90E2'
+                });
+            }
+        }
+        </script>
+        <style>
+        .profile-card {
+            transition: transform 0.3s ease;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1a5f7a;
+            box-shadow: 0 0 0 2px rgba(26, 95, 122, 0.2);
+        }
+
+        button[type="submit"]:hover {
+            background: #156789;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .camera-icon:hover {
+            background: rgba(0, 0, 0, 0.9) !important;
+            transform: scale(1.1);
+        }
+
+        .swal-wide {
+            width: 400px !important;
+        }
+
+        .camera-popup {
+            min-height: 500px;
+        }
+        
+        .camera-popup .swal2-html-container {
+            margin: 0;
+            padding: 20px 0;
+        }
+        
+        #video {
+            background-color: #1a1a1a;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        #capture {
+            z-index: 10;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        #capture:hover {
+            background-color: #357abd !important;
+            transform: translateX(-50%) scale(1.05);
+        }
+        </style>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                var mod1 = 0, mod2 = 0, mod3 = 0, mod5 = 0, mod6 = 0, mod7 = 0, mod8 = 0, mod9 = 0;
+
+                function validateName() {
+                    var n = document.getElementById("name");
+                    var namePattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+                    if (!n.value.match(namePattern) || n.value.trim() !== n.value) {
+                        document.getElementById("text1").innerHTML = "Invalid name format. Please use only letters with single spaces between words.";
+                        mod1 = 1;
+                    } else {
+                        document.getElementById("text1").innerHTML = "";
+                        mod1 = 0;
+                    }
+                    toggleSubmitButton();
+                }
+
+                function validateEmail() {
+                    var email = document.getElementById("email");
+                    var emailPattern = /^\S+@\S+\.\S+$/;
+                    if (!email.value.match(emailPattern) || email.value.trim() !== email.value) {
+                        document.getElementById("text2").innerHTML = "Invalid email format. Please check and try again.";
+                        mod2 = 1;
+                        toggleSubmitButton();
+                    } else {
+                        $.ajax({
+                            url: "{% url 'check_email' %}",
+                            data: {'email': email.value},
+                            dataType: 'json',
+                            success: function (data) {
+                                if (data.is_taken && email.value !== "{{ user.email }}") {
+                                    document.getElementById("text2").innerHTML = "Email already taken. Please try another";
+                                    mod2 = 1;
+                                } else {
+                                    document.getElementById("text2").innerHTML = "";
+                                    mod2 = 0;
+                                }
+                                toggleSubmitButton();
+                            }
+                        });
+                    }
+                }
+
+                function validatePhone() {
+                    var phone = document.getElementById("phone");
+                    var phonePattern = /^\d{10}$/;
+                    if (!phone.value.match(phonePattern) || phone.value.trim() !== phone.value) {
+                        document.getElementById("text3").innerHTML = "Invalid phone number. Please enter exactly 10 digits without spaces.";
+                        mod3 = 1;
+                    } else {
+                        document.getElementById("text3").innerHTML = "";
+                        mod3 = 0;
+                    }
+                    toggleSubmitButton();
+                }
+
+                function validateHomeTown() {
+                    var homeTown = document.getElementById("home_town");
+                    var letterPattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+                    if (!homeTown.value.match(letterPattern) || homeTown.value.trim() !== homeTown.value) {
+                        document.getElementById("text5").innerHTML = "Invalid home town. Use only letters with single spaces between words.";
+                        mod5 = 1;
+                    } else {
+                        document.getElementById("text5").innerHTML = "";
+                        mod5 = 0;
+                    }
+                    toggleSubmitButton();
+                }
+
+                function validateDistrict() {
+                    var district = document.getElementById("district");
+                    var letterPattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+                    if (!district.value.match(letterPattern) || district.value.trim() !== district.value) {
+                        document.getElementById("text6").innerHTML = "Invalid district. Use only letters with single spaces between words.";
+                        mod6 = 1;
+                    } else {
+                        document.getElementById("text6").innerHTML = "";
+                        mod6 = 0;
+                    }
+                    toggleSubmitButton();
+                }
+
+                function validateState() {
+                    var state = document.getElementById("state");
+                    var letterPattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+                    if (!state.value.match(letterPattern) || state.value.trim() !== state.value) {
+                        document.getElementById("text7").innerHTML = "Invalid state. Use only letters with single spaces between words.";
+                        mod7 = 1;
+                    } else {
+                        document.getElementById("text7").innerHTML = "";
+                        mod7 = 0;
+                    }
+                    toggleSubmitButton();
+                }
+
+                function validatePincode() {
+                    var pincode = document.getElementById("pincode");
+                    var pincodePattern = /^\d{6}$/;
+                    if (!pincode.value.match(pincodePattern) || pincode.value.trim() !== pincode.value) {
+                        document.getElementById("pincodeError").innerHTML = "Pincode must be exactly 6 digits without spaces.";
+                        mod8 = 1;
+                    } else {
+                        document.getElementById("pincodeError").innerHTML = "";
+                        mod8 = 0;
+                    }
+                    toggleSubmitButton();
+                }
+
+                function validateAddress() {
+                    var address = document.getElementById("address");
+                    var addressPattern = /^[A-Za-z0-9,.'#\-]+(\s[A-Za-z0-9,.'#\-]+)*$/;
+                    if (!address.value.match(addressPattern) || address.value.trim() !== address.value) {
+                        document.getElementById("addressError").innerHTML = "Invalid address format. Please use single spaces between words and avoid leading/trailing spaces.";
+                        mod9 = 1;
+                    } else {
+                        document.getElementById("addressError").innerHTML = "";
+                        mod9 = 0;
+                    }
+                    toggleSubmitButton();
+                }
+
+                function toggleSubmitButton() {
+                    if (mod1 === 0 && mod2 === 0 && mod3 === 0 && mod5 === 0 && mod6 === 0 && mod7 === 0 && mod8 === 0 && mod9 === 0) {
+                        $('.btn').prop("disabled", false).css("opacity", 1);
+                    } else {
+                        $('.btn').prop("disabled", true).css("opacity", 0.5);
+                    }
+                }
+
+                // Initial validation
+                validateName();
+                validateEmail();
+                validatePhone();
+                validateHomeTown();
+                validateDistrict();
+                validateState();
+                validatePincode();
+                validateAddress();
+
+                // Event listeners
+                $("#name").keyup(validateName);
+                $("#email").keyup(validateEmail);
+                $("#phone").keyup(validatePhone);
+                $("#home_town").keyup(validateHomeTown);
+                $("#district").keyup(validateDistrict);
+                $("#state").keyup(validateState);
+                $("#pincode").keyup(validatePincode);
+                $("#address").keyup(validateAddress);
+            });
+        </script>
+        <style>
+            .error {
+                color: #ff4444;
+                font-size: 12px;
+                margin-top: 5px;
+                display: block;
+            }
+            
+            input.error, textarea.error {
+                border-color: #ff4444 !important;
+            }
+            
+            .btn:disabled {
+                cursor: not-allowed;
+            }
+        </style>
+ </body>
+</html>

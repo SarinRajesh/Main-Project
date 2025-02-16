@@ -1,0 +1,382 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+    </head>
+
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
+            </div>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder"href="{% url 'admin_index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                <!-- share button-->  
+                <div class="show-share-wrap">
+                    <div class="show-share">
+                        <a href="{% url 'account' %}" style="text-decoration: none;">
+                            <span style="background-color: #1a5f7a; color: white; padding: 8px 15px; border-radius: 4px; font-weight: bold; letter-spacing: 1px; cursor: pointer;">{{ user.username }}</span>
+                        </a>
+                        <a href="{% url 'logout_view' %}"><img src="{% static 'index/images/logout.png' %}" alt=""></a>
+                    </div>
+                </div>
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
+                <div class="nav-holder" style="display: none;">
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li>
+                            <a href="{% url 'index' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Home</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'delivery' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Delivery</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'account' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Account Details</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header  end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!--  content -->
+                    <div class="content">
+                        <!--  section  -->
+                     
+                        <!--  section  end-->
+                        <!--  section  -->
+                        <section>
+                            <div class="container" style="width: 100%; max-width: none; padding: 0;">
+                                <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                                    <div style="width: 80%; max-width: 1200px; margin: 40px auto;">
+                                        <!-- Orders Table -->
+                                        <div style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 20px; margin-top: -9%; border-radius: 8px; background-color: white;">
+                                            <h2 style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; color: #34495e; margin-bottom: 20px;">Orders</h2>
+                                            
+                                            {% if my_orders %}
+                                            <div style="overflow-x: auto; width: 100%;">
+                                                <table style="width: 100%; border-collapse: collapse;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order ID</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Customer</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Location</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Product</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Quantity</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Amount</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order Date</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Delivery Date</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order Status</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Delivery Status</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for order in my_orders %}
+                                                        <tr>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.id }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.user.username }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                {{ order.user.district }}{% if order.user.district %}, {% endif %}
+                                                                {{ order.user.home_town }}{% if order.user.home_town %}, {% endif %}
+                                                                {{ order.user.pincode }}
+                                                            </td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.product.name }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.quantity }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.amount.amount }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_date|date:"Y-m-d H:i" }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_date|date:"Y-m-d H:i" }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                <span style="
+                                                                    padding: 5px 10px;
+                                                                    border-radius: 4px;
+                                                                    font-size: 14px;
+                                                                    {% if order.order_status == 'Approved' %}
+                                                                        background-color: #f1c40f;
+                                                                        color: #000;
+                                                                    {% elif order.order_status == 'Pending' %}
+                                                                        background-color: #e67e22;
+                                                                        color: white;
+                                                                    {% elif order.order_status == 'Processing' %}
+                                                                        background-color: #3498db;
+                                                                        color: white;
+                                                                    {% elif order.order_status == 'Completed' %}
+                                                                        background-color: #27ae60;
+                                                                        color: white;
+                                                                    {% endif %}
+                                                                ">
+                                                                    {{ order.order_status }}
+                                                                </span>
+                                                            </td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                <span style="
+                                                                    padding: 5px 10px;
+                                                                    border-radius: 4px;
+                                                                    font-size: 14px;
+                                                                    display: inline-block;
+                                                                    min-width: 100px;
+                                                                    text-align: center;
+                                                                    {% if not order.delivery_boy %}
+                                                                        background-color: #95a5a6;
+                                                                        color: white;
+                                                                    {% elif order.delivery_status == 'Pending' %}
+                                                                        background-color: #e67e22;
+                                                                        color: white;
+                                                                    {% elif order.delivery_status == 'Delivered' %}
+                                                                        background-color: #27ae60;
+                                                                        color: white;
+                                                                    {% endif %}
+                                                                ">
+                                                                    {% if not order.delivery_boy %}
+                                                                        Not Assigned
+                                                                    {% else %}
+                                                                        {{ order.delivery_status }}
+                                                                    {% endif %}
+                                                                </span>
+                                                            </td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                {% if not order.delivery_boy %}
+                                                                    <form method="post" style="display: inline;">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                                        <input type="hidden" name="action" value="accept">
+                                                                        <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; margin-right: 5px;">
+                                                                            Accept Delivery
+                                                                        </button>
+                                                                    </form>
+                                                                {% elif order.delivery_boy == request.user %}
+                                                                    {% if order.delivery_status == 'Pending' %}
+                                                                        <form method="post" style="display: inline;">
+                                                                            {% csrf_token %}
+                                                                            <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                                            <input type="hidden" name="action" value="out_for_delivery">
+                                                                            <button type="submit" style="background-color: #f1c40f; color: black; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
+                                                                                Mark Out for Delivery
+                                                                            </button>
+                                                                        </form>
+                                                                    {% elif order.delivery_status == 'Out for Delivery' %}
+                                                                        <form method="post" style="display: inline;">
+                                                                            {% csrf_token %}
+                                                                            <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                                            <input type="hidden" name="action" value="delivered">
+                                                                            <button type="submit" style="background-color: #3498db; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
+                                                                                Mark as Delivered
+                                                                            </button>
+                                                                        </form>
+                                                                    {% elif order.delivery_status == 'Delivered' %}
+                                                                        <span style="
+                                                                            padding: 5px 10px;
+                                                                            border-radius: 4px;
+                                                                            font-size: 14px;
+                                                                            background-color: #27ae60;
+                                                                            color: white;
+                                                                            display: inline-block;
+                                                                        ">
+                                                                            Delivered
+                                                                        </span>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {% else %}
+                                            <div style="text-align: center; padding: 20px;">
+                                                <p style="color: #7f8c8d; font-size: 16px;">No orders available in your area at the moment.</p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <!--  section  end-->
+                        <!--  social-wrap  -->
+                        <div class="social-wrap fl-wrap">
+                            <ul>
+                                <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                            </ul>
+                        </div>
+                        <!--  social-wrap  end-->
+                    </div>
+                    <!-- content end -->
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+            <!--search-form-holder -->
+          
+                  
+              <footer class="main-footer" style="width: 15%; background-color: #000000; padding: 20px 10px 20px 20px; height: calc(100vh - 80px); position: fixed; left: 0; top: 80px;">
+                    <div class="footer-admin-links" style="
+                        height: calc(100vh - 120px);
+                        overflow-y: auto; 
+                        overflow-x: hidden;
+                        scrollbar-width: thin;
+                        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+                        padding-right: 10px;
+                    ">
+                        <div style="width: 100%;">
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="margin-bottom: 30px; text-align: center;">
+                                    <a href="{% url 'deliveryboy_index' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                             
+                                        Home
+                                    </a>
+                                </li>
+                                <div style="width: 100%;">
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li style="margin-bottom: 30px; text-align: center;">
+                                            <a href="{% url 'delivery' %}"  style="color: #000000; 
+                                            text-decoration: none; 
+                                            font-size: 18px; 
+                                            font-weight: bold; 
+                                            display: block; 
+                                            padding: 15px 20px; 
+                                            background-color: #ffffff;
+                                            border-radius: 4px;">  Delivery
+                                            </a>
+                                        </li>
+                                        <div style="width: 100%;">
+                                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                                <li style="margin-bottom: 30px; text-align: center;">
+                                                    <a href="{% url 'account' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                                             
+                                                       Account Details
+                                                    </a>
+                                                </li>
+                        </ul>
+                        
+                    </div>
+                </div>
+                </footer>
+            
+            <style>
+                /* Modern, subtle scrollbar styling */
+                .footer-admin-links::-webkit-scrollbar {
+                    width: 4px;
+                    margin-right: 4px;
+                }
+                
+                .footer-admin-links::-webkit-scrollbar-track {
+                    background: transparent;
+                    margin: 4px 0;
+                }
+                
+                .footer-admin-links::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 10px;
+                    transition: background 0.3s;
+                }
+                
+                .footer-admin-links::-webkit-scrollbar-thumb:hover {
+                    background: rgba(255, 255, 255, 0.4);
+                }
+                
+                /* Hide scrollbar when not scrolling */
+                .footer-admin-links {
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+                }
+                
+                /* Add smooth scrolling */
+                .footer-admin-links {
+                    scroll-behavior: smooth;
+                }
+            </style>
+
+            <!-- footer end-->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+ </body>
+</html>

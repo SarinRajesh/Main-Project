@@ -112,6 +112,15 @@ class Order(models.Model):
     payment_type = models.ForeignKey(Payment_Type, on_delete=models.CASCADE,default=0)
     payment_status = models.CharField(max_length=100)
     delivery_date = models.DateTimeField(null=True, blank=True)
+    delivery_boy = models.ForeignKey(
+        Users, 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='deliveries',
+        limit_choices_to={'user_type_id__user_type': 'DeliveryBoy'}
+    )
+    delivery_status = models.CharField(max_length=100, default='Pending')
     def __str__(self):
         return f'Order {self.id}'
     

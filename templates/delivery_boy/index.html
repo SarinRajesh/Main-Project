@@ -38,7 +38,9 @@
                 <!-- share button-->  
                 <div class="show-share-wrap">
                     <div class="show-share">
-                        <span style="background-color: #1a5f7a; color: white; padding: 8px 15px; border-radius: 4px; font-weight: bold; letter-spacing: 1px;">Admin</span>
+                        <a href="{% url 'account' %}" style="text-decoration: none;">
+                            <span style="background-color: #1a5f7a; color: white; padding: 8px 15px; border-radius: 4px; font-weight: bold; letter-spacing: 1px; cursor: pointer;">{{ user.username }}</span>
+                        </a>
                         <a href="{% url 'logout_view' %}"><img src="{% static 'index/images/logout.png' %}" alt=""></a>
                     </div>
                 </div>
@@ -49,57 +51,22 @@
                 </div>
                 <!-- mobile nav end--> 
                 <!-- sales analytics link -->
-                <div style="position: absolute; left: 70%; top: 50%; transform: translateY(-50%);">
-                    <a href="{% url 'product_sales_analytics' %}" style="
-                        color: #00c6ff;
-                        text-decoration: none;
-                        font-family: 'Montserrat', sans-serif;
-                        font-weight: 500;
-                        font-size: 16px;
-                        padding: 8px 15px;
-                        border: 1px solid #00c6ff;
-                        border-radius: 4px;
-                        background-color: rgba(0, 198, 255, 0.1);
-                        box-shadow: 0 0 10px rgba(0, 198, 255, 0.3);
-                        transition: all 0.3s ease;">
-                        Sales Analytics
-                    </a>
-                </div>
+                
                 <!-- mobile nav end--> 
                 <!--  navigation --> 
                 <div class="nav-holder" style="display: none;">
                     <ul style="list-style-type: none; padding: 0;">
                         <li>
-                            <a href="{% url 'admin_index' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Home</a>
+                            <a href="{% url 'index' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Home</a>
                         </li>
                         <li>
-                            <a href="{% url 'customers_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Customers Table</a>
+                            <a href="{% url 'delivery' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Delivery</a>
                         </li>
                         <li>
-                            <a href="{% url 'designers_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designers Table</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'designs_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designs Table</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'consultations_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Consultations Table</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'projects_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Projects Table</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'products_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Products Table</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'orders_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Orders Table</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'add_designer' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Designers</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'add_product' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Products</a>
+                            <a href="{% url 'account' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Account Details</a>
                         </li>
                     </ul>
+                        
                 </div>
                 <!-- navigation  end -->
             </header>
@@ -225,7 +192,7 @@
                 <div style="width: 100%;">
                     <ul style="list-style: none; padding: 0; margin: 0;">
                         <li style="margin-bottom: 30px; text-align: center;">
-                            <a href="{% url 'admin_index' %}" style="color: #000000; 
+                            <a href="{% url 'deliveryboy_index' %}" style="color: #000000; 
                             text-decoration: none; 
                             font-size: 18px; 
                             font-weight: bold; 
@@ -239,79 +206,22 @@
                         <div style="width: 100%;">
                             <ul style="list-style: none; padding: 0; margin: 0;">
                                 <li style="margin-bottom: 30px; text-align: center;">
-                                    <a href="{% url 'customers_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                    <a href="{% url 'delivery' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
                             onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
                             onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                                        Customers Table
+                                        Delivery
                                     </a>
                                 </li>
-                        <li style="margin-bottom: 30px; text-align: center;">
-                            <a href="{% url 'designers_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                            onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                            onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                                Designers Table
-                            </a>
-                        </li>
-                        <li style="margin-bottom: 20px;">
-                            <a href="{% url 'designs_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                                Designs Table
-                            </a>
-                        </li>
-                        <li style="margin-bottom: 20px;">
-                            <a href="{% url 'consultations_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                                Consultations Table
-                            </a>
-                        </li>
-                       
-            
-                        <li style="margin-bottom: 20px;">
-                            <a href="{% url 'projects_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                                Projects Table
-                            </a>
-                        </li>
-            
-                        <li style="margin-bottom: 20px;">
-                            <a href="{% url 'products_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                                Products Table
-                            </a>
-                        </li>
-                        <li style="margin-bottom: 20px;">
-                            <a href="{% url 'orders_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                                Orders Table
-                            </a>
-                        </li>
-                        
-                        <li style="margin-bottom: 20px;">
-                            <a href="{% url 'add_designer' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                            onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                            onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                           Add Designer
-                            </a>
-                        </li>
-                        <li style="margin-bottom: 20px;"></li>
-                            <a href="{% url 'add_deliveryboy' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                            onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                            onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                           Add Delivery Boy
-                            </a>
-                        </li>
-                        <li style="margin-bottom: 20px;">
-                            <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                                Add Products
-                            </a>
-                        </li>
+                                <div style="width: 100%;">
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li style="margin-bottom: 30px; text-align: center;">
+                                            <a href="{% url 'account' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                            onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                            onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                                     
+                                               Account Details
+                                            </a>
+                                        </li>
                     </ul>
                     
                 </div>

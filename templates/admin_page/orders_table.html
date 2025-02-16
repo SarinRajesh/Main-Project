@@ -126,7 +126,9 @@
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Order Status</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Payment Type</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Payment Status</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Delivery Boy</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Delivery Date</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Delivery Status</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Actions</th>
                                                         </tr>
                                                     </thead>
@@ -142,7 +144,19 @@
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_status }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_type.payment_type }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_status }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                {% if order.order_status == 'Cancelled' %}
+                                                                    None
+                                                                {% elif order.delivery_boy %}
+                                                                    {{ order.delivery_boy.username }}
+                                                                {% elif order.order_status == 'Approved' %}
+                                                                    No delivery boy available
+                                                                {% else %}
+                                                                    <a href="{% url 'add_deliveryboy' %}" style="color: #3498db; text-decoration: none;">Add a delivery boy</a>
+                                                                {% endif %}
+                                                            </td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_date|date:"Y-m-d H:i" }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_status }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">
                                                                 {% if order.order_status == 'Pending' %}
                                                                     <form method="post" style="display: inline;">
@@ -153,6 +167,15 @@
                                                                             Approve
                                                                         </button>
                                                                     </form>
+                                                                    <form method="post" style="display: inline;">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                                        <input type="hidden" name="action" value="cancel">
+                                                                        <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
+                                                                            Cancel
+                                                                        </button>
+                                                                    </form>
+                                                                {% elif order.order_status == 'Approved' %}
                                                                     <form method="post" style="display: inline;">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" name="order_id" value="{{ order.id }}">
