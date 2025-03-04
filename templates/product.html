@@ -193,12 +193,19 @@
                                                         <span>({{ avg_rating }})</span>
                                                     </div>
                                                 </div>
-                                                <!-- Add this new section for the delivery date -->
-                                                <div class="delivery-info fl-wrap" style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                                                    <i class="fa fa-truck" style="font-size: 24px; color: #4CAF50; margin-right: 10px;"></i>
-                                                    <span style="font-size: 16px; color: #333;">
-                                                        Estimated Delivery: <strong style="color: #4CAF50;">{{ delivery_date }}</strong>
-                                                    </span>
+                                                <!-- Add delivery charge info -->
+                                                <div class="delivery-info fl-wrap" style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                        <div>
+                                                            <i class="fa fa-truck" style="font-size: 24px; color: #4CAF50; margin-right: 10px;"></i>
+                                                            <span style="font-size: 16px; color: #333;">
+                                                                Estimated Delivery: <strong style="color: #4CAF50;">{{ delivery_date }}</strong>
+                                                            </span>
+                                                        </div>
+                                                        <div style="text-align: right;">
+                                                            <span style="font-size: 16px; color: #333;">Delivery Charge: <strong>Rs. 80</strong></span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div id="tabs-container">
                                                     <ul class="tabs-menu">
@@ -424,38 +431,32 @@
                             }
 
                             function initializeRazorpay() {
-                                // Razorpay options
+                                const productAmount = {{ product.amount.amount }};
+                                const deliveryCharge = 80;
+                                const totalAmount = (productAmount + deliveryCharge) * 100; // Convert to paise
+
                                 var options = {
-                                    "key": "rzp_test_3ybzcJKABRAGdi", // Replace with your actual Razorpay key
-                                    "amount": {{ product_amount_paise }},  // Use the amount passed from the backend
+                                    "key": "rzp_test_3ybzcJKABRAGdi",
+                                    "amount": totalAmount,
                                     "currency": "INR",
                                     "name": "{{ product.name }}",
                                     "description": "{{ product.description|truncatechars:100 }}",
-                                    "image": "{{ product.image.url }}", // Use the product's image URL
-                                  
-                                    "prefill": {
-                                        "name": "{{ user.name }}",
-                                        "email": "{{ user.email }}",
-                                        "contact": "{{ user.phone }}"
-                                    },
-                                    "theme": {
-                                        "color": "#3399cc"
-                                    },
+                                    "image": "{{ product.image.url }}",
                                     "handler": function (response){
-                                        // On successful payment, create the order
                                         $.ajax({
                                             url: '{% url "create_order_from_product" %}',
                                             type: 'POST',
                                             data: {
                                                 'product_id': {{ product.id }},
                                                 'quantity': 1,
+                                                'delivery_charge': deliveryCharge,
                                                 'csrfmiddlewaretoken': '{{ csrf_token }}'
                                             },
                                             success: function(data) {
                                                 if(data.status === 'success') {
                                                     Swal.fire({
                                                         title: 'Order Placed Successfully!',
-                                                        text: `Order ID: ${data.order_id}`,
+                                                        text: 'Your order has been placed successfully.',
                                                         icon: 'success',
                                                         confirmButtonText: 'OK'
                                                     }).then((result) => {
@@ -481,10 +482,17 @@
                                                 });
                                             }
                                         });
+                                    },
+                                    "prefill": {
+                                        "name": "{{ user.name }}",
+                                        "email": "{{ user.email }}",
+                                        "contact": "{{ user.phone }}"
+                                    },
+                                    "theme": {
+                                        "color": "#3399cc"
                                     }
                                 };
                             
-                                // Open Razorpay checkout
                                 try {
                                     var rzp1 = new Razorpay(options);
                                     rzp1.open();

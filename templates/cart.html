@@ -119,9 +119,25 @@
                                                 <h3>Your Cart</h3>
                                                 <span class="tottal-items">{{ cart_items|length }} item{% if cart_items|length != 1 %}s{% endif %}</span>
                                             </div>
+                                            {% if cart_items %}
                                             <div class="col-md-5">
-                                                <div class="sum-total">Rs. {{ total_price|floatformat:2 }} <span>Total</span></div>
+                                                <div class="sum-details" style="text-align: right; background-color: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                    <div class="price-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: #666;">
+                                                        <span style="font-size: 15px;">Subtotal:</span>
+                                                        <span class="subtotal" style="font-size: 15px; font-weight: 500;">Rs. {{ total_price|floatformat:2 }}</span>
+                                                    </div>
+                                                    <div class="price-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: #666;">
+                                                        <span style="font-size: 15px;">Delivery Charge:</span>
+                                                        <span class="delivery-charge" style="font-size: 15px; font-weight: 500;">Rs. 80.00</span>
+                                                    </div>
+                                                    <div class="divider" style="height: 1px; background-color: #dee2e6; margin: 15px 0;"></div>
+                                                    <div class="price-row" style="display: flex; justify-content: space-between; align-items: center;">
+                                                        <span style="font-size: 18px; font-weight: 600; color: #333;">Total:</span>
+                                                        <span class="sum-total" style="font-size: 18px; font-weight: 600; color: #333;">Rs. {{ total_price|add:80|floatformat:2 }}</span>
+                                                    </div>
+                                                </div>
                                             </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <!-- cart header end  -->    
@@ -350,10 +366,14 @@
                                                 contentType: 'application/json',
                                                 success: function(data) {
                                                     if (data.success) {
-                                                        // Update the total price
+                                                        // Update the total price and subtotal
                                                         const totalPriceElement = document.querySelector('.sum-total');
+                                                        const subtotalElement = document.querySelector('.subtotal');
                                                         if (totalPriceElement) {
-                                                            totalPriceElement.innerHTML = `Rs. ${parseFloat(data.total_price).toFixed(2)} <span>Total</span>`;
+                                                            totalPriceElement.textContent = `Rs. ${parseFloat(data.total_price + 80).toFixed(2)}`;
+                                                        }
+                                                        if (subtotalElement) {
+                                                            subtotalElement.textContent = `Rs. ${parseFloat(data.total_price).toFixed(2)}`;
                                                         }
 
                                                         // Update the item total
@@ -425,10 +445,14 @@
                                                             cartItem.remove();
                                                         }
 
-                                                        // Update the total price
+                                                        // Update the total price and subtotal
                                                         const totalPriceElement = document.querySelector('.sum-total');
+                                                        const subtotalElement = document.querySelector('.subtotal');
                                                         if (totalPriceElement) {
-                                                            totalPriceElement.innerHTML = `Rs. ${parseFloat(data.total_price).toFixed(2)} <span>Total</span>`;
+                                                            totalPriceElement.textContent = `Rs. ${parseFloat(data.total_price + 80).toFixed(2)}`;
+                                                        }
+                                                        if (subtotalElement) {
+                                                            subtotalElement.textContent = `Rs. ${parseFloat(data.total_price).toFixed(2)}`;
                                                         }
 
                                                         // Update the total items count
@@ -468,8 +492,10 @@
                                         <div class="row">
                                             <div class="col-md-8">
                                             </div>
-                                            <div class=" col-md-4">
+                                            <div class="col-md-4">
+                                                {% if cart_items %}
                                                 <button id="checkoutBtn" class="btn float-btn flat-btn">Proceed to Checkout</button>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>

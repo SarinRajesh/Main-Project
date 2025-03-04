@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage, MoodBoard, MoodBoardItem, Project, Review, ProjectFeedback
+from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage, MoodBoard, MoodBoardItem, Project, Review, ProjectFeedback, VirtualRoom
 # ... (keep existing admin classes) ...
 class UsersAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'phone', 'email', 'address', 'home_town', 'district', 'state', 'pincode', 'username', 'status', 'user_type_id', 'deactivation_reason')
@@ -158,6 +158,26 @@ class ProjectFeedbackAdmin(admin.ModelAdmin):
         }),
     )
 
+class VirtualRoomAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'name', 'width', 'length', 'ceiling_color','wall_color','floor_color', 'height',  'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('user__username', 'name')
+    date_hierarchy = 'created_at'
+
+    fieldsets = (
+        ('Room Information', {
+            'fields': ('user', 'name')
+        }),
+        ('Dimensions', {
+            'fields': ('width', 'length', 'height')
+        }),
+        ('Timestamp', {
+            'fields': ('created_at',)
+        }),
+    )
+
+    readonly_fields = ('created_at',)
+
 admin.site.register(MoodBoard, MoodBoardAdmin)
 admin.site.register(MoodBoardItem, MoodBoardItemAdmin)
 
@@ -182,3 +202,4 @@ admin.site.register(Project, ProjectAdmin)
 
 
 admin.site.register(ProjectFeedback, ProjectFeedbackAdmin)
+admin.site.register(VirtualRoom, VirtualRoomAdmin)
