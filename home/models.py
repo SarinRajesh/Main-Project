@@ -254,4 +254,34 @@ class VirtualRoom(models.Model):
     ceiling_color = models.CharField(max_length=50, default='#FFFFFF')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    models = models.ManyToManyField('RoomModel', through='VirtualRoomModel')
+
+class RoomModel(models.Model):
+    name = models.CharField(max_length=255)
+    model_file = models.FileField(upload_to='room_models/')
+    thumbnail = models.ImageField(upload_to='room_model_thumbnails/', null=True, blank=True)
+    category = models.CharField(max_length=100, default='furniture')
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    virtual_rooms = models.ManyToManyField(VirtualRoom, through='VirtualRoomModel')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Room Model"
+        verbose_name_plural = "Room Models"
+
+class VirtualRoomModel(models.Model):
+    virtual_room = models.ForeignKey(VirtualRoom, on_delete=models.CASCADE)
+    room_model = models.ForeignKey(RoomModel, on_delete=models.CASCADE)
+    position_x = models.FloatField(default=0)
+    position_y = models.FloatField(default=0)
+    position_z = models.FloatField(default=0)
+    rotation_y = models.FloatField(default=0)
+    scale = models.FloatField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('virtual_room', 'room_model')
 

@@ -55,19 +55,6 @@
             width: 250px;
         }
         
-        #functionalities-panel {
-            position: absolute;
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            width: 180px;
-        }
-        
         .btn-custom {
             margin: 5px 0;
             width: 100%;
@@ -97,15 +84,6 @@
             transform: translate(-50%, -50%);
             z-index: 1000;
             display: none;
-        }
-
-        .functionality-item {
-            font-size: 0.8em;
-            color: #495057;
-            padding: 4px 8px;
-            margin-bottom: 4px;
-            border-radius: 4px;
-            background: #f8f9fa;
         }
 
         .functionality-title {
@@ -141,6 +119,346 @@
         #functionalities-list::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
+        .model-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .model-item.hidden {
+            display: none;
+        }
+
+        .model-item .category-badge {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 12px;
+            background-color: #e9ecef;
+            color: #6c757d;
+            margin-right: 8px;
+        }
+
+        .model-item .model-info {
+            flex-grow: 1;
+        }
+
+        .model-item .model-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .model-thumbnail {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+
+        .category-filter .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .category-filter .btn {
+            flex: 1 1 auto;
+            font-size: 0.875rem;
+            padding: 4px 8px;
+        }
+
+        /* Updated color scheme and panel styling */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --border-color: #e0e6ed;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            
+            /* Add new color variables */
+            --category-bed: #e74c3c;
+            --category-sofa: #2ecc71;
+            --category-table: #f39c12;
+            --category-window: #9b59b6;
+            --gradient-primary: linear-gradient(135deg, #2c3e50, #3498db);
+            --gradient-secondary: linear-gradient(135deg, #2980b9, #2c3e50);
+        }
+
+        #controls, #item-library {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 20px;
+        }
+
+        .panel-header {
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+        }
+
+        .panel-header h5 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .btn-custom {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .control-label {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .model-item {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .model-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent-color);
+        }
+
+        .category-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            letter-spacing: 0.5px;
+        }
+
+        .model-item[data-category="bed"] .category-badge {
+            background-color: var(--category-bed);
+            color: white;
+        }
+
+        .model-item[data-category="sofa"] .category-badge {
+            background-color: var(--category-sofa);
+            color: white;
+        }
+
+        .model-item[data-category="table"] .category-badge {
+            background-color: var(--category-table);
+            color: white;
+        }
+
+        .model-item[data-category="window"] .category-badge {
+            background-color: var(--category-window);
+            color: white;
+        }
+
+        .category-filter .btn-group {
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            gap: 8px;
+        }
+
+        .category-filter .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 8px 16px;
+            color: var(--text-primary);
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .category-filter .btn:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .category-filter .btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+        }
+
+        #room-dimensions {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-control {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        #furniture-controls {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-group .btn {
+            border-radius: 6px;
+            margin: 2px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Loading indicator styling */
+        #loading-indicator {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Update the model actions buttons */
+        .model-actions {
+            gap: 8px;
+        }
+
+        .model-actions .btn {
+            border-radius: 8px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+
+        .model-actions .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+        }
+
+        .model-actions .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+        }
+
+        .model-actions .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+        }
+
+        .model-actions .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+        }
+
+        /* Update the model thumbnails */
+        .model-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 12px;
+            border: 2px solid var(--border-color);
+        }
+
+        /* Update the panel header */
+        .panel-header {
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
+            padding-bottom: 15px;
+            background: var(--gradient-primary);
+            margin: -20px -20px 20px -20px;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .panel-header h5 {
+            color: white;
+            font-weight: 600;
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Update the upload button */
+        .upload-section .btn-custom {
+            background: var(--gradient-secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);
+        }
+
+        /* Add a subtle scrollbar */
+        #item-library::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #item-library::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+        }
+
+        #item-library::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 3px;
+        }
+
+        #item-library::-webkit-scrollbar-thumb:hover {
+            background: var(--gradient-secondary);
+        }
     </style>
 </head>
 <body>
@@ -153,6 +471,9 @@
     <div id="room-container">
         <!-- Controls Panel -->
         <div id="controls">
+            <div class="panel-header">
+                <h5>Room Designer</h5>
+            </div>
             <div class="mb-3">
                 <button id="new-room" class="btn btn-primary btn-custom">Create Room</button>
             
@@ -268,28 +589,44 @@
         
         <!-- Item Library Panel -->
         <div id="item-library">
-            <h5 class="mb-3">Furniture Library</h5>
-            <div id="furniture-items" class="mb-3">
-                <!-- Items will be loaded dynamically -->
+            <div class="panel-header">
+                <h5>Furniture Library</h5>
             </div>
-            <input type="file" id="model-upload" accept=".glb,.gltf" style="display: none;">
-            <button id="upload-model" class="btn btn-outline-primary btn-custom">Upload 3D Model</button>
+            
+            <!-- Add Category Filter -->
+            <div class="category-filter mb-3">
+                <div class="btn-group w-100" role="group" aria-label="Model categories">
+                    <button type="button" class="btn active" data-category="all">
+                        <i class="bi bi-grid-fill"></i> All
+                    </button>
+                    <button type="button" class="btn" data-category="bed">
+                        <i class="bi bi-house-door"></i> Beds
+                    </button>
+                    <button type="button" class="btn" data-category="sofa">
+                        <i class="bi bi-archive"></i> Sofas
+                    </button>
+                    <button type="button" class="btn" data-category="table">
+                        <i class="bi bi-table"></i> Tables
+                    </button>
+                    <button type="button" class="btn" data-category="window">
+                        <i class="bi bi-window"></i> Windows
+                    </button>
+                </div>
         </div>
 
-        <!-- Move this outside of controls div and place it after item-library div -->
-        <div id="functionalities-panel">
-            <div class="functionality-title">Quick Guide</div>
-            <div id="functionalities-list">
-                <div class="functionality-item">↔️ Drag to rotate view</div>
-                <div class="functionality-item">🖱️ Scroll to zoom</div>
-                <div class="functionality-item">⌨️ Arrow keys to move items</div>
-                <div class="functionality-item">⬆️ Page Up/Down for height</div>
-                <div class="functionality-item">🎨 Click colors to change</div>
-                <div class="functionality-item">📏 Adjust size with slider</div>
-                <div class="functionality-item">🔄 Use slider to rotate</div>
-                <div class="functionality-item">💾 Auto-saves changes</div>
-                <div class="functionality-item">📁 Load saved rooms</div>
-                <div class="functionality-item">➕ Upload 3D models</div>
+            <!-- Model List -->
+            <div id="model-list" class="mb-3">
+                <div class="list-group">
+                    <!-- Models will be loaded here dynamically -->
+                </div>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="upload-section">
+                <input type="file" id="model-upload" accept=".glb,.gltf" style="display: none;">
+                <button id="upload-model" class="btn btn-outline-primary btn-custom">
+                    <i class="bi bi-upload"></i> Upload 3D Model
+                </button>
             </div>
         </div>
     </div>
@@ -308,6 +645,7 @@
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         let isDragging = false;
+        let currentCategory = 'all';
 
         function init() {
             // Scene setup
@@ -365,24 +703,25 @@
             // Create a group to hold all room components
             currentRoom = new THREE.Group();
             
-            const wallThickness = 0.2; // 20cm wall thickness
+            const wallThickness = 0.2;
             
             // Get colors from input elements
             const wallColor = document.getElementById('wall-color').value;
             const floorColor = document.getElementById('floor-color').value;
             const ceilingColor = document.getElementById('ceiling-color').value;
             
-            // Create materials with some texture
+            // Materials
             const wallMaterial = new THREE.MeshStandardMaterial({
                 color: new THREE.Color(wallColor),
-                roughness: 0.7,
-                metalness: 0.1
+                roughness: 0.9,
+                metalness: 0.1,
+                side: THREE.DoubleSide
             });
             
             const floorMaterial = new THREE.MeshStandardMaterial({
                 color: new THREE.Color(floorColor),
                 roughness: 0.8,
-                metalness: 0.1
+                metalness: 0.2
             });
             
             const ceilingMaterial = new THREE.MeshStandardMaterial({
@@ -405,6 +744,25 @@
             ceiling.receiveShadow = true;
             currentRoom.add(ceiling);
 
+            // Front wall with door
+            const doorWidth = 2.0;  // Increased from 1.5 to 2.0 meters
+            const doorHeight = height * 0.45;  // Reduced from 0.6 to 0.45 (45% of room height)
+            const frontWallLeft = new THREE.BoxGeometry((width - doorWidth)/2, height, wallThickness);
+            const frontWallRight = new THREE.BoxGeometry((width - doorWidth)/2, height, wallThickness);
+            const frontWallTop = new THREE.BoxGeometry(width, height - doorHeight, wallThickness);
+
+            const frontLeft = new THREE.Mesh(frontWallLeft, wallMaterial);
+            const frontRight = new THREE.Mesh(frontWallRight, wallMaterial);
+            const frontTop = new THREE.Mesh(frontWallTop, wallMaterial);
+
+            frontLeft.position.set(-(width + doorWidth)/4, height/2, length/2);
+            frontRight.position.set((width + doorWidth)/4, height/2, length/2);
+            frontTop.position.set(0, height - (height - doorHeight)/2, length/2);
+
+            currentRoom.add(frontLeft);
+            currentRoom.add(frontRight);
+            currentRoom.add(frontTop);
+
             // Back wall
             const backWallGeometry = new THREE.BoxGeometry(width, height, wallThickness);
             const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
@@ -412,81 +770,84 @@
             backWall.receiveShadow = true;
             currentRoom.add(backWall);
 
-            // Front wall
-            const frontWallGeometry = new THREE.BoxGeometry(width, height, wallThickness);
-            const frontWall = new THREE.Mesh(frontWallGeometry, wallMaterial);
-            frontWall.position.set(0, height/2, length/2);
-            frontWall.receiveShadow = true;
-            currentRoom.add(frontWall);
+            // Right wall with window
+            const windowWidth = 2.0;  // Increased from 1.2 to 2.0 meters
+            const windowHeight = 1.8;  // Increased from 1.2 to 1.8 meters
+            const windowY = height * 0.5;  // Adjusted from 0.6 to 0.5 (center of wall)
+            
+            // Create wall segments around the window
+            const rightWallBottom = new THREE.BoxGeometry(wallThickness, windowY - windowHeight/2, length);
+            const rightWallTop = new THREE.BoxGeometry(wallThickness, height - (windowY + windowHeight/2), length);
+            const rightWallFront = new THREE.BoxGeometry(wallThickness, height, (length - windowWidth)/2);
+            const rightWallBack = new THREE.BoxGeometry(wallThickness, height, (length - windowWidth)/2);
 
-            // Left wall
+            const rightBottom = new THREE.Mesh(rightWallBottom, wallMaterial);
+            const rightTop = new THREE.Mesh(rightWallTop, wallMaterial);
+            const rightFront = new THREE.Mesh(rightWallFront, wallMaterial);
+            const rightBack = new THREE.Mesh(rightWallBack, wallMaterial);
+
+            rightBottom.position.set(width/2, (windowY - windowHeight/2)/2, 0);
+            rightTop.position.set(width/2, windowY + windowHeight/2 + (height - (windowY + windowHeight/2))/2, 0);
+            rightFront.position.set(width/2, height/2, (length + windowWidth)/4);
+            rightBack.position.set(width/2, height/2, -(length + windowWidth)/4);
+
+            currentRoom.add(rightBottom);
+            currentRoom.add(rightTop);
+            currentRoom.add(rightFront);
+            currentRoom.add(rightBack);
+
+            // Left wall (solid)
             const leftWallGeometry = new THREE.BoxGeometry(wallThickness, height, length);
             const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
             leftWall.position.set(-width/2, height/2, 0);
             leftWall.receiveShadow = true;
             currentRoom.add(leftWall);
 
-            // Right wall
-            const rightWallGeometry = new THREE.BoxGeometry(wallThickness, height, length);
-            const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial);
-            rightWall.position.set(width/2, height/2, 0);
-            rightWall.receiveShadow = true;
-            currentRoom.add(rightWall);
-
             // Add room to scene
             scene.add(currentRoom);
             
-            // Adjust camera position and target
-            camera.position.set(width * 1.2, height * 1.2, length * 1.2);
-            controls.target.set(0, height/2, 0);
-            controls.update();
-
-            // Add better lighting
-            setupLighting(width, height, length);
-
-            // Add this at the end of the createRoom function
-            saveRoomToLocalStorage();
+            // Adjust camera and add lighting
+            setupCamera(width, height, length);
+            setupEnhancedLighting(width, height, length);
         }
 
-        // Separate lighting setup into its own function for clarity
-        function setupLighting(width, height, length) {
+        function setupEnhancedLighting(width, height, length) {
             // Remove existing lights
             scene.children.forEach(child => {
                 if (child.isLight) scene.remove(child);
             });
 
-            // Add ambient light
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            // Ambient light
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
             scene.add(ambientLight);
 
-            // Add main directional light (simulating sun/window light)
-            const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            mainLight.position.set(width, height * 1.5, length);
-            mainLight.castShadow = true;
-            mainLight.shadow.mapSize.width = 2048;
-            mainLight.shadow.mapSize.height = 2048;
-            mainLight.shadow.camera.near = 0.5;
-            mainLight.shadow.camera.far = 50;
-            scene.add(mainLight);
+            // Main directional light (sunlight)
+            const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            sunLight.position.set(width, height * 1.5, length);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            scene.add(sunLight);
 
-            // Add point lights in corners for better illumination
-            const intensity = 0.3;
-            const pointLights = [
-                { pos: [width/3, height-1, length/3], color: 0xffffff },
-                { pos: [-width/3, height-1, length/3], color: 0xffffff },
-                { pos: [width/3, height-1, -length/3], color: 0xffffff },
-                { pos: [-width/3, height-1, -length/3], color: 0xffffff }
-            ];
+            // Window lights
+            const windowLight1 = new THREE.PointLight(0xd6e6ff, 0.6);
+            windowLight1.position.set(width/2, height * 0.6, 0);
+            currentRoom.add(windowLight1);
 
-            pointLights.forEach(light => {
-                const pointLight = new THREE.PointLight(light.color, intensity);
-                pointLight.position.set(...light.pos);
-                currentRoom.add(pointLight);
-            });
+            const windowLight2 = new THREE.PointLight(0xd6e6ff, 0.6);
+            windowLight2.position.set(-width/2, height * 0.6, 0);
+            currentRoom.add(windowLight2);
 
-            // Update renderer
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            // Ceiling lights
+            const ceilingLight = new THREE.PointLight(0xffffff, 0.4);
+            ceilingLight.position.set(0, height - 0.2, 0);
+            currentRoom.add(ceilingLight);
+        }
+
+        function setupCamera(width, height, length) {
+            camera.position.set(width * 1.2, height * 1.2, length * 1.2);
+            controls.target.set(0, height/2, 0);
+            controls.update();
         }
 
         function showLoadingIndicator() {
@@ -509,13 +870,16 @@
             reader.onload = function(e) {
                 loader.parse(e.target.result, '', function(gltf) {
                     const model = gltf.scene;
+                    const modelName = file.name.split('.')[0].toLowerCase();
                     
-                    // First, compute the bounding box before any transformations
-                    const box = new THREE.Box3().setFromObject(model);
-                    const size = box.getSize(new THREE.Vector3());
-                    const center = box.getCenter(new THREE.Vector3());
+                    // Set up the model properties
+                    model.userData.id = 'model_' + Date.now();
+                    model.userData.name = modelName;
+                    model.userData.draggable = true;
                     
                     // Calculate scale
+                    const box = new THREE.Box3().setFromObject(model);
+                    const size = box.getSize(new THREE.Vector3());
                     const maxDim = Math.max(size.x, size.y, size.z);
                     const scale = 2 / maxDim;
                     model.scale.set(scale, scale, scale);
@@ -523,20 +887,6 @@
                     // Store scales for reference
                     model.userData.originalScale = { x: scale, y: scale, z: scale };
                     model.userData.baseScale = scale;
-                    
-                    // Recalculate bounding box after scaling
-                    const scaledBox = new THREE.Box3().setFromObject(model);
-                    
-                    // Position the model
-                    // Center horizontally and place exactly on the floor
-                    model.position.x = -center.x * scale;
-                    model.position.z = -center.z * scale;
-                    model.position.y = -scaledBox.min.y; // This ensures bottom is at y=0
-                    
-                    // Add other properties
-                    model.userData.id = 'model_' + Date.now();
-                    model.userData.name = file.name.split('.')[0];
-                    model.userData.draggable = true;
                     
                     // Set up shadows
                     model.traverse((child) => {
@@ -547,13 +897,122 @@
                         }
                     });
                     
+                    // Add to scene
                     scene.add(model);
+                    
+                    // Get room dimensions
+                    const roomWidth = parseFloat(document.getElementById('room-width').value);
+                    const roomHeight = parseFloat(document.getElementById('room-height').value);
+                    const roomLength = parseFloat(document.getElementById('room-length').value);
+                    
+                    // Auto-position based on furniture type
+                    if (modelName.includes('picture_window') || modelName.includes('window')) {
+                        // Window placement
+                        model.scale.set(1.8, 1.8, 1.8);
+                        model.position.set(
+                            roomWidth/2 - 0.05,
+                            roomHeight * 0.5,
+                            0
+                        );
+                        model.rotation.y = -Math.PI / 2;
+                    }
+                    else if (modelName.includes('bed')) {
+                        // Bed placement - center of the room, against back wall
+                        model.position.set(
+                            0,
+                            size.y/2,
+                            -roomLength/2 + size.z/2 + 0.3
+                        );
+                        model.rotation.y = 0;
+                    }
+                    else if (modelName.includes('table')) {
+                        // Table placement - corner of the room
+                        model.position.set(
+                            roomWidth/2 - size.x/2 - 0.3,
+                            size.y/2,
+                            roomLength/2 - size.z/2 - 0.3
+                        );
+                        model.rotation.y = 0;
+                    }
+                    else if (modelName.includes('chair')) {
+                        // Chair placement - near table if exists
+                        const tableExists = findFurnitureByType('table');
+                        if (tableExists) {
+                            model.position.set(
+                                tableExists.position.x - 0.5,
+                                size.y/2,
+                                tableExists.position.z
+                            );
+                        } else {
+                            model.position.set(
+                                roomWidth/3,
+                                size.y/2,
+                                roomLength/3
+                            );
+                        }
+                    }
+                    else if (modelName.includes('sofa')) {
+                        // Sofa placement - against left wall, centered
+                        model.position.set(
+                            -roomWidth/2 + size.x/2 + 0.3,
+                            size.y/2,
+                            0
+                        );
+                        model.rotation.y = 0;
+                    }
+                    else if (modelName.includes('cabinet') || modelName.includes('wardrobe')) {
+                        // Cabinet placement - against wall
+                        model.position.set(
+                            -roomWidth/2 + size.x/2 + 0.1,
+                            size.y/2,
+                            -roomLength/2 + size.z/2 + 0.3
+                        );
+                        model.rotation.y = 0;
+                    }
+                    else if (modelName.includes('lamp')) {
+                        // Lamp placement - corner
+                        model.position.set(
+                            -roomWidth/2 + size.x/2 + 0.2,
+                            size.y/2,
+                            roomLength/2 - size.z/2 - 0.2
+                        );
+                    }
+                    else {
+                        // Default placement for other furniture
+                        model.position.set(
+                            0,
+                            size.y/2,
+                            0
+                        );
+                    }
+                    
+                    // Force update transformations
+                    model.updateMatrix();
+                    model.updateMatrixWorld(true);
+                    
+                    // Save the position
+                    saveModelPosition(model);
+                    
                     updateModelList();
                     selectObject(model);
                     hideLoadingIndicator();
                 });
             };
             reader.readAsArrayBuffer(file);
+        }
+
+        // Helper function to find existing furniture by type
+        function findFurnitureByType(type) {
+            let furniture = null;
+            scene.traverse((object) => {
+                if (object.userData && 
+                    object.userData.name && 
+                    object.userData.name.toLowerCase().includes(type) &&
+                    !furniture) {
+                    furniture = object;
+                }
+            });
+            return furniture;
         }
 
         function updateModelList() {
@@ -754,14 +1213,36 @@
             document.getElementById('model-upload').click();
         });
 
-        document.getElementById('model-upload').addEventListener('change', function(event) {
+        document.getElementById('model-upload').addEventListener('change', async function(event) {
             const file = event.target.files[0];
-            if (file) {
-                if (file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')) {
-                    loadModel(file);
-                } else {
-                    alert('Please upload a .glb or .gltf file');
+            if (!file) return;
+            
+            if (file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')) {
+                try {
+                    await uploadModel(file);
+                    
+                    // Clear the input to allow uploading the same file again
+                    event.target.value = '';
+                    
+                    // Show success message
+                    await Swal.fire({
+                        title: 'Success!',
+                        text: 'Model uploaded successfully',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                } catch (error) {
+                    console.error('Error in upload process:', error);
                 }
+            } else {
+                await Swal.fire({
+                    title: 'Invalid File',
+                    text: 'Please upload a .glb or .gltf file',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6'
+                });
             }
         });
 
@@ -1001,6 +1482,16 @@
                     selectedObject.position.z = Math.max(-maxZ, Math.min(maxZ, selectedObject.position.z));
                     selectedObject.position.y = Math.max(objectHeight / 2, Math.min(maxY - (objectHeight / 2), selectedObject.position.y));
                 }
+            }
+
+            // After movement, auto-place if it's a window
+            if (selectedObject.userData.name.toLowerCase().includes('window')) {
+                autoPlaceFurniture(selectedObject);
+            }
+
+            // Add this at the end of the function
+            if (selectedObject) {
+                saveModelPosition(selectedObject);
             }
         }
 
@@ -1371,6 +1862,37 @@
             loadSavedRoom();
         });
 
+        // Add these new functions for room management
+        async function loadRooms() {
+            try {
+                const response = await fetch('/get_all_rooms/');
+                if (!response.ok) {
+                    throw new Error('Failed to load rooms');
+                }
+                
+                const data = await response.json();
+                const selector = document.getElementById('room-selector');
+                
+                // Clear existing options except the first one
+                while (selector.options.length > 1) {
+                    selector.remove(1);
+                }
+                
+                // Add rooms to selector
+                data.rooms.forEach(room => {
+                    const option = document.createElement('option');
+                    option.value = room.id;
+                    option.textContent = room.name || `Room ${room.id}`;
+                    selector.add(option);
+                });
+                
+                // Setup delete button after loading rooms
+                setupDeleteButton();
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+            }
+        }
+
         // Add these functions after the updateRoomColors function
         function saveRoomToLocalStorage() {
             if (!currentRoom) return;
@@ -1438,6 +1960,355 @@
         document.getElementById('floor-color').addEventListener('change', saveRoomToLocalStorage);
         document.getElementById('ceiling-color').addEventListener('change', saveRoomToLocalStorage);
         document.getElementById('room-name').addEventListener('change', saveRoomToLocalStorage);
+
+        // Function to upload a 3D model
+        async function uploadModel(file) {
+            showLoadingIndicator();
+            const formData = new FormData();
+            formData.append('model', file);
+            formData.append('name', file.name.split('.')[0]);
+            formData.append('category', 'furniture');
+            
+            try {
+                const response = await fetch('/upload-room-model/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Failed to upload model');
+                }
+                
+                const modelData = await response.json();
+                
+                // Reload the model list instead of immediately loading the model
+                await loadModels();
+                
+                hideLoadingIndicator();
+                return modelData;
+                
+            } catch (error) {
+                hideLoadingIndicator();
+                console.error('Error uploading model:', error);
+                throw error;
+            }
+        }
+
+        // Function to load saved models
+        async function loadSavedModels() {
+            try {
+                const response = await fetch('/get-room-models/');
+                if (!response.ok) {
+                    throw new Error('Failed to load models');
+                }
+                
+                const data = await response.json();
+                
+                // Load each model
+                for (const modelData of data.models) {
+                    const loader = new THREE.GLTFLoader();
+                    try {
+                        const gltf = await new Promise((resolve, reject) => {
+                            loader.load(modelData.url, resolve, undefined, reject);
+                        });
+                        
+                        const model = gltf.scene;
+                        
+                        // Set up the model
+                        model.userData.id = modelData.id;
+                        model.userData.name = modelData.name;
+                        model.userData.draggable = true;
+                        
+                        // Apply saved position, rotation, and scale
+                        model.position.set(
+                            modelData.position.x,
+                            modelData.position.y,
+                            modelData.position.z
+                        );
+                        model.rotation.y = modelData.rotation;
+                        model.scale.setScalar(modelData.scale);
+                        
+                        // Set up shadows
+                        model.traverse((child) => {
+                            if (child.isMesh) {
+                                child.castShadow = true;
+                                child.receiveShadow = true;
+                            }
+                        });
+                        
+                        scene.add(model);
+                        
+                    } catch (error) {
+                        console.error('Error loading model:', modelData.name, error);
+                    }
+                }
+                
+                updateModelList();
+                
+            } catch (error) {
+                console.error('Error loading saved models:', error);
+            }
+        }
+
+        // Function to load and display models from database
+        async function loadModels() {
+            try {
+                const response = await fetch('/get-room-models/');
+                if (!response.ok) {
+                    throw new Error('Failed to load models: ' + response.statusText);
+                }
+                
+                const data = await response.json();
+                
+                const modelList = document.querySelector('#model-list .list-group');
+                modelList.innerHTML = ''; // Clear existing items
+                
+                data.models.forEach(model => {
+                    // Determine category based on model name
+                    let category = 'other';
+                    const modelName = model.name.toLowerCase();
+                    if (modelName.includes('bed')) category = 'bed';
+                    else if (modelName.includes('sofa')) category = 'sofa';
+                    else if (modelName.includes('table')) category = 'table';
+                    else if (modelName.includes('window')) category = 'window';
+                    
+                    const modelItem = document.createElement('div');
+                    modelItem.className = 'model-item';
+                    modelItem.dataset.category = category;
+                    modelItem.innerHTML = `
+                        <div class="model-info">
+                            ${model.thumbnail ? `<img src="${model.thumbnail}" class="model-thumbnail" alt="${model.name}">` : ''}
+                            <span class="category-badge">${category}</span>
+                            <span>${model.name}</span>
+                        </div>
+                        <div class="model-actions">
+                            <button class="btn btn-sm btn-primary add-model" data-model-id="${model.id}">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-model" data-model-id="${model.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add model to scene when clicked
+                    modelItem.querySelector('.add-model').addEventListener('click', async () => {
+                        try {
+                            showLoadingIndicator();
+                            await loadModelFromURL({
+                                id: model.id,
+                                name: model.name,
+                                url: model.model_file,
+                                thumbnail: model.thumbnail,
+                                category: category
+                            });
+                            hideLoadingIndicator();
+            } catch (error) {
+                console.error('Error loading model:', error);
+                            hideLoadingIndicator();
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Failed to load model',
+                                icon: 'error'
+                            });
+                        }
+                    });
+                    
+                    // Delete model when delete button clicked
+                    modelItem.querySelector('.delete-model').addEventListener('click', async () => {
+                        if (await confirmDeleteModel(model.id)) {
+                            await deleteModel(model.id);
+                            await loadModels(); // Reload the list
+                        }
+                    });
+                    
+                    modelList.appendChild(modelItem);
+                });
+                
+                // Apply initial filtering
+                filterModels();
+                
+            } catch (error) {
+                console.error('Error loading models:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to load models: ' + error.message,
+                    icon: 'error'
+                });
+            }
+        }
+
+        // Function to confirm model deletion
+        async function confirmDeleteModel(modelId) {
+            const result = await Swal.fire({
+                title: 'Delete Model?',
+                text: 'This action cannot be undone',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Delete'
+            });
+            
+            return result.isConfirmed;
+        }
+
+        // Function to delete model
+        async function deleteModel(modelId) {
+            try {
+                const response = await fetch(`/delete-room-model/${modelId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to delete model');
+                
+                await Swal.fire({
+                    title: 'Success',
+                    text: 'Model deleted successfully',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                console.error('Error deleting model:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to delete model',
+                    icon: 'error'
+                });
+            }
+        }
+
+        // Update the upload model event listener
+        document.getElementById('upload-model').addEventListener('click', function() {
+            document.getElementById('model-upload').click();
+        });
+
+        document.getElementById('model-upload').addEventListener('change', async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')) {
+                try {
+                    showLoadingIndicator();
+                    await uploadModel(file);
+                    await loadModels(); // Reload the model list
+                    event.target.value = ''; // Clear the input
+                    hideLoadingIndicator();
+                    
+                    await Swal.fire({
+                        title: 'Success!',
+                        text: 'Model uploaded successfully',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+            } catch (error) {
+                    hideLoadingIndicator();
+                    console.error('Error in upload process:', error);
+                    await Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to upload model',
+                        icon: 'error'
+                    });
+                }
+            } else {
+                await Swal.fire({
+                    title: 'Invalid File',
+                    text: 'Please upload a .glb or .gltf file',
+                    icon: 'error'
+                });
+            }
+        });
+
+        // Load models when page loads
+        document.addEventListener('DOMContentLoaded', loadModels);
+
+        // Update the loadModelFromURL function
+        async function loadModelFromURL(modelData) {
+            const loader = new THREE.GLTFLoader();
+            
+            try {
+                const gltf = await new Promise((resolve, reject) => {
+                    loader.load(modelData.url, resolve, undefined, reject);
+                });
+                
+                const model = gltf.scene;
+                
+                // Set up the model properties
+                model.userData.id = modelData.id;
+                model.userData.name = modelData.name;
+                model.userData.draggable = true;
+                
+                // Calculate appropriate scale
+                const box = new THREE.Box3().setFromObject(model);
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 2 / maxDim;
+                model.scale.setScalar(scale);
+                
+                // Store original scale
+                model.userData.originalScale = { x: scale, y: scale, z: scale };
+                model.userData.baseScale = scale;
+                
+                // Position the model at the center of the room
+                model.position.set(0, size.y/2, 0);
+                
+                // Set up shadows
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                
+                scene.add(model);
+                updateModelList();
+                selectObject(model);
+                
+                return model;
+                
+            } catch (error) {
+                console.error('Error loading model:', error);
+                throw error;
+            }
+        }
+
+        // Add category filter event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryButtons = document.querySelectorAll('.category-filter .btn');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    categoryButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    // Update current category and filter models
+                    currentCategory = this.dataset.category;
+                    filterModels();
+                });
+            });
+        });
+
+        // Function to filter models based on category
+        function filterModels() {
+            const modelItems = document.querySelectorAll('.model-item');
+            modelItems.forEach(item => {
+                const itemCategory = item.dataset.category;
+                if (currentCategory === 'all' || itemCategory === currentCategory) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
     </script>
 </body>
 </html>

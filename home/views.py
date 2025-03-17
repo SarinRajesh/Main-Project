@@ -7,7 +7,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.hashers import make_password
-from .models import UserType, Consultation, Users, Design, Amount, Product, Cart, Review, Order, Payment_Type, ConsultationDate,VirtualRoom
+from .models import UserType, Consultation, Users, Design, Amount, Product, Cart, Review, Order, Payment_Type, ConsultationDate,VirtualRoom, RoomModel, VirtualRoomModel
 from .decorators import nocache
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -38,6 +38,7 @@ import json
 from django.http import JsonResponse
 from django.core.serializers import serialize
 from django.forms.models import model_to_dict
+from django.core.files.storage import default_storage
 
 
 
@@ -3056,3 +3057,190 @@ def product_sales_analytics(request):
     }
     
     return render(request, 'admin_page/product_sales_analytics.html', context)
+
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.core.files.storage import default_storage
+from .models import RoomModel
+
+@login_required
+@require_http_methods(["POST"])
+def upload_room_model(request):
+    try:
+        model_file = request.FILES.get('model')
+        if not model_file:
+            return JsonResponse({'error': 'No model file provided'}, status=400)
+        
+        # Validate file type
+        if not model_file.name.lower().endswith(('.glb', '.gltf')):
+            return JsonResponse({'error': 'Invalid file type'}, status=400)
+        
+        # Get form data
+        name = request.POST.get('name', model_file.name)
+        category = request.POST.get('category', 'furniture')
+        
+        # Create the model record
+        room_model = RoomModel.objects.create(
+            name=name,
+            model_file=model_file,
+            category=category,
+            user=request.user,
+            position_x=0,
+            position_y=0,
+            position_z=0,
+            rotation_y=0,
+            scale=1
+        )
+        
+        # Return the model information including the URL
+        return JsonResponse({
+            'id': room_model.id,
+            'name': room_model.name,
+            'url': room_model.model_file.url,
+            'category': room_model.category,
+            'position': {
+                'x': room_model.position_x,
+                'y': room_model.position_y,
+                'z': room_model.position_z
+            },
+            'rotation': room_model.rotation_y,
+            'scale': room_model.scale
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def get_room_models(request):
+    try:
+        models = RoomModel.objects.filter(user=request.user)
+        models_data = [{
+            'id': model.id,
+            'name': model.name,
+            'model_file': model.model_file.url if model.model_file else None,
+            'thumbnail': model.thumbnail.url if model.thumbnail else None,
+            'category': model.category,
+            'created_at': model.created_at.isoformat()
+        } for model in models]
+        
+        return JsonResponse({
+            'models': models_data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_room_model(request, model_id):
+    try:
+        model = RoomModel.objects.get(id=model_id, user=request.user)
+        
+        # Delete the file from storage
+        if model.model_file:
+            default_storage.delete(model.model_file.path)
+        if model.thumbnail:
+            default_storage.delete(model.thumbnail.path)
+            
+        # Delete the database record
+        model.delete()
+        
+        return JsonResponse({'message': 'Model deleted successfully'})
+        
+    except RoomModel.DoesNotExist:
+        return JsonResponse({'error': 'Model not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+@require_http_methods(["POST"])
+def update_model_position(request):
+    try:
+        data = json.loads(request.body)
+        model_id = data.get('model_id')
+        position = data.get('position', {})
+        rotation = data.get('rotation', 0)
+        scale = data.get('scale', 1)
+        
+        model = RoomModel.objects.get(id=model_id, user=request.user)
+        
+        # Update position
+        model.position_x = position.get('x', model.position_x)
+        model.position_y = position.get('y', model.position_y)
+        model.position_z = position.get('z', model.position_z)
+        model.rotation_y = rotation
+        model.scale = scale
+        
+        model.save()
+        
+        return JsonResponse({'message': 'Position updated successfully'})
+        
+    except RoomModel.DoesNotExist:
+        return JsonResponse({'error': 'Model not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+@require_http_methods(["POST"])
+def add_model_to_room(request):
+    try:
+        data = json.loads(request.body)
+        room_id = data.get('room_id')
+        model_id = data.get('model_id')
+        position = data.get('position', {})
+        rotation = data.get('rotation', 0)
+        scale = data.get('scale', 1)
+
+        # Get the virtual room and room model
+        virtual_room = VirtualRoom.objects.get(id=room_id, user=request.user)
+        room_model = RoomModel.objects.get(id=model_id)
+
+        # Create or update the relationship
+        virtual_room_model, created = VirtualRoomModel.objects.update_or_create(
+            virtual_room=virtual_room,
+            room_model=room_model,
+            defaults={
+                'position_x': float(position.get('x', 0)),
+                'position_y': float(position.get('y', 0)),
+                'position_z': float(position.get('z', 0)),
+                'rotation_y': float(rotation),
+                'scale': float(scale)
+            }
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'created': created,
+            'id': virtual_room_model.id
+        })
+    except VirtualRoom.DoesNotExist:
+        return JsonResponse({'error': 'Room not found'}, status=404)
+    except RoomModel.DoesNotExist:
+        return JsonResponse({'error': 'Model not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def get_room_models_for_room(request, room_id):
+    try:
+        virtual_room = VirtualRoom.objects.get(id=room_id, user=request.user)
+        room_models = VirtualRoomModel.objects.filter(virtual_room=virtual_room)
+        
+        models_data = [{
+            'id': rm.room_model.id,
+            'name': rm.room_model.name,
+            'url': rm.room_model.model_file.url,
+            'position': {
+                'x': rm.position_x,
+                'y': rm.position_y,
+                'z': rm.position_z
+            },
+            'rotation': rm.rotation_y,
+            'scale': rm.scale
+        } for rm in room_models]
+        
+        return JsonResponse({'models': models_data})
+    except VirtualRoom.DoesNotExist:
+        return JsonResponse({'error': 'Room not found'}, status=404)

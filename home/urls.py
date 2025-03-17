@@ -91,7 +91,13 @@ path('get_all_rooms/', views.get_all_rooms, name='get_all_rooms'),
 path('get_room/<int:room_id>/', views.get_room, name='get_room'),
 path('delete_room/<int:room_id>/', views.delete_room, name='delete_room'),
 
-path('api/user-info/', views.get_user_info, name='user_info')
+path('api/user-info/', views.get_user_info, name='user_info'),
+path('upload-room-model/', views.upload_room_model, name='upload_room_model'),
+path('get-room-models/', views.get_room_models, name='get_room_models'),
+path('delete-room-model/<int:model_id>/', views.delete_room_model, name='delete_room_model'),
+path('update-model-position/', views.update_model_position, name='update_model_position'),
+path('add-model-to-room/', views.add_model_to_room, name='add_model_to_room'),
+path('get-room-models/<int:room_id>/', views.get_room_models_for_room, name='get_room_models_for_room'),
 ]
 
 # Serve media files during development

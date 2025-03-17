@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage, MoodBoard, MoodBoardItem, Project, Review, ProjectFeedback, VirtualRoom
+from .models import Users, UserType, Feedback, Consultation, Product, Design, Amount, Cart, Order, Payment_Type, ConsultationDate, ChatMessage, MoodBoard, MoodBoardItem, Project, Review, ProjectFeedback, VirtualRoom, RoomModel, VirtualRoomModel
 # ... (keep existing admin classes) ...
 class UsersAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'phone', 'email', 'address', 'home_town', 'district', 'state', 'pincode', 'username', 'status', 'user_type_id', 'deactivation_reason')
@@ -159,23 +159,65 @@ class ProjectFeedbackAdmin(admin.ModelAdmin):
     )
 
 class VirtualRoomAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'name', 'width', 'length', 'ceiling_color','wall_color','floor_color', 'height',  'created_at')
-    list_filter = ('created_at',)
+    list_display = ('id', 'user', 'name', 'dimensions', 'colors', 'created_at', 'updated_at')
+    list_filter = ('created_at', 'updated_at')
     search_fields = ('user__username', 'name')
     date_hierarchy = 'created_at'
 
+    def dimensions(self, obj):
+        return f"{obj.width:.1f} x {obj.length:.1f} x {obj.height:.1f}"
+    dimensions.short_description = 'Dimensions (W x L x H)'
+
+    def colors(self, obj):
+        return f"W: {obj.wall_color}, F: {obj.floor_color}, C: {obj.ceiling_color}"
+    colors.short_description = 'Colors (Wall, Floor, Ceiling)'
+
     fieldsets = (
-        ('Room Information', {
+        ('Basic Information', {
             'fields': ('user', 'name')
         }),
         ('Dimensions', {
-            'fields': ('width', 'length', 'height')
+            'fields': (('width', 'length', 'height'),)
         }),
-        ('Timestamp', {
-            'fields': ('created_at',)
+        ('Colors', {
+            'fields': (('wall_color', 'floor_color', 'ceiling_color'),)
+        })
+    )
+
+    readonly_fields = ('created_at', 'updated_at')
+
+class RoomModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'category', 'model_file', 'thumbnail')
+    list_filter = ('category',)
+    search_fields = ('name', 'category')
+    
+    fieldsets = (
+        ('Model Information', {
+            'fields': ('name', 'category', 'model_file', 'thumbnail')
         }),
     )
 
+class VirtualRoomModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'virtual_room', 'room_model', 'position_info', 'rotation_y', 'scale', 'created_at')
+    list_filter = ('virtual_room', 'room_model', 'created_at')
+    search_fields = ('virtual_room__name', 'room_model__name')
+    
+    def position_info(self, obj):
+        return f"X: {obj.position_x:.2f}, Y: {obj.position_y:.2f}, Z: {obj.position_z:.2f}"
+    position_info.short_description = 'Position (X, Y, Z)'
+
+    fieldsets = (
+        ('Relationship', {
+            'fields': ('virtual_room', 'room_model')
+        }),
+        ('Position & Rotation', {
+            'fields': (('position_x', 'position_y', 'position_z'), 'rotation_y')
+        }),
+        ('Scale', {
+            'fields': ('scale',)
+        })
+    )
+    
     readonly_fields = ('created_at',)
 
 admin.site.register(MoodBoard, MoodBoardAdmin)
@@ -203,3 +245,5 @@ admin.site.register(Project, ProjectAdmin)
 
 admin.site.register(ProjectFeedback, ProjectFeedbackAdmin)
 admin.site.register(VirtualRoom, VirtualRoomAdmin)
+admin.site.register(RoomModel, RoomModelAdmin)
+admin.site.register(VirtualRoomModel, VirtualRoomModelAdmin)
