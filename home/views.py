@@ -3187,40 +3187,49 @@ def update_model_position(request):
 def add_model_to_room(request):
     try:
         data = json.loads(request.body)
-        room_id = data.get('room_id')
-        model_id = data.get('model_id')
-        position = data.get('position', {})
+        room_id = data.get('roomId')
+        model_id = data.get('modelId')
+        position = data.get('position', {'x': 0, 'y': 0, 'z': 0})
         rotation = data.get('rotation', 0)
         scale = data.get('scale', 1)
 
-        # Get the virtual room and room model
-        virtual_room = VirtualRoom.objects.get(id=room_id, user=request.user)
-        room_model = RoomModel.objects.get(id=model_id)
+        room = VirtualRoom.objects.get(id=room_id, user=request.user)
+        model = RoomModel.objects.get(id=model_id)
 
-        # Create or update the relationship
-        virtual_room_model, created = VirtualRoomModel.objects.update_or_create(
-            virtual_room=virtual_room,
-            room_model=room_model,
-            defaults={
-                'position_x': float(position.get('x', 0)),
-                'position_y': float(position.get('y', 0)),
-                'position_z': float(position.get('z', 0)),
-                'rotation_y': float(rotation),
-                'scale': float(scale)
-            }
+        # Adjust position based on category
+        if model.category.lower() == 'bed' or model.category.lower() == 'furniture':
+            # Place directly on the floor (y = 0)
+            position['y'] = 0
+        elif model.category.lower() == 'window':
+            # Place on the wall at a default height (e.g., 1.5 units up)
+            position['y'] = 1.5
+            # Ensure it's against the wall by setting either x or z to room boundary
+            if abs(position['x']) > abs(position['z']):
+                position['x'] = room.width/2 if position['x'] > 0 else -room.width/2
+            else:
+                position['z'] = room.length/2 if position['z'] > 0 else -room.length/2
+
+        virtual_room_model = VirtualRoomModel.objects.create(
+            virtual_room=room,
+            room_model=model,
+            position_x=position['x'],
+            position_y=position['y'],
+            position_z=position['z'],
+            rotation_y=rotation,
+            scale=scale
         )
 
         return JsonResponse({
-            'status': 'success',
-            'created': created,
-            'id': virtual_room_model.id
+            'success': True,
+            'message': 'Model added successfully',
+            'modelId': virtual_room_model.id
         })
     except VirtualRoom.DoesNotExist:
-        return JsonResponse({'error': 'Room not found'}, status=404)
+        return JsonResponse({'success': False, 'message': 'Room not found'}, status=404)
     except RoomModel.DoesNotExist:
-        return JsonResponse({'error': 'Model not found'}, status=404)
+        return JsonResponse({'success': False, 'message': 'Model not found'}, status=404)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 @login_required
 def get_room_models_for_room(request, room_id):
@@ -3244,3 +3253,194 @@ def get_room_models_for_room(request, room_id):
         return JsonResponse({'models': models_data})
     except VirtualRoom.DoesNotExist:
         return JsonResponse({'error': 'Room not found'}, status=404)
+
+@login_required
+def add_models(request):
+    # Get all models and handle the case where thumbnail might be None
+    room_models = RoomModel.objects.all().order_by('-created_at')
+    context = {
+        'room_models': room_models,
+        'user_type': 'admin'
+    }
+    return render(request, 'admin_page/add_models.html', context)
+
+@login_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_room_model(request, model_id):
+    try:
+        model = RoomModel.objects.get(id=model_id)
+        
+        # Safely delete files if they exist
+        try:
+            if model.model_file:
+                model.model_file.delete(save=False)
+        except:
+            pass
+            
+        try:
+            if model.thumbnail:
+                model.thumbnail.delete(save=False)
+        except:
+            pass
+            
+        # Delete the model instance
+        model.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Model deleted successfully'
+        })
+    except RoomModel.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Model not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@login_required
+@require_http_methods(["POST"])
+def upload_room_model(request):
+    try:
+        name = request.POST.get('name')
+        category = request.POST.get('category')
+        model_file = request.FILES.get('model_file')
+        thumbnail = request.FILES.get('thumbnail')
+
+        if not all([name, category, model_file, thumbnail]):
+            return JsonResponse({'success': False, 'error': 'All fields are required'})
+
+        # Validate file type
+        if not model_file.name.endswith(('.gltf', '.glb')):
+            return JsonResponse({'success': False, 'error': 'Invalid model file format'})
+
+        # Create new room model
+        room_model = RoomModel.objects.create(
+            name=name,
+            category=category,
+            model_file=model_file,
+            thumbnail=thumbnail,
+            user=request.user
+        )
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_room_model(request, model_id):
+    try:
+        model = RoomModel.objects.get(id=model_id)
+        model.delete()
+        return JsonResponse({'success': True})
+    except RoomModel.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Model not found'})
+
+@login_required
+@csrf_exempt  # Add CSRF exemption for the delete endpoint
+@require_http_methods(["DELETE"])
+def delete_room_model(request, model_id):
+    try:
+        model = get_object_or_404(RoomModel, id=model_id)
+        
+        # Delete the associated files
+        if model.model_file:
+            model.model_file.delete()
+        if model.thumbnail:
+            model.thumbnail.delete()
+            
+        # Delete the model
+        model.delete()
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@login_required
+@require_POST
+def save_virtual_room(request):
+    try:
+        data = json.loads(request.body)
+        room_id = data.get('room_id')
+        
+        # Get the existing room
+        try:
+            room = VirtualRoom.objects.get(id=room_id, user=request.user)
+        except VirtualRoom.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Room not found'
+            }, status=404)
+            
+        # Clear existing model positions for this room
+        VirtualRoomModel.objects.filter(virtual_room=room).delete()
+        
+        # Save new model positions
+        for model_data in data.get('models', []):
+            try:
+                room_model = RoomModel.objects.get(id=model_data['model_id'])
+                VirtualRoomModel.objects.create(
+                    virtual_room=room,
+                    room_model=room_model,
+                    position_x=float(model_data['position']['x']),
+                    position_y=float(model_data['position']['y']),
+                    position_z=float(model_data['position']['z']),
+                    rotation_y=float(model_data['rotation_y']),
+                    scale=float(model_data['scale'])
+                )
+            except RoomModel.DoesNotExist:
+                print(f"Model with ID {model_data['model_id']} not found")
+                continue
+            
+        saved_models = VirtualRoomModel.objects.filter(virtual_room=room)
+        return JsonResponse({
+            'success': True,
+            'room_id': room.id,
+            'message': 'Models saved successfully',
+            'saved_models_count': saved_models.count()
+        })
+        
+    except Exception as e:
+        print(f"Error in save_virtual_room: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+        
+@csrf_exempt
+@require_POST
+def add_model_to_room(request):
+    try:
+        data = json.loads(request.body)
+        room_id = data.get('room_id')
+        model_id = data.get('model_id')
+        position_x = data.get('position_x', 0)
+        position_y = data.get('position_y', 0)
+        position_z = data.get('position_z', 0)
+        rotation_y = data.get('rotation_y', 0)
+        scale = data.get('scale', 1)
+
+        virtual_room = VirtualRoom.objects.get(id=room_id)
+        room_model = RoomModel.objects.get(id=model_id)
+
+        # Create a new VirtualRoomModel entry
+        VirtualRoomModel.objects.create(
+            virtual_room=virtual_room,
+            room_model=room_model,
+            position_x=position_x,
+            position_y=position_y,
+            position_z=position_z,
+            rotation_y=rotation_y,
+            scale=scale
+        )
+
+        return JsonResponse({'success': True, 'message': 'Model added to room successfully.'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+

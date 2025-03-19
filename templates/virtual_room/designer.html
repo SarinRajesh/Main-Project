@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -459,6 +458,215 @@
         #item-library::-webkit-scrollbar-thumb:hover {
             background: var(--gradient-secondary);
         }
+
+        .category-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #4a90e2;
+            background-color: rgba(74, 144, 226, 0.1);
+            color: #4a90e2;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            flex: 0 1 auto;
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+
+        .filter-btn:hover {
+            background-color: rgba(74, 144, 226, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+
+        .filter-btn.active {
+            background-color: #4a90e2;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.4);
+        }
+
+        .filter-btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .filter-btn:hover::after {
+            opacity: 1;
+        }
+
+        .filter-btn:active::after {
+            background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 100%);
+            opacity: 1;
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .filter-btn {
+                border-color: #5a9de2;
+                color: #5a9de2;
+                background-color: rgba(90, 157, 226, 0.1);
+            }
+
+            .filter-btn:hover {
+                background-color: rgba(90, 157, 226, 0.2);
+            }
+
+            .filter-btn.active {
+                background-color: #5a9de2;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .category-filter {
+                overflow-x: auto;
+                padding: 10px;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            
+            .category-filter::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .filter-btn {
+                flex: 0 0 auto;
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+        }
+
+        /* Add these animation classes */
+        .model-item {
+            transition: all 0.3s ease;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .model-item.hidden {
+            display: none;
+        }
+
+        .model-item.visible {
+            animation: fadeInUp 0.3s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Style for the search input */
+        .search-input:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+            outline: none;
+        }
+
+        /* Dark mode support for search input */
+        @media (prefers-color-scheme: dark) {
+            .search-input {
+                background: rgba(255, 255, 255, 0.1);
+                color: #fff;
+            }
+            
+            .search-input::placeholder {
+                color: rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        /* Category count badge styles */
+        .count {
+            display: inline-block;
+            background: rgba(74, 144, 226, 0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .filter-btn.active .count {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .room-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background-color: #1976D2;
+        }
+
+        .control-btn .icon {
+            font-size: 16px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: flex-start; /* Aligns items to the start */
+            padding: 10px;
+            background-color: #f1f1f1; /* Light background for contrast */
+            border-bottom: 1px solid #ccc; /* Optional border for separation */
+        }
+
+        #save-room-btn {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -521,6 +729,13 @@
                 </div>
                 <button id="create-room" class="btn btn-primary btn-custom">Create Room</button>
                 </div>
+            </div>
+
+            <!-- Add this in the controls panel, after the room dimensions section -->
+            <div class="mb-3">
+                <button id="save-room-btn" class="btn btn-success btn-custom">
+                    <i class="bi bi-save"></i> Save Room
+                </button>
             </div>
 
             <div id="functionalities-list" style="max-height: 200px;">
@@ -600,16 +815,25 @@
                         <i class="bi bi-grid-fill"></i> All
                     </button>
                     <button type="button" class="btn" data-category="bed">
-                        <i class="bi bi-house-door"></i> Beds
-                    </button>
-                    <button type="button" class="btn" data-category="sofa">
-                        <i class="bi bi-archive"></i> Sofas
+                        <i class="bi bi-lamp"></i> Beds
                     </button>
                     <button type="button" class="btn" data-category="table">
                         <i class="bi bi-table"></i> Tables
                     </button>
+                    <button type="button" class="btn" data-category="chair">
+                        <i class="bi bi-archive"></i> Chairs
+                    </button>
                     <button type="button" class="btn" data-category="window">
                         <i class="bi bi-window"></i> Windows
+                    </button>
+                    <button type="button" class="btn" data-category="door">
+                        <i class="bi bi-door-closed"></i> Doors
+                    </button>
+                    <button type="button" class="btn" data-category="light">
+                        <i class="bi bi-lightbulb"></i> Lights
+                    </button>
+                    <button type="button" class="btn" data-category="fan">
+                        <i class="bi bi-fan"></i> Fans
                     </button>
                 </div>
         </div>
@@ -620,14 +844,6 @@
                     <!-- Models will be loaded here dynamically -->
                 </div>
             </div>
-
-            <!-- Upload Form -->
-            <div class="upload-section">
-                <input type="file" id="model-upload" accept=".glb,.gltf" style="display: none;">
-                <button id="upload-model" class="btn btn-outline-primary btn-custom">
-                    <i class="bi bi-upload"></i> Upload 3D Model
-                </button>
-            </div>
         </div>
     </div>
 
@@ -637,6 +853,10 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+
+    <!-- Add these if not already present -->
+    <script src="three.js"></script>
+    <script src="DragControls.js"></script>
 
     <script>
         let scene, camera, renderer, controls;
@@ -1209,43 +1429,6 @@
             });
         });
 
-        document.getElementById('upload-model').addEventListener('click', function() {
-            document.getElementById('model-upload').click();
-        });
-
-        document.getElementById('model-upload').addEventListener('change', async function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            if (file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')) {
-                try {
-                    await uploadModel(file);
-                    
-                    // Clear the input to allow uploading the same file again
-                    event.target.value = '';
-                    
-                    // Show success message
-                    await Swal.fire({
-                        title: 'Success!',
-                        text: 'Model uploaded successfully',
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    
-                } catch (error) {
-                    console.error('Error in upload process:', error);
-                }
-            } else {
-                await Swal.fire({
-                    title: 'Invalid File',
-                    text: 'Please upload a .glb or .gltf file',
-                    icon: 'error',
-                    confirmButtonColor: '#3085d6'
-                });
-            }
-        });
-
         function addControlsToHTML() {
             const controlsDiv = document.getElementById('controls');
             const furnitureControls = `
@@ -1380,7 +1563,10 @@
 
             // Update keyboard controls
             document.addEventListener('keydown', function(event) {
-                if (selectedObject) {
+                if (selectedObject && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(event.key)) {
+                    // Prevent default scrolling behavior
+                    event.preventDefault();
+                    
                     switch(event.key) {
                         case 'ArrowLeft':
                             moveSelectedObject('left');
@@ -1408,90 +1594,78 @@
             document.getElementById('wall-color').addEventListener('input', updateRoomColors);
             document.getElementById('floor-color').addEventListener('input', updateRoomColors);
             document.getElementById('ceiling-color').addEventListener('input', updateRoomColors);
+
+            // Add save button listener
+            document.getElementById('save-room-btn').addEventListener('click', saveCurrentRoom);
         }
 
         function moveSelectedObject(direction) {
             if (!selectedObject) return;
             
             const step = parseFloat(document.getElementById('movement-step').value);
+            const roomWidth = parseFloat(document.getElementById('room-width').value);
+            const roomHeight = parseFloat(document.getElementById('room-height').value);
+            const roomLength = parseFloat(document.getElementById('room-length').value);
             
-            // Get the object's bounding box
-            const boundingBox = new THREE.Box3().setFromObject(selectedObject);
-            const objectHeight = boundingBox.max.y - boundingBox.min.y;
+            // Check if it's a window
+            const isWindow = selectedObject.userData.isWindow;
             
-            // Store original position
-            const originalPosition = selectedObject.position.clone();
-            
-            switch(direction) {
-                case 'left':
-                    selectedObject.position.x -= step;
-                    break;
-                case 'right':
-                    selectedObject.position.x += step;
-                    break;
-                case 'forward':
-                    selectedObject.position.z -= step;
-                    break;
-                case 'backward':
-                    selectedObject.position.z += step;
-                    break;
-                case 'up':
-                    selectedObject.position.y += step;
-                    break;
-                case 'down':
-                    // Calculate the minimum Y position based on the object's height
-                    const minY = objectHeight / 2;
-                    selectedObject.position.y = Math.max(minY, selectedObject.position.y - step);
-                    break;
-            }
-
-            // Keep object within room bounds if a room exists
-            if (currentRoom) {
-                // Get room dimensions from the input fields
-                const roomWidth = parseFloat(document.getElementById('room-width').value) || 0;
-                const roomLength = parseFloat(document.getElementById('room-length').value) || 0;
-                const roomHeight = parseFloat(document.getElementById('room-height').value) || 0;
-                
-                // Calculate boundaries with some padding
-                const padding = 0.1; // Reduced padding for tighter wall alignment
-                const maxX = (roomWidth / 2) - padding;
-                const maxZ = (roomLength / 2) - padding;
-                const maxY = roomHeight - padding;
-                
-                // Special handling for windows (checking object name)
-                if (selectedObject.userData.name && selectedObject.userData.name.toLowerCase().includes('window')) {
-                    // Adjust position to align with walls if close enough
-                    const wallThreshold = 0.5; // Distance to snap to wall
-                    
-                    if (Math.abs(Math.abs(selectedObject.position.x) - maxX) < wallThreshold) {
-                        // Snap to side walls
-                        selectedObject.position.x = Math.sign(selectedObject.position.x) * maxX;
-                    }
-                    if (Math.abs(Math.abs(selectedObject.position.z) - maxZ) < wallThreshold) {
-                        // Snap to front/back walls
-                        selectedObject.position.z = Math.sign(selectedObject.position.z) * maxZ;
-                    }
-                    
-                    // Ensure window stays within valid height range
-                    const minWindowHeight = objectHeight / 2;
-                    const maxWindowHeight = roomHeight - (objectHeight / 2);
-                    selectedObject.position.y = Math.max(minWindowHeight, Math.min(maxWindowHeight, selectedObject.position.y));
-                } else {
-                    // Regular object bounds checking
-                    selectedObject.position.x = Math.max(-maxX, Math.min(maxX, selectedObject.position.x));
-                    selectedObject.position.z = Math.max(-maxZ, Math.min(maxZ, selectedObject.position.z));
-                    selectedObject.position.y = Math.max(objectHeight / 2, Math.min(maxY - (objectHeight / 2), selectedObject.position.y));
+            if (isWindow) {
+                switch(direction) {
+                    case 'left':
+                    case 'right':
+                        // Move along current wall
+                        if (selectedObject.userData.wall === 'right' || selectedObject.userData.wall === 'left') {
+                            selectedObject.position.z += (direction === 'left' ? -step : step);
+                        } else {
+                            selectedObject.position.x += (direction === 'left' ? -step : step);
+                        }
+                        break;
+                    case 'up':
+                        // Move up the wall, but not higher than the room
+                        selectedObject.position.y = Math.min(
+                            selectedObject.position.y + step,
+                            roomHeight * 0.8  // Max 80% of wall height
+                        );
+                        break;
+                    case 'down':
+                        // Move down the wall, but not below minimum height
+                        selectedObject.position.y = Math.max(
+                            selectedObject.position.y - step,
+                            roomHeight * 0.2  // Min 20% of wall height
+                        );
+                        break;
                 }
-            }
-
-            // After movement, auto-place if it's a window
-            if (selectedObject.userData.name.toLowerCase().includes('window')) {
-                autoPlaceFurniture(selectedObject);
-            }
-
-            // Add this at the end of the function
-            if (selectedObject) {
-                saveModelPosition(selectedObject);
+                
+                // Keep window within wall bounds
+                const currentWall = selectedObject.userData.wall;
+                if (currentWall === 'right' || currentWall === 'left') {
+                    selectedObject.position.z = Math.max(-roomLength/2 + 1, Math.min(roomLength/2 - 1, selectedObject.position.z));
+                } else {
+                    selectedObject.position.x = Math.max(-roomWidth/2 + 1, Math.min(roomWidth/2 - 1, selectedObject.position.x));
+                }
+            } else {
+                // Original movement for non-window objects
+                switch(direction) {
+                    case 'left':
+                        selectedObject.position.x -= step;
+                        break;
+                    case 'right':
+                        selectedObject.position.x += step;
+                        break;
+                    case 'forward':
+                        selectedObject.position.z -= step;
+                        break;
+                    case 'backward':
+                        selectedObject.position.z += step;
+                        break;
+                    case 'up':
+                        selectedObject.position.y += step;
+                        break;
+                    case 'down':
+                        selectedObject.position.y = Math.max(0, selectedObject.position.y - step);
+                        break;
+                }
             }
         }
 
@@ -1944,6 +2118,7 @@
         // Update the DOMContentLoaded event listener
         document.addEventListener('DOMContentLoaded', async function() {
             await loadRooms();
+            await loadModels();  // Add this line back
             const savedState = localStorage.getItem('currentRoomState');
             if (savedState) {
                 restoreRoomFromLocalStorage();
@@ -1960,43 +2135,6 @@
         document.getElementById('floor-color').addEventListener('change', saveRoomToLocalStorage);
         document.getElementById('ceiling-color').addEventListener('change', saveRoomToLocalStorage);
         document.getElementById('room-name').addEventListener('change', saveRoomToLocalStorage);
-
-        // Function to upload a 3D model
-        async function uploadModel(file) {
-            showLoadingIndicator();
-            const formData = new FormData();
-            formData.append('model', file);
-            formData.append('name', file.name.split('.')[0]);
-            formData.append('category', 'furniture');
-            
-            try {
-                const response = await fetch('/upload-room-model/', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || 'Failed to upload model');
-                }
-                
-                const modelData = await response.json();
-                
-                // Reload the model list instead of immediately loading the model
-                await loadModels();
-                
-                hideLoadingIndicator();
-                return modelData;
-                
-            } catch (error) {
-                hideLoadingIndicator();
-                console.error('Error uploading model:', error);
-                throw error;
-            }
-        }
 
         // Function to load saved models
         async function loadSavedModels() {
@@ -2186,51 +2324,6 @@
             }
         }
 
-        // Update the upload model event listener
-        document.getElementById('upload-model').addEventListener('click', function() {
-            document.getElementById('model-upload').click();
-        });
-
-        document.getElementById('model-upload').addEventListener('change', async function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            if (file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')) {
-                try {
-                    showLoadingIndicator();
-                    await uploadModel(file);
-                    await loadModels(); // Reload the model list
-                    event.target.value = ''; // Clear the input
-                    hideLoadingIndicator();
-                    
-                    await Swal.fire({
-                        title: 'Success!',
-                        text: 'Model uploaded successfully',
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-            } catch (error) {
-                    hideLoadingIndicator();
-                    console.error('Error in upload process:', error);
-                    await Swal.fire({
-                        title: 'Error',
-                        text: 'Failed to upload model',
-                        icon: 'error'
-                    });
-                }
-            } else {
-                await Swal.fire({
-                    title: 'Invalid File',
-                    text: 'Please upload a .glb or .gltf file',
-                    icon: 'error'
-                });
-            }
-        });
-
-        // Load models when page loads
-        document.addEventListener('DOMContentLoaded', loadModels);
-
         // Update the loadModelFromURL function
         async function loadModelFromURL(modelData) {
             const loader = new THREE.GLTFLoader();
@@ -2242,30 +2335,72 @@
                 
                 const model = gltf.scene;
                 
-                // Set up the model properties
-                model.userData.id = modelData.id;
-                model.userData.name = modelData.name;
-                model.userData.draggable = true;
-                
+                // Get room dimensions
+                const roomWidth = parseFloat(document.getElementById('room-width').value);
+                const roomHeight = parseFloat(document.getElementById('room-height').value);
+                const roomLength = parseFloat(document.getElementById('room-length').value);
+
                 // Calculate appropriate scale
                 const box = new THREE.Box3().setFromObject(model);
                 const size = box.getSize(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z);
                 const scale = 2 / maxDim;
-                model.scale.setScalar(scale);
+
+                // Position and rotate based on category
+                if (modelData.name.toLowerCase().includes('window')) {
+                    // Place window on the right wall by default
+                    const windowHeight = roomHeight * 0.5; // Window at 50% of wall height
+                    model.position.set(
+                        roomWidth/2,           // Right wall
+                        windowHeight,          // Middle of the wall height
+                        0                      // Center of wall depth
+                    );
+                    model.rotation.y = -Math.PI / 2;  // Rotate to face into the room
+                    
+                    // Adjust scale specifically for windows
+                    const windowScale = scale * 1.2;  // Slightly larger scale for windows
+                    model.scale.set(windowScale, windowScale, windowScale);
+                    
+                    // Store the wall position for later reference
+                    model.userData.wall = 'right';
+                    model.userData.isWindow = true;
+                } else if (modelData.name.toLowerCase().includes('bed')) {
+                    // Place bed on the floor
+                    model.position.set(
+                        0,                    // Center of room width
+                        0,                    // On the floor
+                        -roomLength/4         // Slightly towards back wall
+                    );
+                    model.scale.set(scale, scale, scale);
+                } else {
+                    // Default positioning for other furniture
+                    model.position.set(
+                        0,                    // Center of room width
+                        0,                    // On the floor
+                        0                     // Center of room length
+                    );
+                    model.scale.set(scale, scale, scale);
+                }
                 
-                // Store original scale
-                model.userData.originalScale = { x: scale, y: scale, z: scale };
+                // Set up model properties
+                model.userData.id = modelData.id;
+                model.userData.name = modelData.name;
+                model.userData.draggable = true;
+                model.userData.category = modelData.category;
+                model.userData.originalScale = { x: model.scale.x, y: model.scale.y, z: model.scale.z };
                 model.userData.baseScale = scale;
                 
-                // Position the model at the center of the room
-                model.position.set(0, size.y/2, 0);
-                
-                // Set up shadows
+                // Set up shadows and materials
                 model.traverse((child) => {
                     if (child.isMesh) {
                         child.castShadow = true;
                         child.receiveShadow = true;
+                        if (child.material) {
+                            child.material.transparent = false;
+                            child.material.opacity = 1;
+                            child.material.side = THREE.DoubleSide;
+                            child.material.needsUpdate = true;
+                        }
                     }
                 });
                 
@@ -2273,6 +2408,28 @@
                 updateModelList();
                 selectObject(model);
                 
+                // Force scene update
+                renderer.render(scene, camera);
+                
+                // Send data to backend
+                const roomId = document.getElementById('room-selector').value;
+                await fetch('/add-model-to-room/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        room_id: roomId,
+                        model_id: modelData.id,
+                        position_x: model.position.x,
+                        position_y: model.position.y,
+                        position_z: model.position.z,
+                        rotation_y: model.rotation.y,
+                        scale: model.scale.x
+                    })
+                });
+
                 return model;
                 
             } catch (error) {
@@ -2307,6 +2464,380 @@
                 } else {
                     item.classList.add('hidden');
                 }
+            });
+        }
+
+        function addModelToScene(modelUrl, modelId, category) {
+            loader.load(modelUrl, function (gltf) {
+                const model = gltf.scene;
+                    
+                    // Get room dimensions
+                const room = scene.getObjectByName('room');
+                const roomWidth = room.userData.width;
+                const roomHeight = room.userData.height;
+                const roomLength = room.userData.length;
+
+                // Set initial position based on category
+                if (category.toLowerCase() === 'window') {
+                    // Place window on wall at a fixed height
+                    const wallHeight = roomHeight * 0.6; // Place window at 60% of wall height
+                    
+                    // Determine which wall to place it on based on camera position
+                    const cameraAngle = Math.atan2(camera.position.x, camera.position.z);
+                    let position = new THREE.Vector3();
+                    
+                    if (Math.abs(cameraAngle) < Math.PI/4) {
+                        // Front wall
+                        position.set(0, wallHeight, roomLength/2);
+                    } else if (Math.abs(cameraAngle) > 3*Math.PI/4) {
+                        // Back wall
+                        position.set(0, wallHeight, -roomLength/2);
+                    } else if (cameraAngle > 0) {
+                        // Right wall
+                        position.set(roomWidth/2, wallHeight, 0);
+                    } else {
+                        // Left wall
+                        position.set(-roomWidth/2, wallHeight, 0);
+                    }
+                    
+                    model.position.copy(position);
+                    // Rotate window to face inward
+                    model.lookAt(new THREE.Vector3(0, wallHeight, 0));
+                    
+                } else if (category.toLowerCase() === 'bed' || category.toLowerCase() === 'furniture') {
+                    // Place bed/furniture on floor
+                    const floorY = -roomHeight/2; // Assuming room center is at origin
+                    
+                    // Get center of room floor
+                    const position = new THREE.Vector3(
+                        0,
+                        floorY + 0.01, // Slightly above floor to prevent z-fighting
+                        0
+                    );
+                    
+                    model.position.copy(position);
+                }
+
+                // Send position to backend
+                fetch('/add-model-to-room/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        roomId: currentRoomId,
+                        modelId: modelId,
+                        position: {
+                            x: model.position.x,
+                            y: model.position.y,
+                            z: model.position.z
+                        },
+                        rotation: model.rotation.y,
+                        scale: model.scale.x,
+                        category: category
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Add the model to the scene
+                        scene.add(model);
+                        
+                        // Make the model draggable but constrained based on category
+                        const dragControls = new DragControls([model], camera, renderer.domElement);
+                        
+                        dragControls.addEventListener('drag', function(event) {
+                            if (category.toLowerCase() === 'window') {
+                                // Constrain window movement to walls only
+                                const closestWall = findClosestWall(event.object.position);
+                                event.object.position.copy(closestWall);
+                            } else if (category.toLowerCase() === 'bed' || category.toLowerCase() === 'furniture') {
+                                // Constrain to floor level
+                                event.object.position.y = -roomHeight/2 + 0.01;
+                            }
+                        });
+                        
+                        // Store reference to the model
+                        models.set(data.modelId, model);
+                    } else {
+                        console.error('Failed to add model:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        }
+
+        // Helper function to find closest wall for window placement
+        function findClosestWall(position) {
+            const room = scene.getObjectByName('room');
+            const roomWidth = room.userData.width;
+            const roomLength = room.userData.length;
+            const wallHeight = room.userData.height * 0.6;
+
+            // Find the closest wall based on position
+            const walls = [
+                new THREE.Vector3(roomWidth/2, wallHeight, position.z), // Right wall
+                new THREE.Vector3(-roomWidth/2, wallHeight, position.z), // Left wall
+                new THREE.Vector3(position.x, wallHeight, roomLength/2), // Front wall
+                new THREE.Vector3(position.x, wallHeight, -roomLength/2) // Back wall
+            ];
+
+            return walls.reduce((closest, wall) => {
+                return (position.distanceTo(wall) < position.distanceTo(closest)) ? wall : closest;
+            });
+        }
+
+        // Update the model item click handler
+        document.querySelectorAll('.model-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const modelUrl = this.dataset.modelUrl;
+                const modelId = this.dataset.modelId;
+                const category = this.dataset.category;
+                addModelToScene(modelUrl, modelId, category);
+            });
+        });
+
+        // Update the model actions buttons
+        document.querySelectorAll('.model-actions .btn').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
+
+        // Update the model thumbnails
+        document.querySelectorAll('.model-thumbnail').forEach(thumbnail => {
+            thumbnail.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
+
+        // Update the panel header
+        document.querySelector('.panel-header').addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+        // Update the upload button
+        document.querySelector('.upload-section .btn-custom').addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+        // Add a subtle scrollbar
+        document.querySelector('#item-library').style.overflowY = 'scroll';
+        document.querySelector('#item-library').style.scrollbarWidth = 'thin';
+        document.querySelector('#item-library').style.scrollbarColor = 'var(--gradient-primary) transparent';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const modelItems = document.querySelectorAll('.model-item');
+            const categories = ['all', 'bed', 'table', 'chair', 'window', 'door', 'light', 'fan'];
+
+            // Initialize counters for each category
+            const categoryCounts = {};
+            categories.forEach(cat => categoryCounts[cat] = 0);
+
+            // Count initial items in each category
+            modelItems.forEach(item => {
+                const category = item.getAttribute('data-category');
+                categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+                categoryCounts['all']++;
+            });
+
+            // Update button text with counts
+            filterButtons.forEach(button => {
+                const category = button.getAttribute('data-category');
+                const count = categoryCounts[category] || 0;
+                const originalText = button.textContent;
+                button.innerHTML = `${originalText} <span class="count">${count}</span>`;
+            });
+
+            // Filter functionality
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    button.classList.add('active');
+
+                    const selectedCategory = button.getAttribute('data-category');
+
+                    modelItems.forEach(item => {
+                        const itemCategory = item.getAttribute('data-category');
+                        
+                        if (selectedCategory === 'all' || itemCategory === selectedCategory) {
+                            // Show item with animation
+                            item.classList.remove('hidden');
+                            setTimeout(() => {
+                                item.classList.add('visible');
+                            }, 10);
+                        } else {
+                            // Hide item with animation
+                            item.classList.remove('visible');
+                            setTimeout(() => {
+                                item.classList.add('hidden');
+                            }, 300);
+                        }
+                    });
+
+                    // Update no results message
+                    updateNoResultsMessage(selectedCategory);
+                });
+            });
+
+            // Search functionality
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = 'Search models...';
+            searchInput.className = 'search-input';
+            searchInput.style.cssText = `
+                width: 100%;
+                padding: 12px 15px;
+                margin-bottom: 15px;
+                border: 2px solid rgba(74, 144, 226, 0.2);
+                border-radius: 8px;
+                font-size: 14px;
+                background: rgba(255, 255, 255, 0.05);
+                color: #4a90e2;
+                transition: all 0.3s ease;
+            `;
+
+            document.querySelector('.category-filter').insertAdjacentElement('beforebegin', searchInput);
+
+            function updateNoResultsMessage(category = 'all', searchTerm = '') {
+                const visibleItems = document.querySelectorAll('.model-item:not(.hidden)');
+                let noResultsEl = document.querySelector('.no-results-message');
+                
+                if (visibleItems.length === 0) {
+                    if (!noResultsEl) {
+                        noResultsEl = document.createElement('div');
+                        noResultsEl.className = 'no-results-message';
+                        noResultsEl.style.cssText = `
+                            text-align: center;
+                            padding: 20px;
+                            background: rgba(255, 255, 255, 0.05);
+                            border-radius: 8px;
+                            margin-top: 20px;
+                            color: #4a90e2;
+                            backdrop-filter: blur(5px);
+                        `;
+                        
+                        const messageText = searchTerm 
+                            ? `No models found matching "${searchTerm}"`
+                            : `No models available in ${category} category`;
+                        
+                        noResultsEl.innerHTML = messageText;
+                        document.querySelector('.models-container').appendChild(noResultsEl);
+                    }
+                } else if (noResultsEl) {
+                    noResultsEl.remove();
+                }
+            }
+
+            // Combined search and filter functionality
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
+
+                modelItems.forEach(item => {
+                    const itemName = item.getAttribute('data-name').toLowerCase();
+                    const itemCategory = item.getAttribute('data-category');
+                    const matchesSearch = itemName.includes(searchTerm);
+                    const matchesCategory = activeCategory === 'all' || itemCategory === activeCategory;
+
+                    if (matchesSearch && matchesCategory) {
+                        item.classList.remove('hidden');
+                        setTimeout(() => {
+                            item.classList.add('visible');
+                        }, 10);
+                    } else {
+                        item.classList.remove('visible');
+                        setTimeout(() => {
+                            item.classList.add('hidden');
+                        }, 300);
+                    }
+                });
+
+                updateNoResultsMessage(activeCategory, searchTerm);
+            });
+        });
+
+        // Add this after your existing JavaScript functions
+        function saveCurrentRoom() {
+            if (!currentRoom) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Please create a room first',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            const roomId = document.getElementById('room-selector').value;
+            if (!roomId) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Please select a room to save',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            showLoadingIndicator();
+
+            // Get all models in the scene
+            const modelData = [];
+            scene.traverse((object) => {
+                if (object.userData && object.userData.draggable && object.userData.id) {
+                    modelData.push({
+                        model_id: object.userData.id,
+                        position: {
+                            x: object.position.x,
+                            y: object.position.y,
+                            z: object.position.z
+                        },
+                        rotation_y: object.rotation.y,
+                        scale: object.scale.x
+                    });
+                }
+            });
+
+            // Prepare data for saving
+            const saveData = {
+                room_id: roomId,
+                models: modelData
+            };
+
+            // Send data to server
+            fetch('/save-virtual-room/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(saveData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoadingIndicator();
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Room models saved successfully',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    throw new Error(data.message || 'Failed to save room models');
+                }
+            })
+            .catch(error => {
+                hideLoadingIndicator();
+                Swal.fire({
+                    title: 'Error',
+                    text: error.message || 'Failed to save room models',
+                    icon: 'error'
+                });
             });
         }
     </script>

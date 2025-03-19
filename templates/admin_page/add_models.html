@@ -1,0 +1,959 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!--=============== basic  ===============-->
+        <meta charset="UTF-8">
+        <title>ElegantDecor - Creative Responsive Architecture Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="robots" content="index, follow"/>
+        <meta name="keywords" content=""/>
+        <meta name="description" content=""/>
+        <!--=============== css  ===============-->	
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/reset.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/plugins.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/style.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
+        <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
+        <!--=============== favicons ===============-->
+        <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
+
+    <body>
+        <!-- loader -->
+        <div class="loader">
+            <div id="movingBallG">
+                <div class="movingBallLineG"></div>
+                <div id="movingBallG_1" class="movingBallG"></div>
+            </div>
+        </div>
+        <!-- loader end -->
+        <!--================= Main   ================-->
+        <div id="main">
+            <!--================= header ================-->
+            <header class="main-header">
+                <!-- logo -->
+                <a class="logo-holder"href="{% url 'admin_index' %}" ><img src="{% static 'index/images/ElegantDecor.gif' %}" style="margin-left: 39%;" height="43px" alt=""></a>
+                <!-- logo end -->  
+                <!-- share button-->  
+                <div class="show-share-wrap">
+                    <div class="show-share">
+                        <span>Admin</span>
+                        <a href="{% url 'logout_view' %}"><img src="{% static 'index/images/logout.png' %}" alt=""></a>
+                    </div>
+                </div>
+                <!-- share button end-->  		
+                <!-- search button--> 	 
+                <div class="show-search show-fixed-search vissearch"> <img src="{% static 'index/images/prof.png' %}" alt="Profile Picture" style="height: 50px; width: 50px;"></div>
+                <!-- search button end --> 
+                <!-- mobile nav --> 
+                <div class="nav-button-wrap">
+                    <div class="nav-button vis-main-menu"><span></span><span></span><span></span></div>
+                </div>
+                <!-- mobile nav end--> 
+                <!--  navigation --> 
+                <div class="nav-holder" style="display: none;">
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li>
+                            <a href="{% url 'admin_index' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Home</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'customers_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Customers Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'designers_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designers Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'designs_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designs Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'consultations_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Consultations Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'projects_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Projects Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'products_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Products Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'orders_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Orders Table</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_designer' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Designers</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_deliveryboy' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Delivery Boys</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_product' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Products</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_models' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Models</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- navigation  end -->
+            </header>
+            <!-- header  end -->
+            <!--=============== wrapper ===============-->
+            <div id="wrapper">
+                <!-- content-holder  -->
+                <div class="content-holder">
+                    <!--  content -->
+                    <div class="content">
+                        <!--  section  -->
+                     
+                        <!--  section  end-->
+                        <!--  section  -->
+                        <section>
+                            <div class="container">
+                                <div class="contact-details-wrap fl-wrap" style="margin-top: -5%;">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2 style="text-align: center; font-size: 36px; margin-bottom: 30px; color: #333; font-weight: 300;">Add 3D Model</h2>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <!-- 3D Model Upload Form -->
+                                            <div class="contact-form-holder fl-wrap">
+                                                <form method="post" action="{% url 'upload_room_model' %}" enctype="multipart/form-data" id="modelForm" class="custom-form">
+                                                        {% csrf_token %}
+                                                    <div class="form-group">
+                                                        <input name="name" type="text" id="model_name" placeholder="Model Name" required
+                                                               class="form-control custom-input">
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <select name="category" id="model_category" required class="form-control custom-select">
+                                                            <option value="">Select Category</option>
+                                                            <option value="bed">Bed</option>
+                                                            <option value="table">Table</option>
+                                                            <option value="chair">Chair</option>
+                                                            <option value="window">Window</option>
+                                                            <option value="door">Door</option>
+                                                            <option value="light">Light</option>
+                                                            <option value="fan">Fan</option>
+                                                        </select>
+                                                        </div>
+                                                        
+                                                    <div class="form-group">
+                                                        <label for="model_file" class="custom-file-label">3D Model File (GLTF/GLB)</label>
+                                                        <input name="model_file" type="file" id="model_file" required accept=".gltf,.glb"
+                                                               class="form-control custom-file-input">
+                                                        </div>
+                                                        
+                                                    <div class="form-group">
+                                                        <label for="thumbnail" class="custom-file-label">Thumbnail Image</label>
+                                                        <input name="thumbnail" type="file" id="thumbnail" required accept="image/*"
+                                                               class="form-control custom-file-input">
+                                                        </div>
+                                                        
+                                                    <button type="submit" class="custom-submit-btn">
+                                                        <i class="bi bi-cloud-upload"></i> Upload Model
+                                                    </button>
+                                                </form>
+                                                        </div>
+                                                        </div>
+                                                        
+                                        <div class="col-md-6">
+                                            <!-- Existing Models List -->
+                                            <div class="models-list" style="background: #f8f9fa; padding: 20px; border-radius: 10px; max-height: 600px; overflow-y: auto; margin-bottom: 50px;">
+                                                <h3 style="margin-bottom: 20px;">Existing Models</h3>
+                                                <div class="category-filter" style="margin-bottom: 20px;">
+                                                    <button class="filter-btn active" data-category="all">All</button>
+                                                    <button class="filter-btn" data-category="bed">Bed</button>
+                                                    <button class="filter-btn" data-category="table">Table</button>
+                                                    <button class="filter-btn" data-category="chair">Chair</button>
+                                                    <button class="filter-btn" data-category="window">Window</button>
+                                                    <button class="filter-btn" data-category="door">Door</button>
+                                                    <button class="filter-btn" data-category="light">Light</button>
+                                                    <button class="filter-btn" data-category="fan">Fan</button>
+                                                        </div>
+                                                <div class="models-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                                                    {% for model in room_models %}
+                                                    <div class="model-card" id="model-{{ model.id }}" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                                                        {% if model.thumbnail %}
+                                                            <img src="{{ model.thumbnail.url }}" alt="{{ model.name }}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 10px;">
+                                                        {% else %}
+                                                            <div style="width: 100%; height: 150px; background-color: #e9ecef; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                                                                <i class="bi bi-image" style="font-size: 3rem; color: #6c757d;"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                        <h4 style="margin: 10px 0; font-size: 16px; word-break: break-word;">{{ model.name }}</h4>
+                                                        <p style="color: #666; font-size: 14px; margin-bottom: 10px;">{{ model.category }}</p>
+                                                        <button 
+                                                            onclick="deleteModel({{ model.id }})" 
+                                                            class="delete-model-btn" 
+                                                            type="button">
+                                                            <i class="bi bi-trash"></i> Delete
+                                                        </button>
+                                                    </div>
+                                                    {% empty %}
+                                                    <div style="grid-column: 1/-1; text-align: center; padding: 20px; background: white; border-radius: 8px;">
+                                                        <p style="color: #666;">No models available</p>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <!--  section  end-->
+                        <!--  social-wrap  -->
+                        <div class="social-wrap fl-wrap">
+                            <ul>
+                                <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
+                                <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                            </ul>
+                        </div>
+                        <!--  social-wrap  end-->
+                    </div>
+                    <!-- content end -->
+                    <!--=============== content-footer   ===============-->
+                    <div class="height-emulator"></div>
+                    <footer class="content-footer">
+                        <div class="footer-inner">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="footer-logo" href="index.html"><img src="images/logo.png" alt=""></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="footer-header fl-wrap"><span>01.</span> Contacts</div>
+                                    <div class="footer-box fl-wrap">
+                                        <ul>
+                                            <li><span>Mail :</span><a href="#" target="_blank">yourmail@domain.com</a></li>
+                                            <li> <span>Adress :</span><a href="#" target="_blank">USA 27TH Brooklyn NY</a></li>
+                                            <li><span>Phone :</span><a href="#">+7(111)123456789</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="footer-header fl-wrap"><span>02.</span> Subscribe</div>
+                                    <div class="footer-box fl-wrap">
+                                        <div class="subcribe-form fl-wrap">
+                                            <span>Newsletter</span>
+                                            <form id="subscribe">
+                                                <input class="enteremail" name="email" id="subscribe-email" placeholder="email" spellcheck="false" type="text">
+                                                <button type="submit" id="subscribe-button" class="subscribe-button">Submit</button>
+                                                <label for="subscribe-email" class="subscribe-message"></label>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3"></div>
+                                <div class="col-md-9">
+                                    <div class="fl-wrap policy-box">
+                                        <p> &#169; ElegantDecor   2017.  All rights reserved.  </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="to-top"><i class="fa fa-long-arrow-up"></i></div>
+                        </div>
+                    </footer>
+                    <!-- content-footer end    -->
+                </div>
+                <!-- content-holder end -->
+            </div>
+            <!-- wrapper end -->
+           
+                   
+<footer class="main-footer" style="width: 15%; background-color: #000000; padding: 20px 10px 20px 20px; height: calc(100vh - 80px); position: fixed; left: 0; top: 80px;">
+    <div class="footer-admin-links" style="
+        height: calc(100vh - 120px);
+        overflow-y: auto; 
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        padding-right: 10px;
+    ">
+        <div style="width: 100%;">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li style="margin-bottom: 30px; text-align: center;"></li>
+                <a href="{% url 'admin_index' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                   Home
+                </a>
+            </li>
+            <li style="margin-bottom: 30px; text-align: center;">
+                <a href="{% url 'designers_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+               
+                        Customers Table
+                    </a>
+                </li>
+                <li style="margin-bottom: 30px; text-align: center;">
+                    <a href="{% url 'designers_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                        Designers Table
+                    </a>
+                </li>
+                <li style="margin-bottom: 20px;">
+                    <li style="margin-bottom: 30px; text-align: center;">
+                        <a href="{% url 'consultations_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                        onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                        onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';"> 
+                        Designs Table
+                    </a>
+                </li>
+                <li style="margin-bottom: 20px;">
+                    <a href="{% url 'customers_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                        Consultations Table
+                    </a>
+                </li>
+
+                <li style="margin-bottom: 20px;">
+                    <a href="{% url 'projects_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                        onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                        onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                        Projects Table
+                    </a>
+                </li>
+    
+                <li style="margin-bottom: 20px;">
+                    <a href="{% url 'products_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                        onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                        onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                        Products Table
+                    </a>
+                </li>
+                <li style="margin-bottom: 20px;">
+                    <a href="{% url 'orders_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                        onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                        onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                        Orders Table
+                    </a>
+                </li>
+                
+                <li style="margin-bottom: 20px;">
+                    <a href="{% url 'add_designer' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                   Add Designer
+                    </a>
+                </li>
+                 
+                <li style="margin-bottom: 20px;">
+                    <a href="{% url 'add_deliveryboy' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                   Add Delivery Boy
+                    </a>
+                </li>
+                <li style="margin-bottom: 20px;">
+                    <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                   Add Products
+                    </a>
+                </li>
+                <li style="margin-bottom: 20px;">
+                    <a href="{% url 'add_models' %}"   style="color: #000000; 
+                    text-decoration: none; 
+                    font-size: 18px; 
+                    font-weight: bold; 
+                    display: block; 
+                    padding: 15px 20px; 
+                    background-color: #ffffff;
+                    border-radius: 4px;">Add Models
+                    </a>
+                </li>
+            </ul>
+            
+        </div>
+    </div>
+    </footer>
+
+<style>
+    /* Modern, subtle scrollbar styling */
+    .footer-admin-links::-webkit-scrollbar {
+        width: 4px;
+        margin-right: 4px;
+    }
+    
+    .footer-admin-links::-webkit-scrollbar-track {
+        background: transparent;
+        margin: 4px 0;
+    }
+    
+    .footer-admin-links::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        transition: background 0.3s;
+    }
+    
+    .footer-admin-links::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.4);
+    }
+    
+    /* Hide scrollbar when not scrolling */
+    .footer-admin-links {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+    
+    /* Add smooth scrolling */
+    .footer-admin-links {
+        scroll-behavior: smooth;
+    }
+
+    .models-list {
+        margin-bottom: 100px !important;
+        padding-bottom: 50px !important;
+    }
+
+    .model-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .model-card img,
+    .model-card .placeholder-img {
+        flex: 0 0 150px;
+    }
+
+    .model-card h4,
+    .model-card p {
+        margin: 8px 0;
+    }
+
+    .delete-model-btn {
+        margin-top: auto;
+    }
+
+    /* Improve scrollbar appearance */
+    .models-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .models-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .models-list::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    .models-list::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    .custom-form {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 30px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .custom-input,
+    .custom-select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+    }
+
+    .custom-input:focus,
+    .custom-select:focus {
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        outline: none;
+    }
+
+    .custom-file-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .custom-file-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px dashed #e0e0e0;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .custom-file-input:hover {
+        border-color: #4a90e2;
+        background-color: #f0f4f8;
+    }
+
+    .custom-submit-btn {
+        width: 100%;
+        padding: 15px 20px;
+        border: none;
+        background-color: #4a90e2;
+        color: #fff;
+        border-radius: 8px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .custom-submit-btn:hover {
+        background-color: #357abd;
+        transform: translateY(-2px);
+    }
+
+    .delete-model-btn {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .delete-model-btn:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+    }
+
+    .models-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 25px;
+        padding: 20px;
+    }
+
+    .model-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .model-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .model-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-bottom: 1px solid #eee;
+    }
+
+    .model-info {
+        padding: 15px;
+    }
+
+    .model-info h4 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 18px;
+    }
+
+    .model-info p {
+        color: #666;
+        margin: 0 0 15px 0;
+        font-size: 14px;
+    }
+
+    /* Update the category filter styles */
+    .category-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border: 2px solid #4a90e2;
+        background-color: transparent;
+        color: #4a90e2;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        font-weight: 500;
+        flex: 0 1 auto;
+        white-space: nowrap;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .filter-btn:hover {
+        background-color: rgba(74, 144, 226, 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+    }
+
+    .filter-btn.active {
+        background-color: #4a90e2;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(74, 144, 226, 0.3);
+    }
+
+    .filter-btn::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .filter-btn:hover::after {
+        opacity: 1;
+    }
+
+    /* Add ripple effect on click */
+    .filter-btn:active::after {
+        background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 100%);
+        opacity: 1;
+        transform: scale(1.1);
+        transition: transform 0.2s ease;
+    }
+
+    /* Category count badge */
+    .filter-btn .count {
+        display: inline-block;
+        background-color: rgba(74, 144, 226, 0.1);
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 12px;
+        margin-left: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover .count {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .filter-btn.active .count {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    /* Add animation for model cards */
+    .model-card {
+        transition: all 0.3s ease;
+    }
+
+    .model-card.hidden {
+        display: none;
+    }
+
+    .model-card.visible {
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+
+            <!-- footer end-->
+        </div>
+        <!-- Main end -->
+        <!--=============== scripts  ===============-->
+        <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
+            <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+ <script>
+document.getElementById('modelForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "upload_room_model" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Model uploaded successfully',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            throw new Error(data.error || 'Failed to upload model');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message
+        });
+    });
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function deleteModel(modelId) {
+    if (!modelId) return;
+
+    const csrftoken = getCookie('csrftoken');
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This model will be permanently deleted!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin_page/delete-room-model/${modelId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const modelCard = document.getElementById(`model-${modelId}`);
+                    if (modelCard) {
+                        modelCard.remove();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: 'Model has been deleted successfully.',
+                            timer: 1500
+                        });
+                    }
+                } else {
+                    throw new Error(data.error || 'Failed to delete model');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: error.message
+                });
+            });
+        }
+    });
+}
+
+// Add hover effects for delete buttons
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-model-btn').forEach(button => {
+        button.addEventListener('mouseover', function() {
+            this.style.backgroundColor = '#c82333';
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        button.addEventListener('mouseout', function() {
+            this.style.backgroundColor = '#dc3545';
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const modelCards = document.querySelectorAll('.model-card');
+    const categories = ['all', 'bed', 'table', 'chair', 'window', 'door', 'light', 'fan'];
+
+    // Initialize counters for each category
+    const categoryCounts = {};
+    categories.forEach(cat => categoryCounts[cat] = 0);
+
+    // Count initial items in each category
+    modelCards.forEach(card => {
+        const category = card.querySelector('p').textContent.toLowerCase();
+        categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+        categoryCounts['all']++;
+    });
+
+    // Update button text with counts
+    filterButtons.forEach(button => {
+        const category = button.getAttribute('data-category');
+        const count = categoryCounts[category] || 0;
+        button.textContent = `${button.textContent} (${count})`;
+    });
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            button.classList.add('active');
+
+            const selectedCategory = button.getAttribute('data-category');
+
+            modelCards.forEach(card => {
+                const cardCategory = card.querySelector('p').textContent.toLowerCase();
+                
+                if (selectedCategory === 'all' || cardCategory === selectedCategory) {
+                    card.classList.remove('hidden');
+                    card.classList.add('visible');
+                } else {
+                    card.classList.add('hidden');
+                    card.classList.remove('visible');
+                }
+            });
+
+            // Update no results message
+            updateNoResultsMessage(selectedCategory);
+        });
+    });
+
+    // Add search functionality with category awareness
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = 'Search models...';
+    searchInput.className = 'search-input';
+    searchInput.style.cssText = `
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 16px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    `;
+
+    document.querySelector('.category-filter').insertAdjacentElement('beforebegin', searchInput);
+
+    function updateNoResultsMessage(category = 'all', searchTerm = '') {
+        const visibleCards = document.querySelectorAll('.model-card:not(.hidden)');
+        const noModelsMessage = document.querySelector('.no-models-message');
+        
+        if (visibleCards.length === 0) {
+            if (!noModelsMessage) {
+                const message = document.createElement('div');
+                message.className = 'no-models-message';
+                message.style.cssText = `
+                    grid-column: 1/-1;
+                    text-align: center;
+                    padding: 20px;
+                    background: white;
+                    border-radius: 8px;
+                    margin-top: 20px;
+                `;
+                
+                let messageText = searchTerm 
+                    ? `No models found matching "${searchTerm}"`
+                    : `No models available in ${category} category`;
+                
+                message.innerHTML = `<p style="color: #666;">${messageText}</p>`;
+                document.querySelector('.models-grid').appendChild(message);
+            }
+        } else if (noModelsMessage) {
+            noModelsMessage.remove();
+        }
+    }
+
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
+
+        modelCards.forEach(card => {
+            const cardName = card.querySelector('h4').textContent.toLowerCase();
+            const cardCategory = card.querySelector('p').textContent.toLowerCase();
+            const matchesSearch = cardName.includes(searchTerm);
+            const matchesCategory = activeCategory === 'all' || cardCategory === activeCategory;
+
+            if (matchesSearch && matchesCategory) {
+                card.classList.remove('hidden');
+                card.classList.add('visible');
+            } else {
+                card.classList.add('hidden');
+                card.classList.remove('visible');
+            }
+        });
+
+        updateNoResultsMessage(activeCategory, searchTerm);
+    });
+});
+</script>
+ </body>
+</html>

@@ -257,10 +257,20 @@ class VirtualRoom(models.Model):
     models = models.ManyToManyField('RoomModel', through='VirtualRoomModel')
 
 class RoomModel(models.Model):
+    CATEGORY_CHOICES = [
+        ('bed', 'Bed'),
+        ('table', 'Table'),
+        ('chair', 'Chair'),
+        ('window', 'Window'),
+        ('door', 'Door'),
+        ('light', 'Light'),
+        ('fan', 'Fan'),
+    ]
+    
     name = models.CharField(max_length=255)
     model_file = models.FileField(upload_to='room_models/')
     thumbnail = models.ImageField(upload_to='room_model_thumbnails/', null=True, blank=True)
-    category = models.CharField(max_length=100, default='furniture')
+    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES, default='chair')
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     virtual_rooms = models.ManyToManyField(VirtualRoom, through='VirtualRoomModel')

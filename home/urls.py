@@ -98,6 +98,10 @@ path('delete-room-model/<int:model_id>/', views.delete_room_model, name='delete_
 path('update-model-position/', views.update_model_position, name='update_model_position'),
 path('add-model-to-room/', views.add_model_to_room, name='add_model_to_room'),
 path('get-room-models/<int:room_id>/', views.get_room_models_for_room, name='get_room_models_for_room'),
+path('admin_page/add_models/', views.add_models, name='add_models'),
+path('admin_page/upload-room-model/', views.upload_room_model, name='upload_room_model'),
+path('admin_page/delete-room-model/<int:model_id>/', views.delete_room_model, name='delete_room_model'),
+path('save-virtual-room/', views.save_virtual_room, name='save_virtual_room'),
 ]
 
 # Serve media files during development

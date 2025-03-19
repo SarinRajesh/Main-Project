@@ -1,0 +1,127 @@
+<script>
+// ... existing code ...
+
+// Add a save button to your HTML
+const saveButton = document.createElement('button');
+saveButton.textContent = 'Save Room';
+saveButton.classList.add('save-room-btn');
+// Add the button to your UI controls
+
+// Add the save functionality
+async function saveRoom() {
+    const roomId = getCurrentRoomId(); // Function to get current room ID
+    const models = [];
+    
+    // Collect data for all models in the scene
+    scene.traverse((object) => {
+        if (object.userData.modelId) {
+            models.push({
+                modelId: object.userData.modelId,
+                position: {
+                    x: object.position.x,
+                    y: object.position.y,
+                    z: object.position.z
+                },
+                rotation: object.rotation.y,
+                scale: object.scale.x // Assuming uniform scale
+            });
+        }
+    });
+
+    try {
+        const response = await fetch('/save-room/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(), // Function to get CSRF token
+            },
+            body: JSON.stringify({
+                roomId: roomId,
+                models: models
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            showNotification('Room saved successfully', 'success');
+        } else {
+            showNotification('Error saving room: ' + data.message, 'error');
+        }
+    } catch (error) {
+        showNotification('Error saving room: ' + error.message, 'error');
+    }
+}
+
+// Helper function to show notifications
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.classList.add('notification', type);
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Helper function to get CSRF token
+function getCsrfToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+// Add event listener to save button
+saveButton.addEventListener('click', saveRoom);
+
+// Add some CSS for notifications
+const style = document.createElement('style');
+style.textContent = `
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 4px;
+        color: white;
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .notification.success {
+        background-color: #4CAF50;
+    }
+
+    .notification.error {
+        background-color: #f44336;
+    }
+
+    .save-room-btn {
+        background-color: #2196F3;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+        font-weight: bold;
+    }
+
+    .save-room-btn:hover {
+        background-color: #1976D2;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// ... existing code ...
+</script> 

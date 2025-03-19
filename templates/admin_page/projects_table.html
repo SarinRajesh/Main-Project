@@ -82,7 +82,13 @@
                             <a href="{% url 'add_designer' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Designers</a>
                         </li>
                         <li>
+                            <a href="{% url 'add_deliveryboy' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Delivery Boys</a>
+                        </li>
+                        <li>
                             <a href="{% url 'add_product' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Products</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'add_models' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Add Models</a>
                         </li>
                     </ul>
                 </div>
@@ -297,19 +303,23 @@
                                     Orders Table
                                 </a>
                             </li>
-                            
                             <li style="margin-bottom: 20px;">
-                                <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                <a href="{% url 'add_deliveryboy' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
                                 onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
                                 onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                               Add Designer
+                               Add Delivery Boy
                                 </a>
                             </li>
                             <li style="margin-bottom: 20px;">
-                                <a href="{% url 'add_product' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                                    Add Products
+                                <a href="{% url 'add_product' %}"   style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">Add Products
+                                </a>
+                            </li>
+                            <li style="margin-bottom: 20px;">
+                                <a href="{% url 'add_models' %}"   style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">Add Models
                                 </a>
                             </li>
                         </ul>
