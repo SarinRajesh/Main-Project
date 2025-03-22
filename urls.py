@@ -9,4 +9,5 @@ urlpatterns = [
     path('virtual-room/add-item/', views.add_room_item, name='add_room_item'),
     path('virtual-room/update-item/', views.update_item_position, name='update_item_position'),
     path('delete-room-model/<int:model_id>/', views.delete_room_model, name='delete_room_model'),
+    path('save-virtual-room/', views.save_virtual_room, name='save_virtual_room'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 

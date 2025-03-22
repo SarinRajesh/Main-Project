@@ -680,7 +680,7 @@
         <!-- Controls Panel -->
         <div id="controls">
             <div class="panel-header">
-                <h5>Room Designer</h5>
+                <h5>Room Designer - <span id="room-name-display"></span></h5>
             </div>
             <div class="mb-3">
                 <button id="new-room" class="btn btn-primary btn-custom">Create Room</button>
@@ -691,7 +691,8 @@
                         <label class="control-label">Select Existing Room</label>
                         <div class="d-flex align-items-center">
                             <select id="room-selector" class="form-select me-2">
-                                <option value="">Create new room</option>
+                                <option value="">Select a room</option>
+                                <!-- Options should be populated dynamically -->
                             </select>
                             <button id="delete-room" class="btn btn-danger" style="display: none;">
                                 <i class="bi bi-trash"></i> Delete
@@ -731,12 +732,12 @@
                 </div>
             </div>
 
-            <!-- Add this in the controls panel, after the room dimensions section -->
-            <div class="mb-3">
-                <button id="save-room-btn" class="btn btn-success btn-custom">
-                    <i class="bi bi-save"></i> Save Room
-                </button>
-            </div>
+           
+     <div class="mb-3">
+         <button id="save-room-btn" class="btn btn-success btn-custom">
+             <i class="bi bi-save"></i> Save Room
+         </button>
+     </div>
 
             <div id="functionalities-list" style="max-height: 200px;">
                 <h6 class="mb-3">Available Functionalities</h6>
@@ -853,10 +854,9 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/DragControls.js"></script>
 
-    <!-- Add these if not already present -->
-    <script src="three.js"></script>
-    <script src="DragControls.js"></script>
+
 
     <script>
         let scene, camera, renderer, controls;
@@ -1819,39 +1819,230 @@
             return cookieValue;
         }
 
-        // Add function to load saved room on page load
-        async function loadSavedRoom() {
+        // Save current room ID to localStorage
+        function saveCurrentRoomIdToLocalStorage(roomId) {
+            localStorage.setItem('currentRoomId', roomId);
+            console.log('Saved current room ID to localStorage:', roomId);
+        }
+
+        // Load room ID from localStorage
+        function getStoredRoomId() {
+            return localStorage.getItem('currentRoomId');
+        }
+
+        // Modified loadSavedRoom function to accept a roomId parameter
+        async function loadSavedRoom(roomId = null) {
             try {
-                const response = await fetch('/get_saved_room/');
-                if (!response.ok) {
-                    throw new Error('Failed to load saved room');
+                // If no roomId is provided, get it from dropdown or localStorage
+                if (!roomId) {
+                    roomId = document.getElementById('room-selector').value;
+                    
+                    // If dropdown has no selection, try localStorage
+                    if (!roomId) {
+                        roomId = getStoredRoomId();
+                        console.log('Using room ID from localStorage:', roomId);
+                        
+                        // If we have a stored ID, update the dropdown selection
+                        if (roomId) {
+                            document.getElementById('room-selector').value = roomId;
+                        } else {
+                            console.log('No room selected and none stored in localStorage');
+                            return;
+                        }
+                    }
+                }
+
+                console.log(`Loading room with ID: ${roomId}`);
+                
+                // No loading indicator - removed SweetAlert
+
+                // Fetch room data
+                try {
+                    const response = await fetch(`/get_room/${roomId}/`);
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        console.error(`HTTP error! Status: ${response.status}`);
+                        return;
+                    }
+                    
+                    console.log('Room data received:', data);
+                    
+                    // Store current room ID in localStorage
+                    saveCurrentRoomIdToLocalStorage(roomId);
+
+                    // Set room properties
+                    if (data.room) {
+                        document.getElementById('room-width').value = data.room.width;
+                        document.getElementById('room-length').value = data.room.length;
+                        document.getElementById('room-height').value = data.room.height;
+                        document.getElementById('wall-color').value = data.room.wall_color;
+                        document.getElementById('floor-color').value = data.room.floor_color;
+                        document.getElementById('ceiling-color').value = data.room.ceiling_color;
+                        document.getElementById('room-name').value = data.room.name;
+                        
+                        // Update room name display if it exists
+                        const roomNameDisplay = document.getElementById('room-name-display');
+                        if (roomNameDisplay) {
+                            roomNameDisplay.textContent = data.room.name;
+                        }
+                        
+                        // Create or update the room
+                        createRoom(data.room.width, data.room.length, data.room.height);
+                        updateRoomColors();
+                    }
+                    
+                    // Clear existing models
+                    clearExistingModels();
+                    
+                    // Load the models
+                    if (data.models && data.models.length > 0) {
+                        console.log(`Loading ${data.models.length} models...`);
+                        
+                        const loader = new THREE.GLTFLoader();
+                        
+                        for (const modelData of data.models) {
+                            try {
+                                console.log(`Loading model: ${modelData.name} from URL: ${modelData.model_file}`);
+                                
+                                // Load the model
+                                loader.load(
+                                    modelData.model_file,
+                                    (gltf) => {
+                                        console.log(`Successfully loaded model: ${modelData.name}`);
+                                        
+                                        const model = gltf.scene;
+                                        
+                                        // Set model properties
+                                        model.userData = {
+                                            id: modelData.id,
+                                            model_id: modelData.model_id,
+                                            name: modelData.name,
+                                            category: modelData.category,
+                                            draggable: true
+                                        };
+                                        
+                                        // Set position, rotation and scale
+                                        model.position.set(
+                                            modelData.position_x,
+                                            modelData.position_y,
+                                            modelData.position_z
+                                        );
+                                        model.rotation.y = modelData.rotation_y;
+                                        const scale = modelData.scale;
+                                        model.scale.set(scale, scale, scale);
+                                        
+                                        // Set up shadows and materials
+                                        model.traverse((child) => {
+                                            if (child.isMesh) {
+                                                child.castShadow = true;
+                                                child.receiveShadow = true;
+                                                if (child.material) {
+                                                    child.material.needsUpdate = true;
+                                                }
+                                            }
+                                        });
+                                        
+                                        // Add model to the scene
+                                        scene.add(model);
+                                        console.log(`Added model to scene: ${modelData.name}`);
+                                        
+                                        // Force render to update the scene
+                                        render();
+                                    },
+                                    (xhr) => {
+                                        const percentage = (xhr.loaded / xhr.total * 100).toFixed(2);
+                                        console.log(`Loading progress for ${modelData.name}: ${percentage}%`);
+                                    },
+                                    (error) => {
+                                        console.error(`Error loading model ${modelData.name}:`, error);
+                                    }
+                                );
+                                
+                            } catch (error) {
+                                console.error(`Failed to load model ${modelData.name}:`, error);
+                            }
+                        }
+                    } else {
+                        console.log('No models to load');
+                    }
+                } catch (fetchError) {
+                    // Just log fetch errors without alerting
+                    console.error('Error fetching room data:', fetchError);
                 }
                 
-                const roomData = await response.json();
-                if (roomData.room) {
-                    // Update color inputs first
-                    document.getElementById('wall-color').value = roomData.room.wall_color;
-                    document.getElementById('floor-color').value = roomData.room.floor_color;
-                    document.getElementById('ceiling-color').value = roomData.room.ceiling_color;
-                    
-                    // Update dimension inputs
-                    document.getElementById('room-width').value = roomData.room.width;
-                    document.getElementById('room-length').value = roomData.room.length;
-                    document.getElementById('room-height').value = roomData.room.height;
-                    
-                    // Create the room with saved dimensions and colors
-                    createRoom(
-                        roomData.room.width,
-                        roomData.room.length,
-                        roomData.room.height
-                    );
-                    
-                    // Update the room colors after creation
-                    updateRoomColors();
-                }
             } catch (error) {
-                console.error('Error loading saved room:', error);
+                // Suppress the specific "Unexpected token" error
+                if (error.message && error.message.includes('Unexpected token')) {
+                    console.error('Error loading room (suppressed alert):', error);
+                } else {
+                    console.error('Error loading room:', error);
+                }
             }
+        }
+
+        // Modify the room selector change event
+        document.getElementById('room-selector').addEventListener('change', function() {
+            const roomId = this.value;
+            if (roomId) {
+                loadSavedRoom(roomId);
+            }
+        });
+
+        // Modify saveCurrentRoom to also save to localStorage
+        async function saveCurrentRoom() {
+            try {
+                // Existing save code...
+                
+                // After successful save, store the current room ID
+                const roomId = document.getElementById('room-selector').value;
+                if (roomId) {
+                    saveCurrentRoomIdToLocalStorage(roomId);
+                }
+                
+                // Rest of your function...
+            } catch (error) {
+                // Error handling...
+            }
+        }
+
+        // Add auto-load on page initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load room list first
+            loadRoomList().then(() => {
+                // Then try to load the last selected room
+                const storedRoomId = getStoredRoomId();
+                if (storedRoomId) {
+                    console.log('Loading previously selected room from localStorage:', storedRoomId);
+                    // Wait a bit for the room list to populate before setting the value
+                    setTimeout(() => {
+                        const roomSelector = document.getElementById('room-selector');
+                        if (roomSelector) {
+                            roomSelector.value = storedRoomId;
+                            loadSavedRoom(storedRoomId);
+                        }
+                    }, 500);
+                }
+            });
+        });
+
+        function clearExistingModels() {
+            // Find and remove all draggable objects from the scene
+            const objectsToRemove = [];
+            
+            scene.traverse((object) => {
+                if (object.userData && object.userData.draggable === true) {
+                    objectsToRemove.push(object);
+                }
+            });
+            
+            // Remove found objects
+            objectsToRemove.forEach(obj => {
+                console.log(`Removing model: ${obj.userData.name || 'unnamed'}`);
+                scene.remove(obj);
+            });
+            
+            console.log(`Removed ${objectsToRemove.length} existing models from scene`);
         }
 
         // Call loadSavedRoom when the page loads
@@ -1859,93 +2050,62 @@
 
         // Add these new functions for room management
         async function loadRooms() {
-            try {
-                const response = await fetch('/get_all_rooms/');
-                if (!response.ok) {
-                    throw new Error('Failed to load rooms');
-                }
-                
-                const data = await response.json();
-                const selector = document.getElementById('room-selector');
-                
-                // Clear existing options except the first one
-                while (selector.options.length > 1) {
-                    selector.remove(1);
-                }
-                
-                // Add rooms to selector
-                data.rooms.forEach(room => {
-                    const option = document.createElement('option');
-                    option.value = room.id;
-                    option.textContent = room.name || `Room ${room.id}`;
-                    selector.add(option);
-                });
-                
-                // Setup delete button after loading rooms
-                setupDeleteButton();
-            } catch (error) {
-                console.error('Error loading rooms:', error);
+        try {
+            const response = await fetch('/get_all_rooms/');
+            if (!response.ok) {
+                throw new Error('Failed to load rooms');
             }
+            
+            const data = await response.json();
+            const selector = document.getElementById('room-selector');
+            
+            // Clear existing options except the first one
+            while (selector.options.length > 1) {
+                selector.remove(1);
+            }
+            
+            // Add rooms to selector
+            data.rooms.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room.id;
+                option.textContent = room.name || `Room ${room.id}`;
+                selector.add(option);
+            });
+            
+            // Setup delete button after loading rooms
+            setupDeleteButton();
+        } catch (error) {
+            console.error('Error loading rooms:', error);
         }
+    }
+
+    // Call loadRooms when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadRooms();
+        loadSavedRoom();
+    });
 
         // Update room selector change event
         document.getElementById('room-selector').addEventListener('change', async function(e) {
-            const roomId = e.target.value;
-            const deleteButton = document.getElementById('delete-room');
-            deleteButton.style.display = roomId ? 'block' : 'none';
-            
-            if (!roomId) {
-                // Clear input fields for new room
-                document.getElementById('room-name').value = '';
-                document.getElementById('room-width').value = '';
-                document.getElementById('room-length').value = '';
-                document.getElementById('room-height').value = '';
-                document.getElementById('wall-color').value = '#E8E8E8';
-                document.getElementById('floor-color').value = '#CCCCCC';
-                document.getElementById('ceiling-color').value = '#FFFFFF';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/get_room/${roomId}/`);
-                if (!response.ok) {
-                    throw new Error('Failed to load room');
-                }
-                
-                const roomData = await response.json();
-                if (roomData.room) {
-                    // Update inputs
-                    document.getElementById('room-name').value = roomData.room.name || '';
-                    document.getElementById('room-width').value = roomData.room.width;
-                    document.getElementById('room-length').value = roomData.room.length;
-                    document.getElementById('room-height').value = roomData.room.height;
-                    document.getElementById('wall-color').value = roomData.room.wall_color;
-                    document.getElementById('floor-color').value = roomData.room.floor_color;
-                    document.getElementById('ceiling-color').value = roomData.room.ceiling_color;
-                    
-                    // Create room
-                    createRoom(
-                        roomData.room.width,
-                        roomData.room.length,
-                        roomData.room.height
-                    );
-                    
-                    // Update colors
-                    updateRoomColors();
-                    
-                    // Ensure delete button is properly set up
-                    setupDeleteButton();
-                }
-            } catch (error) {
-                console.error('Error loading room:', error);
-                await Swal.fire({
-                    title: 'Error!',
-                    text: 'Failed to load room. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#3085d6'
-                });
+    const roomId = e.target.value;
+    if (!roomId) {
+        // Clear the room and models
+        if (currentRoom) {
+            scene.remove(currentRoom);
+            currentRoom = null;
+        }
+        // Remove all models
+        scene.traverse((object) => {
+            if (object.userData && object.userData.draggable) {
+                scene.remove(object);
             }
         });
+        return;
+    }
+    
+    // Load the room and its models
+    await loadSavedRoom();
+});
 
         // Add function to set up delete button
         function setupDeleteButton() {
@@ -2079,7 +2239,7 @@
                 floor_color: document.getElementById('floor-color').value,
                 ceiling_color: document.getElementById('ceiling-color').value,
                 room_id: document.getElementById('room-selector').value,
-                room_name: document.getElementById('room-name').value
+                room_name: document.getElementById('room-name').value // Save room name
             };
             
             localStorage.setItem('currentRoomState', JSON.stringify(roomState));
@@ -2101,6 +2261,9 @@
                 document.getElementById('ceiling-color').value = roomState.ceiling_color;
                 document.getElementById('room-name').value = roomState.room_name || '';
                 
+                // Set room name display
+                document.getElementById('room-name-display').textContent = roomState.room_name || '';
+                
                 // Create the room with saved dimensions
                 createRoom(roomState.width, roomState.length, roomState.height);
                 
@@ -2118,7 +2281,7 @@
         // Update the DOMContentLoaded event listener
         document.addEventListener('DOMContentLoaded', async function() {
             await loadRooms();
-            await loadModels();  // Add this line back
+            await loadModels();
             const savedState = localStorage.getItem('currentRoomState');
             if (savedState) {
                 restoreRoomFromLocalStorage();
@@ -2326,117 +2489,74 @@
 
         // Update the loadModelFromURL function
         async function loadModelFromURL(modelData) {
-            const loader = new THREE.GLTFLoader();
-            
-            try {
-                const gltf = await new Promise((resolve, reject) => {
-                    loader.load(modelData.url, resolve, undefined, reject);
-                });
-                
-                const model = gltf.scene;
-                
-                // Get room dimensions
-                const roomWidth = parseFloat(document.getElementById('room-width').value);
-                const roomHeight = parseFloat(document.getElementById('room-height').value);
-                const roomLength = parseFloat(document.getElementById('room-length').value);
-
-                // Calculate appropriate scale
-                const box = new THREE.Box3().setFromObject(model);
-                const size = box.getSize(new THREE.Vector3());
-                const maxDim = Math.max(size.x, size.y, size.z);
-                const scale = 2 / maxDim;
-
-                // Position and rotate based on category
-                if (modelData.name.toLowerCase().includes('window')) {
-                    // Place window on the right wall by default
-                    const windowHeight = roomHeight * 0.5; // Window at 50% of wall height
-                    model.position.set(
-                        roomWidth/2,           // Right wall
-                        windowHeight,          // Middle of the wall height
-                        0                      // Center of wall depth
-                    );
-                    model.rotation.y = -Math.PI / 2;  // Rotate to face into the room
-                    
-                    // Adjust scale specifically for windows
-                    const windowScale = scale * 1.2;  // Slightly larger scale for windows
-                    model.scale.set(windowScale, windowScale, windowScale);
-                    
-                    // Store the wall position for later reference
-                    model.userData.wall = 'right';
-                    model.userData.isWindow = true;
-                } else if (modelData.name.toLowerCase().includes('bed')) {
-                    // Place bed on the floor
-                    model.position.set(
-                        0,                    // Center of room width
-                        0,                    // On the floor
-                        -roomLength/4         // Slightly towards back wall
-                    );
-                    model.scale.set(scale, scale, scale);
-                } else {
-                    // Default positioning for other furniture
-                    model.position.set(
-                        0,                    // Center of room width
-                        0,                    // On the floor
-                        0                     // Center of room length
-                    );
-                    model.scale.set(scale, scale, scale);
-                }
-                
-                // Set up model properties
-                model.userData.id = modelData.id;
-                model.userData.name = modelData.name;
-                model.userData.draggable = true;
-                model.userData.category = modelData.category;
-                model.userData.originalScale = { x: model.scale.x, y: model.scale.y, z: model.scale.z };
-                model.userData.baseScale = scale;
-                
-                // Set up shadows and materials
-                model.traverse((child) => {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-                        if (child.material) {
-                            child.material.transparent = false;
-                            child.material.opacity = 1;
-                            child.material.side = THREE.DoubleSide;
-                            child.material.needsUpdate = true;
-                        }
-                    }
-                });
-                
-                scene.add(model);
-                updateModelList();
-                selectObject(model);
-                
-                // Force scene update
-                renderer.render(scene, camera);
-                
-                // Send data to backend
-                const roomId = document.getElementById('room-selector').value;
-                await fetch('/add-model-to-room/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        room_id: roomId,
-                        model_id: modelData.id,
-                        position_x: model.position.x,
-                        position_y: model.position.y,
-                        position_z: model.position.z,
-                        rotation_y: model.rotation.y,
-                        scale: model.scale.x
-                    })
-                });
-
-                return model;
-                
-            } catch (error) {
-                console.error('Error loading model:', error);
-                throw error;
-            }
+    const loader = new THREE.GLTFLoader();
+    
+    try {
+        const gltf = await new Promise((resolve, reject) => {
+            loader.load(modelData.url, resolve, undefined, reject);
+        });
+        
+        const model = gltf.scene;
+        
+        // Set up model properties
+        model.userData.id = modelData.id;
+        model.userData.name = modelData.name;
+        model.userData.draggable = true;
+        
+        // If we have saved position, rotation, and scale, use them
+        if (modelData.position) {
+            model.position.set(
+                modelData.position.x,
+                modelData.position.y,
+                modelData.position.z
+            );
         }
+        
+        if (modelData.rotation !== undefined) {
+            model.rotation.y = modelData.rotation;
+        }
+        
+        if (modelData.scale !== undefined) {
+            const scale = modelData.scale;
+            model.scale.set(scale, scale, scale);
+            model.userData.baseScale = scale;
+        } else {
+            // Calculate default scale if none provided
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 2 / maxDim;
+            model.scale.set(scale, scale, scale);
+            model.userData.baseScale = scale;
+        }
+        
+        // Set up shadows and materials
+        model.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                if (child.material) {
+                    child.material.transparent = false;
+                    child.material.opacity = 1;
+                    child.material.side = THREE.DoubleSide;
+                    child.material.needsUpdate = true;
+                }
+            }
+        });
+        
+        scene.add(model);
+        updateModelList();
+        
+        // Force scene update
+        renderer.render(scene, camera);
+        
+        return model;
+        
+    } catch (error) {
+        console.error('Error loading model:', error);
+        throw error;
+    }
+}
 
         // Add category filter event listeners
         document.addEventListener('DOMContentLoaded', function() {
@@ -2761,84 +2881,127 @@
             });
         });
 
-        // Add this after your existing JavaScript functions
+  
         function saveCurrentRoom() {
-            if (!currentRoom) {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Please create a room first',
-                    icon: 'error'
-                });
-                return;
-            }
-
-            const roomId = document.getElementById('room-selector').value;
-            if (!roomId) {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Please select a room to save',
-                    icon: 'error'
-                });
-                return;
-            }
-
-            showLoadingIndicator();
-
-            // Get all models in the scene
-            const modelData = [];
-            scene.traverse((object) => {
-                if (object.userData && object.userData.draggable && object.userData.id) {
-                    modelData.push({
-                        model_id: object.userData.id,
-                        position: {
-                            x: object.position.x,
-                            y: object.position.y,
-                            z: object.position.z
-                        },
-                        rotation_y: object.rotation.y,
-                        scale: object.scale.x
-                    });
-                }
+    try {
+        const roomName = document.getElementById('room-name').value.trim();
+        if (!roomName) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Please enter a room name.',
+                icon: 'error'
             });
+            return;
+        }
+        
+        // Collect all models currently in the scene
+        const models = [];
+        scene.traverse((object) => {
+            if (object.userData && object.userData.id && object.userData.draggable) {
+                models.push({
+                    model_id: object.userData.id,
+                    position_x: object.position.x,
+                    position_y: object.position.y,
+                    position_z: object.position.z,
+                    rotation_y: object.rotation.y,
+                    scale: object.scale.x
+                });
+            }
+        });
 
-            // Prepare data for saving
-            const saveData = {
-                room_id: roomId,
-                models: modelData
-            };
-
-            // Send data to server
-            fetch('/save-virtual-room/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
+        // Send data to backend
+        fetch('/save-virtual-room/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                room_name: roomName,
+                room_data: {
+                    width: parseFloat(document.getElementById('room-width').value),
+                    length: parseFloat(document.getElementById('room-length').value),
+                    height: parseFloat(document.getElementById('room-height').value),
+                    wall_color: document.getElementById('wall-color').value,
+                    floor_color: document.getElementById('floor-color').value,
+                    ceiling_color: document.getElementById('ceiling-color').value
                 },
-                body: JSON.stringify(saveData)
+                models: models
             })
-            .then(response => response.json())
-            .then(data => {
-                hideLoadingIndicator();
-                if (data.success) {
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'Room models saved successfully',
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    throw new Error(data.message || 'Failed to save room models');
-                }
-            })
-            .catch(error => {
-                hideLoadingIndicator();
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update room selector and reload room list
+                document.getElementById('room-selector').value = data.room_id;
+                loadRooms();  // Refresh the room list
+                
+                // Save to localStorage
+                saveRoomToLocalStorage();
+                
                 Swal.fire({
-                    title: 'Error',
-                    text: error.message || 'Failed to save room models',
-                    icon: 'error'
+                    title: 'Room Saved!',
+                    text: `Room "${roomName}" has been saved successfully`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
                 });
+            } else {
+                throw new Error(data.message || 'Failed to save room');
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'Could not save room.',
+                icon: 'error'
             });
+        });
+        
+    } catch (error) {
+        Swal.fire({
+            title: 'Error',
+            text: 'Could not save room.',
+            icon: 'error'
+        });
+    }
+}
+        function debugLocalStorage() {
+            const savedState = localStorage.getItem('currentRoomState');
+            console.log("currentRoomState:", savedState);
+            
+            if (savedState) {
+                try {
+                    const parsed = JSON.parse(savedState);
+                    console.log("Parsed room_id:", parsed.room_id);
+                    console.log("Parsed room_name:", parsed.room_name);
+                    
+                    // Display in UI for easier debugging
+                    Swal.fire({
+                        title: 'localStorage Debug',
+                        html: `
+                            <strong>Raw data:</strong> ${savedState}<br><br>
+                            <strong>room_id:</strong> ${parsed.room_id || 'missing'}<br>
+                            <strong>room_name:</strong> ${parsed.room_name || 'missing'}<br>
+                        `,
+                        icon: 'info'
+                    });
+                } catch (e) {
+                    console.error("Parse error:", e);
+                    Swal.fire({
+                        title: 'Parse Error',
+                        text: `Could not parse localStorage data: ${e.message}`,
+                        icon: 'error'
+                    });
+                }
+            } else {
+                console.log("No data in localStorage");
+                Swal.fire({
+                    title: 'Missing Data',
+                    text: 'No room data found in localStorage',
+                    icon: 'warning'
+                });
+            }
         }
     </script>
 </body>
