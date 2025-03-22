@@ -1854,7 +1854,15 @@
 
                 console.log(`Loading room with ID: ${roomId}`);
                 
-                // No loading indicator anymore
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Loading room...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
                 // Fetch room data
                 try {
@@ -1863,6 +1871,7 @@
                     
                     if (!response.ok) {
                         console.error(`HTTP error! Status: ${response.status}`);
+                        Swal.close();
                         return;
                     }
                     
@@ -1967,13 +1976,25 @@
                         console.log('No models to load');
                     }
                 } catch (fetchError) {
-                    // Just log the error without showing any alert
+                    // For the "Unexpected token '<'" error, just log it without showing an alert
                     console.error('Error fetching room data:', fetchError);
                 }
                 
+                // Close loading indicator after a short delay to ensure models have time to load
+                setTimeout(() => {
+                    Swal.close();
+                }, 2000);
+                
             } catch (error) {
-                // Just log all errors without showing any alerts
-                console.error('Error loading room:', error);
+                // Check if this is the specific error we want to suppress
+                if (error.message && error.message.includes('Unexpected token')) {
+                    console.error('Error loading room (suppressed alert):', error);
+                } else {
+                    console.error('Error loading room:', error);
+                    Swal.fire('Error', `Failed to load room: ${error.message}`, 'error');
+                }
+                
+                Swal.close();
             }
         }
 
