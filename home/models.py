@@ -257,22 +257,11 @@ class VirtualRoom(models.Model):
     models = models.ManyToManyField('RoomModel', through='VirtualRoomModel')
 
 class RoomModel(models.Model):
-    CATEGORY_CHOICES = [
-        ('bed', 'Bed'),
-        ('table', 'Table'),
-        ('chair', 'Chair'),
-        ('window', 'Window'),
-        ('door', 'Door'),
-        ('light', 'Light'),
-        ('fan', 'Fan'),
-    ]
-    
     name = models.CharField(max_length=255)
     model_file = models.FileField(upload_to='room_models/')
     thumbnail = models.ImageField(upload_to='room_model_thumbnails/', null=True, blank=True)
-    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES, default='chair')
+    category = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
     virtual_rooms = models.ManyToManyField(VirtualRoom, through='VirtualRoomModel')
 
     def __str__(self):
@@ -288,10 +277,14 @@ class VirtualRoomModel(models.Model):
     position_x = models.FloatField(default=0)
     position_y = models.FloatField(default=0)
     position_z = models.FloatField(default=0)
+    rotation_x = models.FloatField(default=0)
     rotation_y = models.FloatField(default=0)
-    scale = models.FloatField(default=1)
+    rotation_z = models.FloatField(default=0)
+    scale_x = models.FloatField(default=1)
+    scale_y = models.FloatField(default=1)
+    scale_z = models.FloatField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('virtual_room', 'room_model')
+        pass
 

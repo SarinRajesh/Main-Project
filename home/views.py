@@ -2918,192 +2918,11 @@ def product_sales_analytics(request):
     
     return render(request, 'admin_page/product_sales_analytics.html', context)
 
-import json
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from django.core.files.storage import default_storage
-from .models import RoomModel
-
-@login_required
-def virtual_room_designer(request):
-    user = request.user
-    user_type = user.user_type_id.user_type if user.user_type_id else None
-    
-    rooms = VirtualRoom.objects.filter(user=request.user)
-    
-    context = {
-        'rooms': rooms,
-        'user_type': user_type,
-    }
-    return render(request, 'virtual_room/designer.html', context)
-
-@login_required
-@require_http_methods(["POST"])
-def create_room(request):
-    try:
-        data = json.loads(request.body)
-        room_name = data.get('name', 'Untitled Room')
-
-        # Try to find an existing room with the same name for this user
-        try:
-            room = VirtualRoom.objects.get(user=request.user, name=room_name)
-            # Update existing room
-            room.width = float(data['width'])
-            room.length = float(data['length'])
-            room.height = float(data['height'])
-            room.wall_color = data['wall_color']
-            room.floor_color = data['floor_color']
-            room.ceiling_color = data['ceiling_color']
-        except VirtualRoom.DoesNotExist:
-            # Create new room
-            room = VirtualRoom(
-                user=request.user,
-                name=room_name,
-                width=float(data['width']),
-                length=float(data['length']),
-                height=float(data['height']),
-                wall_color=data['wall_color'],
-                floor_color=data['floor_color'],
-                ceiling_color=data['ceiling_color']
-            )
-        
-        room.save()
-        
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Room saved successfully',
-            'room_id': room.id
-        })
-    except KeyError as e:
-        return JsonResponse({
-            'status': 'error',
-            'message': f'Missing required field: {str(e)}'
-        }, status=400)
-    except ValueError as e:
-        return JsonResponse({
-            'status': 'error',
-            'message': f'Invalid value provided: {str(e)}'
-        }, status=400)
-    except Exception as e:
-        return JsonResponse({
-            'status': 'error',
-            'message': f'Failed to save room: {str(e)}'
-        }, status=400)
-
-
-
-@login_required
-def get_all_rooms(request):
-    rooms = VirtualRoom.objects.filter(user=request.user).order_by('name')
-    return JsonResponse({
-        'rooms': [{
-            'id': room.id,
-            'name': room.name
-        } for room in rooms]
-    })
-
-@login_required
-def get_room(request, room_id):
-    try:
-        # Get the virtual room with all its models
-        room = VirtualRoom.objects.get(id=room_id, user=request.user)
-        print(f"Found room: {room.name} (ID: {room.id})")
-        
-        # Get all virtual room models with their associated room models (3D models)
-        virtual_room_models = (VirtualRoomModel.objects
-            .filter(virtual_room=room)
-            .select_related('room_model')  # Efficiently get the associated RoomModel data
-            .all())
-
-        print(f"Found {virtual_room_models.count()} virtual room models for room {room.name}")
-
-        room_data = {
-            'room': {
-                'id': room.id,
-                'name': room.name,
-                'width': float(room.width),
-                'length': float(room.length),
-                'height': float(room.height),
-                'wall_color': room.wall_color,
-                'floor_color': room.floor_color,
-                'ceiling_color': room.ceiling_color
-            },
-            'models': []
-        }
-
-        # Process each model in the room
-        for index, vrm in enumerate(virtual_room_models):
-            # Get the actual 3D model data
-            model = vrm.room_model
-            
-            print(f"Model {index+1}: {model.name} (ID: {model.id})")
-            print(f"  - GLB file: {model.model_file.name if model.model_file else 'No file'}")
-            print(f"  - Position: ({vrm.position_x}, {vrm.position_y}, {vrm.position_z})")
-            
-            if model and model.model_file:  # Make sure model and its file exist
-                try:
-                    model_url = model.model_file.url
-                    absolute_url = request.build_absolute_uri(model_url)
-                    
-                    print(f"  - URL: {absolute_url}")
-                    
-                    model_data = {
-                        'id': vrm.id,  # VirtualRoomModel ID
-                        'model_id': model.id,  # RoomModel ID
-                        'name': model.name,
-                        'category': model.category,
-                        # Get the full URL for the GLB file
-                        'model_file': absolute_url,
-                        # Position data from VirtualRoomModel
-                        'position_x': float(vrm.position_x),
-                        'position_y': float(vrm.position_y),
-                        'position_z': float(vrm.position_z),
-                        # Rotation and scale from VirtualRoomModel
-                        'rotation_y': float(vrm.rotation_y),
-                        'scale': float(vrm.scale)
-                    }
-                    room_data['models'].append(model_data)
-                    print(f"  - Added to response")
-                except Exception as e:
-                    print(f"  - Error processing model URL: {str(e)}")
-            else:
-                print(f"  - Skipped: Model file missing")
-
-        print(f"Sending response with {len(room_data['models'])} models")
-        return JsonResponse(room_data)
-
-    except VirtualRoom.DoesNotExist:
-        print(f"Room {room_id} not found")
-        return JsonResponse({'error': 'Room not found'}, status=404)
-    except Exception as e:
-        print(f"Error loading room: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
-
-@login_required
-@require_http_methods(["DELETE"])
-def delete_room(request, room_id):
-    try:
-        room = VirtualRoom.objects.get(id=room_id, user=request.user)
-        room.delete()
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Room deleted successfully'
-        })
-    except VirtualRoom.DoesNotExist:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Room not found'
-        }, status=404)
-    except Exception as e:
-        return JsonResponse({
-            'status': 'error',
-            'message': str(e)
-        }, status=400)
     
 @login_required
 def get_room_models(request):
     try:
-        models = RoomModel.objects.filter(user=request.user)
+        models = RoomModel.objects.all()
         models_data = [{
             'id': model.id,
             'name': model.name,
@@ -3120,9 +2939,6 @@ def get_room_models(request):
         return JsonResponse({
             'error': str(e)
         }, status=500)
-
-
-        return JsonResponse({'error': str(e)}, status=500)
 
 
 
@@ -3190,89 +3006,334 @@ def upload_room_model(request):
         if not model_file.name.endswith(('.gltf', '.glb')):
             return JsonResponse({'success': False, 'error': 'Invalid model file format'})
 
-        # Create new room model
+        # Create new room model - remove the user parameter
         room_model = RoomModel.objects.create(
             name=name,
             category=category,
             model_file=model_file,
-            thumbnail=thumbnail,
-            user=request.user
+            thumbnail=thumbnail
+            # Remove the user field that's causing the error
         )
 
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
+#frontend
 
-@csrf_exempt
-@require_POST
-def save_virtual_room(request):
+
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.core.files.storage import default_storage
+from .models import RoomModel
+
+@login_required
+def virtual_room_designer(request):
+    user = request.user
+    user_type = user.user_type_id.user_type if user.user_type_id else None
+    
+    rooms = VirtualRoom.objects.filter(user=request.user)
+    
+    context = {
+        'rooms': rooms,
+        'user_type': user_type,
+    }
+    return render(request, 'virtual_room/designer.html', context)
+
+@login_required
+def get_models(request):
     try:
-        data = json.loads(request.body)
-        room_name = data.get('room_name')
-        room_data = data.get('room_data')
-        models_data = data.get('models', [])
-
-        # Try to get existing room by name and user, or create new one
-        room, created = VirtualRoom.objects.get_or_create(
-            name=room_name, 
-            user=request.user,
-            defaults={
-                'width': room_data['width'],
-                'length': room_data['length'],
-                'height': room_data['height'],
-                'wall_color': room_data['wall_color'],
-                'floor_color': room_data['floor_color'],
-                'ceiling_color': room_data['ceiling_color']
+        # Get all models from the database
+        models = RoomModel.objects.all()
+        
+        # Prepare data to return
+        models_data = []
+        for model in models:
+            model_data = {
+                'id': model.id,
+                'name': model.name,
+                'category': model.category,
+                'model_file': model.model_file.url if model.model_file else None,
+                'thumbnail': model.thumbnail.url if model.thumbnail else None
             }
-        )
-
-        # Don't clear existing models, just add new ones
-        for model_data in models_data:
-            # Create new VirtualRoomModel for each model
-            VirtualRoomModel.objects.create(
-                virtual_room=room,
-                room_model_id=model_data['model_id'],
-                position_x=model_data['position_x'],
-                position_y=model_data['position_y'],
-                position_z=model_data['position_z'],
-                rotation_y=model_data['rotation_y'],
-                scale=model_data['scale']
-            )
-
+            models_data.append(model_data)
+        
         return JsonResponse({
             'success': True,
-            'message': 'Models added to room successfully',
-            'room_id': room.id
+            'models': models_data
         })
-
     except Exception as e:
-        print(f"Error saving room: {str(e)}")  # Add debug print
         return JsonResponse({
             'success': False,
-            'message': f'Failed to save room: {str(e)}'
+            'message': str(e)
+        })
+
+@login_required
+def get_rooms(request, room_id=None):
+    """
+    Combined endpoint to:
+    1. Get all rooms for the current user (when room_id is None)
+    2. Get a specific room with its models (when room_id is provided)
+    """
+    try:
+        if room_id is None:
+            # Get all rooms for the current user
+            rooms = VirtualRoom.objects.filter(user=request.user).order_by('-updated_at')
+            
+            # Format the rooms as a list of dictionaries
+            rooms_data = []
+            for room in rooms:
+                rooms_data.append({
+                    'id': room.id,
+                    'name': room.name,
+                    'width': float(room.width),
+                    'length': float(room.length),
+                    'height': float(room.height),
+                    'wall_color': room.wall_color,
+                    'floor_color': room.floor_color,
+                    'ceiling_color': room.ceiling_color,
+                    'created_at': room.created_at.strftime('%Y-%m-%d %H:%M'),
+                    'updated_at': room.updated_at.strftime('%Y-%m-%d %H:%M')
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'rooms': rooms_data
+            })
+        else:
+            # Get the specific room with all its models
+            room = VirtualRoom.objects.get(id=room_id, user=request.user)
+            
+            # Get all virtual room models with their associated room models (3D models)
+            virtual_room_models = (VirtualRoomModel.objects
+                .filter(virtual_room=room)
+                .select_related('room_model')
+                .all())
+
+            room_data = {
+                'success': True,
+                'room': {
+                    'id': room.id,
+                    'name': room.name,
+                    'width': float(room.width),
+                    'length': float(room.length),
+                    'height': float(room.height),
+                    'wall_color': room.wall_color,
+                    'floor_color': room.floor_color,
+                    'ceiling_color': room.ceiling_color
+                },
+                'models': []
+            }
+            
+            # Process each model in the room
+            for vrm in virtual_room_models:
+                model = vrm.room_model
+                
+                if model and model.model_file:  # Make sure model and its file exist
+                    try:
+                        model_url = model.model_file.url
+                        absolute_url = request.build_absolute_uri(model_url)
+                        
+                        model_data = {
+                            'id': vrm.id,  # VirtualRoomModel ID
+                            'model_id': model.id,  # RoomModel ID
+                            'name': model.name,
+                            'category': model.category,
+                            'model_file': absolute_url,
+                            'position_x': float(vrm.position_x),
+                            'position_y': float(vrm.position_y),
+                            'position_z': float(vrm.position_z),
+                            'rotation_x': float(vrm.rotation_x),
+                            'rotation_y': float(vrm.rotation_y),
+                            'rotation_z': float(vrm.rotation_z),
+                            'scale_x': float(vrm.scale_x),
+                            'scale_y': float(vrm.scale_y),
+                            'scale_z': float(vrm.scale_z),
+                            'type': model.name  # Add type field for the frontend to identify the model
+                        }
+                        room_data['models'].append(model_data)
+                    except Exception as e:
+                        print(f"Error processing model URL: {str(e)}")
+
+            return JsonResponse(room_data)
+            
+    except VirtualRoom.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Room not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_room(request, room_id):
+    try:
+        room = VirtualRoom.objects.get(id=room_id, user=request.user)
+        room.delete()
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Room deleted successfully'
+        })
+    except VirtualRoom.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Room not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
         }, status=400)
+    
 
 
 @login_required
 @csrf_exempt
 @require_POST
-def get_room_by_name(request):
+def save_room(request, room_id=None):
+    """
+    Combined endpoint to save a virtual room from the 3D designer to the database.
+    This function handles both creating new rooms and updating existing ones.
+    """
     try:
+        # Parse the JSON data from request body
         data = json.loads(request.body)
-        room_name = data.get('room_name')
         
-        if not room_name:
+        # Extract room data
+        name = data.get('name')
+        if not name:
             return JsonResponse({'success': False, 'message': 'Room name is required'}, status=400)
             
-        # Find the room by name for the current user
-        room = VirtualRoom.objects.filter(user=request.user, name=room_name).first()
+        # Get or validate numeric values
+        try:
+            width = float(data.get('width', 0))
+            length = float(data.get('length', 0))
+            height = float(data.get('height', 0))
+            
+            if width <= 0 or length <= 0 or height <= 0:
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Room dimensions must be positive numbers'
+                }, status=400)
+                
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'success': False, 
+                'message': 'Invalid room dimensions'
+            }, status=400)
+            
+        # Get color values
+        wall_color = data.get('wall_color', '#FFFFFF')
+        floor_color = data.get('floor_color', '#FFFFFF')
+        ceiling_color = data.get('ceiling_color', '#FFFFFF')
         
-        if room:
-            return JsonResponse({'success': True, 'room_id': room.id, 'room_name': room.name})
+        # Get furniture data
+        furniture_items = data.get('furniture', [])
+        
+        # Check if we're updating an existing room
+        if room_id:
+            try:
+                room = VirtualRoom.objects.get(id=room_id, user=request.user)
+                # Update existing room
+                room.name = name
+                room.width = width
+                room.length = length
+                room.height = height
+                room.wall_color = wall_color
+                room.floor_color = floor_color
+                room.ceiling_color = ceiling_color
+                room.save()
+                
+                # Clear existing furniture for this room to avoid duplicates
+                VirtualRoomModel.objects.filter(virtual_room=room).delete()
+                
+                message = 'Room updated successfully'
+            except VirtualRoom.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Room not found or you do not have permission to update it'
+                }, status=404)
         else:
-            return JsonResponse({'success': False, 'message': 'Room not found'}, status=404)
+            # Check if a room with this name already exists for this user
+            existing_room = VirtualRoom.objects.filter(user=request.user, name=name).first()
+            
+            if existing_room:
+                # Update existing room with the same name
+                existing_room.width = width
+                existing_room.length = length
+                existing_room.height = height
+                existing_room.wall_color = wall_color
+                existing_room.floor_color = floor_color
+                existing_room.ceiling_color = ceiling_color
+                existing_room.save()
+                
+                # Clear existing furniture for this room to avoid duplicates
+                VirtualRoomModel.objects.filter(virtual_room=existing_room).delete()
+                
+                room = existing_room
+                message = 'Room updated successfully'
+            else:
+                # Create new room
+                room = VirtualRoom.objects.create(
+                    user=request.user,
+                    name=name,
+                    width=width,
+                    length=length,
+                    height=height,
+                    wall_color=wall_color,
+                    floor_color=floor_color,
+                    ceiling_color=ceiling_color
+                )
+                
+                message = 'Room created successfully'
+        
+        # Now save all furniture items
+        furniture_saved = 0
+        for item in furniture_items:
+            try:
+                # Get or create the room model
+                model_name = item.get('type', 'unknown')
+                room_model, created = RoomModel.objects.get_or_create(
+                    name=model_name,
+                    defaults={
+                        'category': 'furniture',
+                        'model_file': f'default_models/{model_name}.glb'  # Default path
+                    }
+                )
+                
+                # Create the virtual room model entry with position data
+                VirtualRoomModel.objects.create(
+                    virtual_room=room,
+                    room_model=room_model,
+                    position_x=float(item.get('position_x', 0)),
+                    position_y=float(item.get('position_y', 0)),
+                    position_z=float(item.get('position_z', 0)),
+                    rotation_x=float(item.get('rotation_x', 0)),
+                    rotation_y=float(item.get('rotation_y', 0)),
+                    rotation_z=float(item.get('rotation_z', 0)),
+                    scale_x=float(item.get('scale_x', 1)),
+                    scale_y=float(item.get('scale_y', 1)),
+                    scale_z=float(item.get('scale_z', 1))
+                )
+                furniture_saved += 1
+            except Exception as e:
+                print(f"Error saving furniture item: {e}")
+                # Continue with other items even if one fails
+        
+        # Return success response
+        return JsonResponse({
+            'success': True,
+            'message': f"{message} with {furniture_saved} furniture items",
+            'room_id': room.id,
+            'redirect_url': '/virtual-room/'  # Redirect to room list page - update as needed
+        })
+        
     except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)}, status=500)
-
+        # Log the error and return an error response
+        print(f"Error in save_room view: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Error saving room: {str(e)}'
+        }, status=500)
 

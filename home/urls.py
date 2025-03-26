@@ -86,9 +86,10 @@ path('projects_manage/', views.projects_manage, name='projects_manage'),
 
 
 path('virtual-room/', views.virtual_room_designer, name='virtual_room_designer'),
-path('create_room/', views.create_room, name='create_room'),
-path('get_all_rooms/', views.get_all_rooms, name='get_all_rooms'),
-path('get_room/<int:room_id>/', views.get_room, name='get_room'),
+# path('create_room/', views.create_room, name='create_room'),
+# path('get_all_rooms/', views.get_all_rooms, name='get_all_rooms'),
+
+# path('get_room/<int:room_id>/', views.get_room, name='get_room'),
 path('delete_room/<int:room_id>/', views.delete_room, name='delete_room'),
 
 path('api/user-info/', views.get_user_info, name='user_info'),
@@ -99,7 +100,18 @@ path('admin_page/delete-room-model/<int:model_id>/', views.delete_room_model, na
 path('upload-room-model/', views.upload_room_model, name='upload_room_model'),
 path('get-room-models/', views.get_room_models, name='get_room_models'),
 path('delete-room-model/<int:model_id>/', views.delete_room_model, name='delete_room_model'),
-path('save-virtual-room/', views.save_virtual_room, name='save_virtual_room'),
+# path('save-virtual-room/', views.save_virtual_room, name='save_virtual_room'),
+
+
+path('virtual-room/save-room/', views.save_room, name='save_room'),
+path('virtual-room/save-room/<int:room_id>/', views.save_room, name='update_room'),
+# path('get-my-rooms/', views.get_my_rooms, name='get_my_rooms'),
+
+# path('virtual-room/update-room/<int:room_id>/', views.update_room, name='update_room'),
+path('virtual-room/get-models/', views.get_models, name='get_models'),
+
+    path('virtual-room/get-rooms/', views.get_rooms, name='get_rooms'),
+    path('virtual-room/get-rooms/<int:room_id>/', views.get_rooms, name='get_room'),
 ]
 
 # Serve media files during development

@@ -104,8 +104,17 @@
                                 </li>
                                 {% if user_type == 'Customer' %}
                                 <li>
-                                    <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
+                                    <a href="">Design Tools</a>
+                                    <ul>
+                                        <li>
+                                            <a href="{% url 'virtual_room_designer' %}">3D Room Creation</a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'recommend_products_by_color' %}">Color-Based Suggestions</a>
+                                        </li>
+                                    </ul>
                                 </li>
+                               
                                 {% endif %}
                                 
                             <li>
@@ -619,7 +628,7 @@
 <script>
 // Make sure these variables are defined
 const API_KEY = 'AIzaSyCcldFUfZNm4jRcDeWhj64mUfvqx7l3t18';
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
 
 // First, let's add the welcome message function
 function showWelcomeMessage() {

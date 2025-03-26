@@ -1,0 +1,96 @@
+function saveRoom(event) {
+    const button = event.currentTarget;
+    
+    const roomData = {
+        name: button.dataset.roomName || "My Room",
+        width: parseFloat(button.dataset.roomWidth) || 10,
+        length: parseFloat(button.dataset.roomLength) || 10,
+        height: parseFloat(button.dataset.roomHeight) || 3,
+        type: button.dataset.roomType || "custom",
+        thumbnail: renderer.domElement.toDataURL('image/png'),
+        furniture: []
+    };
+    
+    // Get furniture models from the scene
+    const furnitureData = [];
+    
+    // Iterate through all models in the scene
+    scene.traverse((object) => {
+        // Check if this is a furniture model
+        if (object.userData && object.userData.modelId) {
+            // Get position, rotation and scale
+            furnitureData.push({
+                model_id: object.userData.modelId,
+                position_x: object.position.x,
+                position_y: object.position.y,
+                position_z: object.position.z,
+                rotation_x: object.rotation.x,
+                rotation_y: object.rotation.y,
+                rotation_z: object.rotation.z,
+                scale_x: object.scale.x,
+                scale_y: object.scale.y,
+                scale_z: object.scale.z
+            });
+        }
+    });
+    
+    roomData.furniture = furnitureData;
+    
+    // Get CSRF token safely
+    let csrfToken;
+    const csrfElement = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfElement) {
+        csrfToken = csrfElement.value;
+    } else {
+        // Extract from cookie if element not found
+        csrfToken = getCookie('csrftoken');
+    }
+    
+    // Send to server
+    fetch('/virtual-room/save-room/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(roomData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Room saved successfully!');
+            // Update UI or redirect if needed
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving the room.');
+    });
+}
+
+// Helper function to get cookie value (for CSRF token)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const saveButton = document.getElementById('save-room-btn');
+    if (saveButton) {
+        saveButton.addEventListener('click', saveRoom);
+    } else {
+        console.warn('Save room button not found in the DOM');
+    }
+}); 

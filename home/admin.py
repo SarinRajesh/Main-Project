@@ -198,23 +198,34 @@ class RoomModelAdmin(admin.ModelAdmin):
     )
 
 class VirtualRoomModelAdmin(admin.ModelAdmin):
-    list_display = ('id', 'virtual_room', 'room_model', 'position_info', 'rotation_y', 'scale', 'created_at')
+    list_display = ('id', 'virtual_room', 'room_model', 'position_info', 'rotation_info', 'scale_info', 'created_at')
     list_filter = ('virtual_room', 'room_model', 'created_at')
     search_fields = ('virtual_room__name', 'room_model__name')
     
     def position_info(self, obj):
         return f"X: {obj.position_x:.2f}, Y: {obj.position_y:.2f}, Z: {obj.position_z:.2f}"
     position_info.short_description = 'Position (X, Y, Z)'
+    
+    def rotation_info(self, obj):
+        return f"X: {obj.rotation_x:.2f}, Y: {obj.rotation_y:.2f}, Z: {obj.rotation_z:.2f}"
+    rotation_info.short_description = 'Rotation (X, Y, Z)'
+    
+    def scale_info(self, obj):
+        return f"X: {obj.scale_x:.2f}, Y: {obj.scale_y:.2f}, Z: {obj.scale_z:.2f}"
+    scale_info.short_description = 'Scale (X, Y, Z)'
 
     fieldsets = (
         ('Relationship', {
             'fields': ('virtual_room', 'room_model')
         }),
-        ('Position & Rotation', {
-            'fields': (('position_x', 'position_y', 'position_z'), 'rotation_y')
+        ('Position', {
+            'fields': (('position_x', 'position_y', 'position_z'),)
+        }),
+        ('Rotation', {
+            'fields': (('rotation_x', 'rotation_y', 'rotation_z'),)
         }),
         ('Scale', {
-            'fields': ('scale',)
+            'fields': (('scale_x', 'scale_y', 'scale_z'),)
         })
     )
     
