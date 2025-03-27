@@ -3084,12 +3084,16 @@ def get_rooms(request, room_id=None):
             # Format the rooms as a list of dictionaries
             rooms_data = []
             for room in rooms:
+                # Count models in this room
+                model_count = VirtualRoomModel.objects.filter(virtual_room=room).count()
+                
                 rooms_data.append({
                     'id': room.id,
                     'name': room.name,
                     'width': float(room.width),
                     'length': float(room.length),
                     'height': float(room.height),
+                    'model_count': model_count,
                     'wall_color': room.wall_color,
                     'floor_color': room.floor_color,
                     'ceiling_color': room.ceiling_color,
@@ -3106,10 +3110,7 @@ def get_rooms(request, room_id=None):
             room = VirtualRoom.objects.get(id=room_id, user=request.user)
             
             # Get all virtual room models with their associated room models (3D models)
-            virtual_room_models = (VirtualRoomModel.objects
-                .filter(virtual_room=room)
-                .select_related('room_model')
-                .all())
+            virtual_room_models = VirtualRoomModel.objects.filter(virtual_room=room)
 
             room_data = {
                 'success': True,
@@ -3135,11 +3136,14 @@ def get_rooms(request, room_id=None):
                         model_url = model.model_file.url
                         absolute_url = request.build_absolute_uri(model_url)
                         
+                        # Get category or infer it from name
+                        category = model.category or get_category_from_name(model.name)
+                        
                         model_data = {
                             'id': vrm.id,  # VirtualRoomModel ID
                             'model_id': model.id,  # RoomModel ID
                             'name': model.name,
-                            'category': model.category,
+                            'category': category,
                             'model_file': absolute_url,
                             'position_x': float(vrm.position_x),
                             'position_y': float(vrm.position_y),
@@ -3294,13 +3298,20 @@ def save_room(request, room_id=None):
             try:
                 # Get or create the room model
                 model_name = item.get('type', 'unknown')
+                category = item.get('category') or get_category_from_name(model_name)
+                
                 room_model, created = RoomModel.objects.get_or_create(
                     name=model_name,
                     defaults={
-                        'category': 'furniture',
+                        'category': category,
                         'model_file': f'default_models/{model_name}.glb'  # Default path
                     }
                 )
+                
+                # If model exists but category is empty, update it
+                if not created and not room_model.category:
+                    room_model.category = category
+                    room_model.save()
                 
                 # Create the virtual room model entry with position data
                 VirtualRoomModel.objects.create(
@@ -3337,3 +3348,47 @@ def save_room(request, room_id=None):
             'message': f'Error saving room: {str(e)}'
         }, status=500)
 
+def get_category_from_name(name):
+    """
+    Infer the category of a furniture item based on its name.
+    This function looks for keywords in the name and returns the appropriate category.
+    """
+    if not name:
+        return 'furniture'
+        
+    name_lower = name.lower()
+    
+    # Define category keywords
+    category_mapping = {
+        'bed': 'bed',
+        'sofa': 'sofa',
+        'chair': 'chair',
+        'table': 'table',
+        'dining': 'dining',
+        'desk': 'desk',
+        'lamp': 'lamp',
+        'light': 'lamp',
+        'bookshelf': 'storage',
+        'shelf': 'storage',
+        'cabinet': 'storage',
+        'wardrobe': 'storage',
+        'dresser': 'storage',
+        'nightstand': 'nightstand',
+        'rug': 'rug',
+        'carpet': 'rug',
+        'plant': 'decor',
+        'decoration': 'decor',
+        'art': 'wall',
+        'painting': 'wall',
+        'mirror': 'wall',
+        'tv': 'electronics',
+        'television': 'electronics'
+    }
+    
+    # Check for category keywords in the model name
+    for keyword, category in category_mapping.items():
+        if keyword in name_lower:
+            return category
+    
+    # Default category
+    return 'furniture'

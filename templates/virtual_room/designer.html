@@ -237,6 +237,8 @@
             margin-left: 5px;
         }
     </style>
+    <!-- Add SweetAlert CDN in the head section -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="container-fluid">
@@ -355,6 +357,23 @@
         window.addEventListener('error', function(event) {
             hideLoadingShowError('JavaScript error: ' + event.message);
         });
+
+        // Add the getCookie function for CSRF token handling
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
 
         function hideLoadingShowError(message) {
             console.error(message);
@@ -1518,6 +1537,7 @@
                 
                 furnitureData.push({
                     type: item.userData.type,
+                    category: item.userData.category || 'furniture', // Include category
                     position_x: item.position.x,
                     position_y: item.position.y,
                     position_z: item.position.z,
@@ -1530,8 +1550,8 @@
                 });
             });
             
-            // Debug - log what we're about to send
-            console.log("Sending room data:", {
+            // Prepare data for API
+            const roomData = {
                 name: roomName,
                 width: roomWidth,
                 length: roomLength,
@@ -1540,75 +1560,49 @@
                 floor_color: floorColor,
                 ceiling_color: ceilingColor,
                 furniture: furnitureData
-            });
+            };
             
-            // Show loading indicator
-            showStatus('Saving room...');
+            // Show loading overlay
+            document.getElementById('loadingOverlay').style.display = 'flex';
             
-            // Determine the URL based on whether we're updating an existing room
-            let url = '/virtual-room/save-room/';
-            if (currentRoomId) {
-                url = `/virtual-room/save-room/${currentRoomId}/`;
-            }
+            // Get the room ID if we're updating an existing room
+            const roomId = currentRoomId || '';
+            const url = roomId ? `/virtual-room/save/${roomId}/` : '/virtual-room/save/';
             
-            console.log("Using URL:", url);
-            
-            // Send data to the server
+            // Send data to server
             fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCsrfToken(),
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
-                body: JSON.stringify({
-                    name: roomName,
-                    width: roomWidth,
-                    length: roomLength,
-                    height: roomHeight,
-                    wall_color: wallColor,
-                    floor_color: floorColor,
-                    ceiling_color: ceilingColor,
-                    furniture: furnitureData
-                })
+                body: JSON.stringify(roomData)
             })
-            .then(response => {
-                console.log("Response status:", response.status);
-                
-                // Check if the response is JSON
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    return response.json().then(data => {
-                        if (!response.ok) {
-                            throw new Error(data.message || `Server error: ${response.status}`);
-                        }
-                        return data;
-                    });
-                } else {
-                    // Not JSON, likely an HTML error page
-                    return response.text().then(text => {
-                        console.error("Received non-JSON response:", text.substring(0, 150) + "...");
-                        throw new Error(`Server returned an error: ${response.status}`);
-                    });
-                }
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log("Room saved successfully:", data);
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
                 
-                // Update currentRoomId with the returned room_id
-                currentRoomId = data.room_id;
-                
-                // Show success message
-                showToast(data.message || 'Room saved successfully', 'success');
-                
-                // Refresh room list if it's visible
-                if (document.getElementById('roomListSection').style.display !== 'none') {
-                    fetchUserRooms();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    
+                    // Update current room ID if this was a new room
+                    if (!currentRoomId && data.room_id) {
+                        currentRoomId = data.room_id;
+                        // Update URL without reloading the page
+                        window.history.pushState({}, '', `/virtual-room/designer/${currentRoomId}/`);
+                    }
+                    
+                    // Update room list if needed
+                    updateRoomList();
+                } else {
+                    showToast(data.message || 'Error saving room', 'error');
                 }
             })
             .catch(error => {
-                console.error("Error saving room:", error);
-                showToast('Error saving room: ' + error.message, 'error');
+                document.getElementById('loadingOverlay').style.display = 'none';
+                showToast('Error saving room: ' + error, 'error');
+                console.error('Error saving room:', error);
             });
         }
 
@@ -1994,7 +1988,214 @@
             });
         }
 
-        // Function to load GLB model with improved loading indicator
+        // Function to apply rule-based positioning based on furniture category
+        function applyRuleBasedPositioning(model, room) {
+            const category = model.userData.category;
+            const roomCenter = {
+                x: room.length / 2,
+                z: room.width / 2
+            };
+            
+            // Get existing furniture positions to avoid overlaps
+            const existingPositions = furniture.map(item => ({
+                x: item.position.x,
+                z: item.position.z,
+                category: item.userData.category
+            }));
+            
+            // Default position (room center)
+            let targetPosition = {
+                x: roomCenter.x,
+                y: 0, // Will be adjusted based on model height
+                z: roomCenter.z
+            };
+            
+            // Get model dimensions using bounding box
+            const bbox = new THREE.Box3().setFromObject(model);
+            const modelSize = new THREE.Vector3();
+            bbox.getSize(modelSize);
+            
+            // Special handling for lamps and tall objects
+            if (category === 'lamp') {
+                // For lamps, we want the base to be on the floor
+                // Most lamp models have their origin at the bottom, so we can just set y=0
+                model.position.y = 0;
+            } else {
+                // For other objects, calculate the offset needed to place the bottom on the floor
+                const bottomY = bbox.min.y;
+                // Adjust Y position to place bottom of model exactly on floor (y=0)
+                const yOffset = -bottomY;
+                model.position.y = yOffset;
+            }
+            
+            // Now apply category-specific positioning rules for x and z coordinates
+            switch(category) {
+                case 'bed':
+                    // Place bed against a wall, centered on one side
+                    targetPosition.x = room.length * 0.75;
+                    targetPosition.z = room.width / 2;
+                    model.rotation.y = Math.PI / 2; // Rotate to face into room
+                    break;
+                    
+                case 'sofa':
+                    // Place sofa against a wall, facing center
+                    targetPosition.x = room.length * 0.25;
+                    targetPosition.z = room.width * 0.75;
+                    model.rotation.y = -Math.PI / 2; // Rotate to face center
+                    break;
+                    
+                case 'chair':
+                    // Place chairs near tables or in corners if no tables
+                    const tables = existingPositions.filter(p => p.category === 'table' || p.category === 'dining');
+                    if (tables.length > 0) {
+                        // Find closest table
+                        const closestTable = tables.reduce((prev, curr) => {
+                            const prevDist = Math.hypot(prev.x - roomCenter.x, prev.z - roomCenter.z);
+                            const currDist = Math.hypot(curr.x - roomCenter.x, curr.z - roomCenter.z);
+                            return prevDist < currDist ? prev : curr;
+                        });
+                        
+                        // Position near table with slight offset
+                        targetPosition.x = closestTable.x + (Math.random() * 0.5 + 0.5);
+                        targetPosition.z = closestTable.z + (Math.random() * 0.5 + 0.5);
+                        // Face toward table
+                        model.rotation.y = Math.atan2(closestTable.x - targetPosition.x, closestTable.z - targetPosition.z);
+                    } else {
+                        // No tables, place in a corner
+                        targetPosition.x = room.length * 0.2;
+                        targetPosition.z = room.width * 0.2;
+                    }
+                    break;
+                    
+                case 'table':
+                    // Place tables in center area
+                    targetPosition.x = roomCenter.x + (Math.random() * 0.4 - 0.2);
+                    targetPosition.z = roomCenter.z + (Math.random() * 0.4 - 0.2);
+                    break;
+                    
+                case 'dining':
+                    // Place dining tables in a designated dining area
+                    targetPosition.x = room.length * 0.7;
+                    targetPosition.z = room.width * 0.3;
+                    break;
+                    
+                case 'desk':
+                    // Place desks against walls
+                    targetPosition.x = room.length * 0.2;
+                    targetPosition.z = room.width * 0.8;
+                    model.rotation.y = Math.PI; // Face away from wall
+                    break;
+                    
+                case 'lamp':
+                    // Place lamps near furniture or in corners
+                    const furniture = existingPositions.filter(p => 
+                        p.category === 'sofa' || p.category === 'bed' || p.category === 'desk');
+                    
+                    if (furniture.length > 0) {
+                        // Find a piece of furniture to place lamp near
+                        const targetFurniture = furniture[Math.floor(Math.random() * furniture.length)];
+                        targetPosition.x = targetFurniture.x + 0.8;
+                        targetPosition.z = targetFurniture.z + 0.8;
+                    } else {
+                        // No furniture, place in a corner
+                        targetPosition.x = room.length * 0.1;
+                        targetPosition.z = room.width * 0.1;
+                    }
+                    break;
+                    
+                case 'storage':
+                    // Place storage items against walls
+                    targetPosition.x = room.length * 0.9;
+                    targetPosition.z = room.width * 0.2;
+                    model.rotation.y = -Math.PI / 2; // Face into room
+                    break;
+                    
+                case 'nightstand':
+                    // Place nightstands near beds
+                    const beds = existingPositions.filter(p => p.category === 'bed');
+                    if (beds.length > 0) {
+                        const bed = beds[0]; // Use the first bed
+                        targetPosition.x = bed.x + 1.2;
+                        targetPosition.z = bed.z;
+                    } else {
+                        // No beds, place where a bed might go
+                        targetPosition.x = room.length * 0.8;
+                        targetPosition.z = room.width * 0.5;
+                    }
+                    break;
+                    
+                case 'rug':
+                    // Place rugs in center of room or under furniture groupings
+                    targetPosition.x = roomCenter.x;
+                    targetPosition.z = roomCenter.z;
+                    // Rugs should be exactly on the floor
+                    model.position.y = 0.01; // Just above floor to prevent z-fighting
+                    break;
+                    
+                case 'wall':
+                    // Place wall items on walls
+                    targetPosition.x = room.length * 0.5;
+                    targetPosition.z = 0.1; // Near wall
+                    // Wall items should be higher up
+                    model.position.y = room.height * 0.6; // Higher on wall
+                    break;
+                    
+                case 'electronics':
+                    // Place electronics against walls
+                    targetPosition.x = room.length * 0.1;
+                    targetPosition.z = room.width * 0.5;
+                    model.rotation.y = Math.PI / 2; // Face into room
+                    break;
+                    
+                case 'decor':
+                    // Place decor items in corners or on other furniture
+                    targetPosition.x = room.length * 0.8;
+                    targetPosition.z = room.width * 0.8;
+                    break;
+                    
+                default:
+                    // For unknown categories, use a semi-random position
+                    targetPosition.x = roomCenter.x + (Math.random() * room.length * 0.6 - room.length * 0.3);
+                    targetPosition.z = roomCenter.z + (Math.random() * room.width * 0.6 - room.width * 0.3);
+                    break;
+            }
+            
+            // Apply the calculated x and z positions (keeping the y position we set earlier)
+            model.position.x = targetPosition.x;
+            model.position.z = targetPosition.z;
+            
+            // Ensure model is within room boundaries
+            keepModelInRoom(model, room);
+            
+            console.log(`Positioned ${model.userData.type} (${category}) at:`, model.position);
+        }
+
+        // Add a helper function to check if a model is positioned correctly
+        function checkModelFloorPosition(model) {
+            // Get the world position of the model
+            const worldPos = new THREE.Vector3();
+            model.getWorldPosition(worldPos);
+            
+            // Get model dimensions using bounding box
+            const bbox = new THREE.Box3().setFromObject(model);
+            
+            // Log the position information for debugging
+            console.log(`Model ${model.userData.type} position check:`, {
+                position: model.position.clone(),
+                worldPosition: worldPos,
+                boundingBoxMin: bbox.min.clone(),
+                boundingBoxMax: bbox.max.clone()
+            });
+            
+            // Check if the model is below the floor
+            if (worldPos.y + bbox.min.y < -0.1) { // Allow a small tolerance
+                console.warn(`Model ${model.userData.type} is below the floor. Adjusting...`);
+                // Adjust the model to sit on the floor
+                model.position.y -= (worldPos.y + bbox.min.y);
+            }
+        }
+
+        // Function to load GLB model with improved loading indicator and floor positioning
         function loadGLBModel(modelId, modelUrl, modelName) {
             // Create loading indicator for this specific model
             const loadingToast = document.createElement('div');
@@ -2037,8 +2238,14 @@
                     // Success callback
                     const model = gltf.scene;
                     
-                    // Set default position
-                    model.position.set(room.length / 2, 0, room.width / 2);
+                    // Set user data for later identification and manipulation
+                    model.userData = {
+                        type: modelName,
+                        draggable: true,
+                        modelId: modelId,
+                        isGLB: true,
+                        category: getCategoryFromName(modelName)
+                    };
                     
                     // Make the model castShadow and receiveShadow
                     model.traverse(function(node) {
@@ -2048,20 +2255,21 @@
                         }
                     });
                     
-                    // Set user data for later identification and manipulation
-                    model.userData = {
-                        type: modelName,
-                        draggable: true,
-                        modelId: modelId,
-                        isGLB: true  // Flag to identify GLB models
-                    };
-                    
-                    // NEW CODE: Auto-scale the model to a reasonable size
+                    // Auto-scale the model to a reasonable size
                     normalizeModelSize(model, modelName);
+                    
+                    // Apply rule-based positioning based on category
+                    applyRuleBasedPositioning(model, room);
                     
                     // Add to scene and furniture array
                     scene.add(model);
                     furniture.push(model);
+                    
+                    // Check and fix the model's floor position after a short delay
+                    // This allows the model to fully initialize in the scene
+                    setTimeout(() => {
+                        checkModelFloorPosition(model);
+                    }, 100);
                     
                     // Remove loading toast
                     setTimeout(() => {
@@ -2092,6 +2300,74 @@
                     }
                 }
             );
+        }
+
+        // Function to extract category from model name
+        function getCategoryFromName(modelName) {
+            const lowerName = modelName.toLowerCase();
+            
+            // Define category keywords to look for
+            const categoryKeywords = {
+                'bed': 'bed',
+                'sofa': 'sofa',
+                'chair': 'chair',
+                'table': 'table',
+                'dining': 'dining',
+                'desk': 'desk',
+                'lamp': 'lamp',
+                'light': 'lamp',
+                'bookshelf': 'storage',
+                'shelf': 'storage',
+                'cabinet': 'storage',
+                'wardrobe': 'storage',
+                'dresser': 'storage',
+                'nightstand': 'nightstand',
+                'rug': 'rug',
+                'carpet': 'rug',
+                'plant': 'decor',
+                'decoration': 'decor',
+                'art': 'wall',
+                'painting': 'wall',
+                'mirror': 'wall',
+                'tv': 'electronics',
+                'television': 'electronics'
+            };
+            
+            // Check for category keywords in the model name
+            for (const [keyword, category] of Object.entries(categoryKeywords)) {
+                if (lowerName.includes(keyword)) {
+                    return category;
+                }
+            }
+            
+            // Default category if no match found
+            return 'furniture';
+        }
+
+        // Function to ensure model stays within room boundaries
+        function keepModelInRoom(model, room) {
+            // Get model dimensions
+            const bbox = new THREE.Box3().setFromObject(model);
+            const modelSize = new THREE.Vector3();
+            bbox.getSize(modelSize);
+            
+            // Calculate half dimensions for positioning
+            const halfWidth = modelSize.x / 2;
+            const halfDepth = modelSize.z / 2;
+            
+            // Constrain X position
+            if (model.position.x - halfWidth < 0) {
+                model.position.x = halfWidth;
+            } else if (model.position.x + halfWidth > room.length) {
+                model.position.x = room.length - halfWidth;
+            }
+            
+            // Constrain Z position
+            if (model.position.z - halfDepth < 0) {
+                model.position.z = halfDepth;
+            } else if (model.position.z + halfDepth > room.width) {
+                model.position.z = room.width - halfDepth;
+            }
         }
 
         // Updated function to normalize model size with better scaling for beds and dining tables
@@ -2417,47 +2693,78 @@
                 function(gltf) {
                     const model = gltf.scene;
                     
-                    // Set position
-                    model.position.set(
-                        modelData.position_x,
-                        modelData.position_y,
-                        modelData.position_z
-                    );
-                    
-                    // Set rotation
-                    model.rotation.set(
-                        modelData.rotation_x,
-                        modelData.rotation_y,
-                        modelData.rotation_z
-                    );
-                    
-                    // Set scale
-                    model.scale.set(
-                        modelData.scale_x,
-                        modelData.scale_y,
-                        modelData.scale_z
-                    );
+                    // Extract category from model name if not provided
+                    const category = modelData.category || getCategoryFromName(modelData.name || modelData.type);
                     
                     // Add user data for identification
                     model.userData = {
                         id: modelData.id,
                         model_id: modelData.model_id,
                         type: modelData.type || modelData.name,
-                        category: modelData.category
+                        category: category,
+                        draggable: true,
+                        isGLB: true
                     };
+                    
+                    // Set up shadows
+                    model.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    
+                    // Check if position data exists
+                    const hasPositionData = (
+                        modelData.position_x !== undefined && 
+                        modelData.position_y !== undefined && 
+                        modelData.position_z !== undefined
+                    );
+                    
+                    if (hasPositionData) {
+                        // Use saved position
+                        model.position.set(
+                            modelData.position_x,
+                            modelData.position_y,
+                            modelData.position_z
+                        );
+                        
+                        // Use saved rotation
+                        model.rotation.set(
+                            modelData.rotation_x || 0,
+                            modelData.rotation_y || 0,
+                            modelData.rotation_z || 0
+                        );
+                        
+                        // Use saved scale
+                        model.scale.set(
+                            modelData.scale_x || 1,
+                            modelData.scale_y || 1,
+                            modelData.scale_z || 1
+                        );
+                    } else {
+                        // No position data, use rule-based positioning
+                        normalizeModelSize(model, modelData.name || modelData.type);
+                        applyRuleBasedPositioning(model, room);
+                    }
                     
                     // Add to scene and furniture array
                     scene.add(model);
                     furniture.push(model);
                     
-                    console.log(`Loaded furniture: ${modelData.name} at position (${modelData.position_x}, ${modelData.position_y}, ${modelData.position_z})`);
+                    // Check and fix the model's floor position after a short delay
+                    setTimeout(() => {
+                        checkModelFloorPosition(model);
+                    }, 100);
+                    
+                    console.log(`Loaded furniture: ${modelData.name || modelData.type} at position (${model.position.x}, ${model.position.y}, ${model.position.z})`);
                 },
                 function(xhr) {
                     // Progress callback
-                    console.log(`${modelData.name} loading: ${(xhr.loaded / xhr.total * 100)}%`);
+                    console.log(`${modelData.name || modelData.type} loading: ${(xhr.loaded / xhr.total * 100)}%`);
                 },
                 function(error) {
-                    console.error(`Error loading model ${modelData.name}:`, error);
+                    console.error(`Error loading model ${modelData.name || modelData.type}:`, error);
                 }
             );
         }
@@ -2482,50 +2789,120 @@
 
         // Function to delete a room
         function deleteRoom(roomId) {
-            showStatus('Deleting room...');
-            
-            fetch(`/delete_room/${roomId}/`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This room will be permanently deleted!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/virtual-room/delete/${roomId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire(
+                                'Deleted!',
+                                'Your room has been deleted.',
+                                'success'
+                            );
+                            
+                            // Refresh the room list
+                            fetchRooms();
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message || 'Failed to delete room',
+                                'error'
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting room:', error);
+                        Swal.fire(
+                            'Error!',
+                            'Failed to delete room: ' + error.message,
+                            'error'
+                        );
+                    });
                 }
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error('Failed to delete room');
-            })
-            .then(data => {
-                showToast('Room deleted successfully', 'success');
-                
-                // Reset current room ID if it was the deleted one
-                if (currentRoomId == roomId) {
-                    currentRoomId = null;
-                }
-                
-                // Refresh room list
-                fetchUserRooms();
-            })
-            .catch(error => {
-                console.error('Error deleting room:', error);
-                showToast('Failed to delete room', 'error');
             });
         }
 
-        // Toggle function to show/hide room list
+        // Make sure this function exists to fetch and display rooms
+        function fetchRooms() {
+            fetch('/virtual-room/get-rooms/')
+                .then(response => response.json())
+                .then(data => {
+                    const roomList = document.getElementById('roomList');
+                    roomList.innerHTML = '';
+                    
+                    if (data.rooms && data.rooms.length > 0) {
+                        data.rooms.forEach(room => {
+                            const roomItem = document.createElement('div');
+                            roomItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                            roomItem.setAttribute('data-room-id', room.id);
+                            roomItem.style.cursor = 'pointer';
+                            
+                            // Make the entire room item clickable for loading
+                            roomItem.onclick = () => {
+                                loadRoom(room.id);
+                            };
+                            
+                            const roomInfo = document.createElement('div');
+                            roomInfo.innerHTML = `
+                                <strong>${room.name}</strong>
+                                <div class="text-muted small">${room.width}m × ${room.length}m × ${room.height}m</div>
+                            `;
+                            
+                            const actionButtons = document.createElement('div');
+                            
+                            // Create a proper delete button with icon
+                            const deleteBtn = document.createElement('button');
+                            deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                            deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>';
+                            deleteBtn.title = 'Delete room';
+                            
+                            // Stop propagation to prevent loading the room when clicking delete
+                            deleteBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                deleteRoom(room.id);
+                            };
+                            
+                            actionButtons.appendChild(deleteBtn);
+                            
+                            roomItem.appendChild(roomInfo);
+                            roomItem.appendChild(actionButtons);
+                            roomList.appendChild(roomItem);
+                        });
+                    } else {
+                        roomList.innerHTML = '<div class="list-group-item text-center text-muted">No rooms found</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching rooms:', error);
+                    document.getElementById('roomList').innerHTML = 
+                        '<div class="list-group-item text-center text-danger">Failed to load rooms</div>';
+                });
+        }
+
+        // Make sure this function is called when the "Show My Rooms" button is clicked
         function toggleRoomList() {
             const roomListSection = document.getElementById('roomListSection');
-            const showRoomsBtn = document.getElementById('showRoomsBtn');
-            
             if (roomListSection.style.display === 'none') {
                 roomListSection.style.display = 'block';
-                showRoomsBtn.textContent = 'Hide My Rooms';
-                fetchUserRooms(); // Fetch rooms when showing the list
+                fetchRooms(); // Fetch rooms when showing the list
             } else {
                 roomListSection.style.display = 'none';
-                showRoomsBtn.textContent = 'Show My Rooms';
             }
         }
 

@@ -86,11 +86,12 @@ path('projects_manage/', views.projects_manage, name='projects_manage'),
 
 
 path('virtual-room/', views.virtual_room_designer, name='virtual_room_designer'),
-# path('create_room/', views.create_room, name='create_room'),
-# path('get_all_rooms/', views.get_all_rooms, name='get_all_rooms'),
-
-# path('get_room/<int:room_id>/', views.get_room, name='get_room'),
-path('delete_room/<int:room_id>/', views.delete_room, name='delete_room'),
+path('virtual-room/models/', views.get_models, name='get_room_models_for_designer'),
+path('virtual-room/rooms/', views.get_rooms, name='get_rooms'),
+path('virtual-room/rooms/<int:room_id>/', views.get_rooms, name='get_room_detail'),
+path('virtual-room/save/', views.save_room, name='save_room'),
+path('virtual-room/save/<int:room_id>/', views.save_room, name='update_room'),
+path('virtual-room/delete/<int:room_id>/', views.delete_room, name='delete_room'),
 
 path('api/user-info/', views.get_user_info, name='user_info'),
 path('admin_page/add_models/', views.add_models, name='add_models'),
@@ -103,11 +104,6 @@ path('delete-room-model/<int:model_id>/', views.delete_room_model, name='delete_
 # path('save-virtual-room/', views.save_virtual_room, name='save_virtual_room'),
 
 
-path('virtual-room/save-room/', views.save_room, name='save_room'),
-path('virtual-room/save-room/<int:room_id>/', views.save_room, name='update_room'),
-# path('get-my-rooms/', views.get_my_rooms, name='get_my_rooms'),
-
-# path('virtual-room/update-room/<int:room_id>/', views.update_room, name='update_room'),
 path('virtual-room/get-models/', views.get_models, name='get_models'),
 
     path('virtual-room/get-rooms/', views.get_rooms, name='get_rooms'),
