@@ -112,9 +112,34 @@
                                                             <h4 style="color: #4A90E2; font-size: 14px; margin-bottom: 5px;">Total Deliveries</h4>
                                                             <p style="color: #fff; font-size: 20px; margin: 0;">{{ total_deliveries|default:'0' }}</p>
                                                         </div>
-                                                        <div class="stat-item" style="background: #333; padding: 15px; border-radius: 10px;">
-                                                            <h4 style="color: #4A90E2; font-size: 14px; margin-bottom: 5px;">Rating</h4>
-                                                            <p style="color: #fff; font-size: 20px; margin: 0;">{{ rating|default:'4.5' }} ⭐</p>
+                                                        
+                                                        <!-- Status Toggle Section -->
+                                                        <div class="stat-item" style="background: #333; padding: 20px; border-radius: 10px;">
+                                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                                <h4 style="color: #4A90E2; font-size: 14px; margin: 0;">Your Status</h4>
+                                                                <form method="post" id="statusForm" style="margin: 0;">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="status_update" value="true">
+                                                                    <div class="toggle-switch" style="position: relative; display: inline-block; width: 60px; height: 30px;">
+                                                                        <input type="checkbox" 
+                                                                               id="status-toggle" 
+                                                                               style="opacity: 0; width: 0; height: 0;"
+                                                                               {% if user.status == 'active' %}checked{% endif %}
+                                                                               onchange="updateStatus(this)">
+                                                                        <label for="status-toggle" 
+                                                                               style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: {% if user.status == 'active' %}#27ae60{% else %}#e74c3c{% endif %}; transition: .4s; border-radius: 15px;">
+                                                                            <span style="position: absolute; content: ''; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; transform: {% if user.status == 'active' %}translateX(30px){% endif %};"></span>
+                                                                        </label>
+                                                                    </div>
+                                                                    <input type="hidden" name="status" id="status-input" value="{{ user.status }}">
+                                                                </form>
+                                                            </div>
+                                                            <p style="color: {% if user.status == 'active' %}#27ae60{% else %}#e74c3c{% endif %}; 
+                                                                      margin-top: 10px; 
+                                                                      font-size: 14px; 
+                                                                      text-align: right;">
+                                                                {{ user.status|capfirst }}
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -786,6 +811,61 @@
             .btn:disabled {
                 cursor: not-allowed;
             }
+        </style>
+        <script>
+        function updateStatus(checkbox) {
+            const statusInput = document.getElementById('status-input');
+            const form = document.getElementById('statusForm');
+            const label = checkbox.nextElementSibling;
+            
+            if (checkbox.checked) {
+                statusInput.value = 'active';
+                label.style.backgroundColor = '#27ae60';
+            } else {
+                statusInput.value = 'inactive';
+                label.style.backgroundColor = '#e74c3c';
+            }
+            
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Confirm Status Change',
+                text: `Are you sure you want to set your status to ${statusInput.value.charAt(0).toUpperCase() + statusInput.value.slice(1)}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, update status',
+                background: '#2A2A2A',
+                color: '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                } else {
+                    // Revert the toggle if user cancels
+                    checkbox.checked = !checkbox.checked;
+                    statusInput.value = checkbox.checked ? 'active' : 'inactive';
+                    label.style.backgroundColor = checkbox.checked ? '#27ae60' : '#e74c3c';
+                }
+            });
+        }
+        </script>
+        <style>
+        /* Add these styles to your existing styles */
+        .toggle-switch label:active span {
+            width: 28px;
+        }
+
+        .toggle-switch input:checked + label span {
+            transform: translateX(30px);
+        }
+
+        .toggle-switch label span {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-switch label:hover {
+            opacity: 0.8;
+        }
         </style>
  </body>
 </html>

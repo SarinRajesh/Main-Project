@@ -1605,83 +1605,126 @@ def deliveryboy_index(request):
 @login_required
 @never_cache
 def delivery(request):
+    # Get the current delivery boy's orders
+    my_orders = Order.objects.filter(
+        delivery_boy=request.user,
+        order_status='Approved'
+    ).select_related(
+        'user',  # For customer details
+        'product',  # For product details
+        'amount'  # For order amount
+    ).order_by('-order_date')
+
+    # Handle POST requests for updating delivery status
     if request.method == 'POST':
         order_id = request.POST.get('order_id')
         action = request.POST.get('action')
         
-        order = get_object_or_404(Order, id=order_id)
-        if action == 'accept':
-            order.delivery_boy = request.user
-            order.delivery_status = 'Pending'
-            message = f'Order #{order_id} has been accepted for delivery.'
-        elif action == 'out_for_delivery':
-            order.delivery_status = 'Out for Delivery'
-            message = f'Order #{order_id} is out for delivery.'
-        elif action == 'delivered':
-            order.delivery_status = 'Delivered'
-            order.delivery_date = timezone.now()
-            message = f'Order #{order_id} has been marked as delivered.'
-        
-        order.save()
-        messages.success(request, message)
+        try:
+            order = Order.objects.get(id=order_id)
+            
+            if action == 'out_for_delivery':
+                order.delivery_status = 'Out for Delivery'
+                order.save()
+                messages.success(request, 'Order marked as out for delivery')
+                
+            elif action == 'delivered':
+                order.delivery_status = 'Delivered'
+                order.delivery_date = timezone.now()
+                order.save()
+                messages.success(request, 'Order marked as delivered')
+                
+            elif action == 'accept':
+                if not order.delivery_boy:
+                    # Check if delivery boy is from same district
+                    if order.user.district == request.user.district:
+                        order.delivery_boy = request.user
+                        order.delivery_status = 'Pending'
+                        order.save()
+                        messages.success(request, 'Order accepted successfully')
+                    else:
+                        messages.error(request, 'You can only accept orders from your district')
+                else:
+                    messages.error(request, 'This order is already assigned')
+                    
+        except Order.DoesNotExist:
+            messages.error(request, 'Order not found')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+            
         return redirect('delivery')
 
-    # Get delivery boy's district and hometown
-    delivery_boy_district = request.user.district
-    delivery_boy_hometown = request.user.home_town
-
-    # Get all orders from customers in the same district and hometown, excluding cancelled orders
-    my_orders = Order.objects.filter(
-        user__district=delivery_boy_district,
-        user__home_town=delivery_boy_hometown  # Added hometown matching
-    ).exclude(
-        order_status='Cancelled'
+    # Get available orders in the delivery boy's district
+    available_orders = Order.objects.filter(
+        delivery_boy__isnull=True,
+        order_status='Approved',
+        user__district=request.user.district
     ).select_related(
         'user',
         'product',
-        'amount',
-        'payment_type'
+        'amount'
     ).order_by('-order_date')
 
+    # Combine my orders and available orders
     context = {
         'my_orders': my_orders,
-        'user': request.user
+        'available_orders': available_orders,
+        'user': request.user,
+        'delivery_stats': {
+            'pending': my_orders.filter(delivery_status='Pending').count(),
+            'out_for_delivery': my_orders.filter(delivery_status='Out for Delivery').count(),
+            'delivered': my_orders.filter(delivery_status='Delivered').count(),
+            'total': my_orders.count()
+        }
     }
+    
     return render(request, 'delivery_boy/delivery.html', context)
 
 @login_required
 @never_cache
 def account(request):
-    if not request.user.user_type_id or request.user.user_type_id.user_type != 'Delivery_boy':
-        return redirect('signin')
-    
     if request.method == 'POST':
+        if 'status_update' in request.POST:
+            try:
+                new_status = request.POST.get('status').lower()  # Convert to lowercase
+                if new_status in ['active', 'inactive']:
+                    request.user.status = new_status
+                    request.user.save()
+                    messages.success(request, f'Your status has been updated to {new_status.capitalize()}')
+                else:
+                    messages.error(request, 'Invalid status value')
+            except Exception as e:
+                messages.error(request, 'Failed to update status')
+            return redirect('account')
+
+        # Existing profile update logic
         try:
-            user = request.user
-            user.name = request.POST.get('name')
-            user.email = request.POST.get('email')
-            user.phone = request.POST.get('phone')
-            user.address = request.POST.get('address')
-            user.home_town = request.POST.get('home_town')
-            user.district = request.POST.get('district')
-            user.state = request.POST.get('state')
-            user.pincode = request.POST.get('pincode')
-            
-            if 'photo' in request.FILES:
-                user.photo = request.FILES['photo']
-            
-            user.save()
-            messages.success(request, 'Account details updated successfully.')
-            
+            name = request.POST.get('name')
+            email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            home_town = request.POST.get('home_town')
+            address = request.POST.get('address')
+            district = request.POST.get('district')
+            state = request.POST.get('state')
+            pincode = request.POST.get('pincode')
+
+            request.user.name = name
+            request.user.email = email
+            request.user.phone = phone
+            request.user.home_town = home_town
+            request.user.address = address
+            request.user.district = district
+            request.user.state = state
+            request.user.pincode = pincode
+            request.user.save()
+
+            messages.success(request, 'Profile updated successfully')
         except Exception as e:
-            messages.error(request, f'Error updating account: {str(e)}')
-        
+            messages.error(request, 'Failed to update profile')
         return redirect('account')
-    
-    # For GET request, render the template with user data
+
     context = {
         'user': request.user,
-        'user_type': request.user.user_type_id.user_type if request.user.user_type_id else None
     }
     return render(request, 'delivery_boy/account.html', context)
 
@@ -2090,63 +2133,64 @@ def consultations_table(request):
 @nocache
 @login_required
 def orders_table(request):
+    orders = Order.objects.all().order_by('-order_date')
+    
     if request.method == 'POST':
         order_id = request.POST.get('order_id')
         action = request.POST.get('action')
         
-        order = get_object_or_404(Order, id=order_id)
-        
-        if action == 'approve':
-            # Get customer's district
-            customer_district = order.user.district
+        try:
+            order = Order.objects.get(id=order_id)
             
-            # Find available delivery boy in the same district
-            delivery_boy = Users.objects.filter(
-                user_type_id__user_type='Delivery_boy',
-                district=customer_district,
-                status='active'
-            ).first()
-            
-            if delivery_boy:
-                order.delivery_boy = delivery_boy
-                order.order_status = 'Completed'
-                message = f'Order #{order_id} has been approved and assigned to delivery boy {delivery_boy.username}'
-            else:
-                # If no delivery boy found in the same district
+            if action == 'approve':
                 order.order_status = 'Approved'
-                message = f'Order #{order_id} has been approved but no delivery boy available in district {customer_district}'
+                order.save()
+                messages.success(request, 'Order approved successfully.')
             
-            order.save()
-            messages.success(request, message)
+            elif action == 'cancel':
+                order.order_status = 'Cancelled'
+                order.save()
+                messages.success(request, 'Order cancelled successfully.')
             
-        elif action == 'cancel':
-            order.order_status = 'Cancelled'
-            order.save()
-            messages.success(request, f'Order #{order_id} has been cancelled.')
+            elif action == 'assign_delivery_boy':
+                delivery_boy_id = request.POST.get('delivery_boy_id')
+                if delivery_boy_id:
+                    delivery_boy = Users.objects.get(id=delivery_boy_id)
+                    # Verify delivery boy is from same district
+                    if delivery_boy.district == order.user.district:
+                        order.delivery_boy = delivery_boy
+                        order.delivery_status = 'Pending'
+                        order.save()
+                        
+                        messages.success(
+                            request, 
+                            f'Successfully assigned delivery boy: {delivery_boy.name}\n'
+                            f'Contact: {delivery_boy.phone}\n'
+                            f'District: {delivery_boy.district}'
+                        )
+                    else:
+                        messages.error(request, 'Delivery boy must be from the same district as the customer.')
+                else:
+                    messages.error(request, 'Please select a delivery boy.')
+                    
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
         
         return redirect('orders_table')
 
-    # Get filter parameters
-    download = request.GET.get('download')
-    
-    orders = Order.objects.select_related(
-        'user',
-        'product',
-        'amount',
-        'payment_type',
-        'delivery_boy'
-    ).order_by('-order_date')
-
-    if download == 'pdf':
-        # Handle PDF download
-        return generate_pdf(orders)
-    elif download == 'excel':
-        # Handle Excel download
-        return generate_excel(orders)
+    # For each order, get delivery boys from the same district
+    for order in orders:
+        if order.order_status == 'Approved' and not order.delivery_boy:
+            order.available_delivery_boys = Users.objects.filter(
+                user_type_id__user_type='Delivery_boy',
+                status='active',
+                district=order.user.district
+            ).select_related('user_type_id')
 
     context = {
-        'orders': orders,
+        'orders': orders
     }
+    
     return render(request, 'admin_page/orders_table.html', context)
 
 @nocache
@@ -2251,28 +2295,6 @@ def download_receipt(request, order_id):
         return response
 
     return HttpResponse('Error generating PDF', status=400)
-
-
-
-@login_required
-@require_POST
-def remove_scheduled_date(request):
-    date_time_str = request.POST.get('date_time')
-    try:
-        date_time = parse_datetime(date_time_str)
-    except ValueError:
-        return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
-
-    if not date_time:
-        return JsonResponse({'status': 'error', 'message': 'Invalid date-time format'})
-
-    consultation_date = get_object_or_404(ConsultationDate, designer=request.user, date_time=date_time)
-
-    if consultation_date.is_booked:
-        return JsonResponse({'status': 'error', 'message': 'Cannot remove a booked consultation date'})
-
-    consultation_date.delete()
-    return JsonResponse({'status': 'success', 'message': 'Consultation date removed successfully'})
 
 import cv2
 import numpy as np
@@ -3392,3 +3414,4 @@ def get_category_from_name(name):
     
     # Default category
     return 'furniture'
+

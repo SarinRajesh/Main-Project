@@ -16,9 +16,13 @@
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/dark-style.css' %}">		
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
         <!--=============== favicons ===============-->
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+
+        <!-- Add this in the head section after the SweetAlert2 CSS -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
 
     <body>
@@ -78,203 +82,175 @@
                         <!--  section  end-->
                         <!--  section  -->
                         <section>
-                            <div class="container" style="width: 100%; max-width: none; padding: 0;">
-                                <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
-                                    <div style="width: 80%; max-width: 1200px; margin: 40px auto;">
-                                        <!-- Orders Table -->
-                                        <div style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 20px; margin-top: -9%; border-radius: 8px; background-color: white;">
-                                            <h2 style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; color: #34495e; margin-bottom: 20px;">Orders</h2>
-                                            
-                                            {% if my_orders %}
-                                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
-                                                {% for order in my_orders %}
-                                                <div style="
-                                                    background: white;
-                                                    border-radius: 12px;
-                                                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                                                    padding: 20px;
-                                                    transition: transform 0.2s;
-                                                    cursor: pointer;
-                                                    position: relative;
-                                                    overflow: hidden;
-                                                " onmouseover="this.style.transform='translateY(-5px)'" 
-                                                   onmouseout="this.style.transform='translateY(0)'">
-                                                    
-                                                    <!-- Order Status Badge -->
-                                                    <div style="
-                                                        position: absolute;
-                                                        top: 0;
-                                                        right: 0;
-                                                        padding: 8px 15px;
-                                                        border-bottom-left-radius: 12px;
-                                                        font-weight: bold;
-                                                        {% if order.order_status == 'Approved' %}
-                                                            background-color: #f1c40f;
-                                                            color: #000;
-                                                        {% elif order.order_status == 'Pending' %}
-                                                            background-color: #e67e22;
-                                                            color: white;
-                                                        {% elif order.order_status == 'Processing' %}
-                                                            background-color: #3498db;
-                                                            color: white;
-                                                        {% elif order.order_status == 'Completed' %}
-                                                            background-color: #27ae60;
-                                                            color: white;
+                            <div style="margin: 20px auto 40px;margin-left: 10%; width: 89%; max-width: 1400px;">
+                                <!-- Dashboard Header -->
+                                <div style="background: linear-gradient(135deg, #1a5f7a 0%, #0f3443 100%);margin-top: -9%; padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                                        <h1 style="color: white; font-size: 24px; margin: 0;">Delivery Dashboard</h1>
+                                        <div style="background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 8px;">
+                                            <span style="color: white; font-size: 14px;">{{ user.district }} Area</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Statistics Cards -->
+                                    <div style="display: grid;margin-left: 10%; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+                                        <div class="stats-card" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
+                                            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                <i class="fas fa-boxes" style="color: #3498db; font-size: 24px; margin-right: 10px;"></i>
+                                                <h3 style="color: white; margin: 0; font-size: 16px;">Total Orders</h3>
+                                            </div>
+                                            <p style="color: white; font-size: 28px; font-weight: 600; margin: 0;">{{ delivery_stats.total }}</p>
+                                        </div>
+                                        <div class="stats-card" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
+                                            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                <i class="fas fa-clock" style="color: #e67e22; font-size: 24px; margin-right: 10px;"></i>
+                                                <h3 style="color: white; margin: 0; font-size: 16px;">Pending</h3>
+                                            </div>
+                                            <p style="color: white; font-size: 28px; font-weight: 600; margin: 0;">{{ delivery_stats.pending }}</p>
+                                        </div>
+                                        <div class="stats-card" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
+                                            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                <i class="fas fa-truck" style="color: #f1c40f; font-size: 24px; margin-right: 10px;"></i>
+                                                <h3 style="color: white; margin: 0; font-size: 16px;">Out for Delivery</h3>
+                                            </div>
+                                            <p style="color: white; font-size: 28px; font-weight: 600; margin: 0;">{{ delivery_stats.out_for_delivery }}</p>
+                                        </div>
+                                        <div class="stats-card" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
+                                            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                <i class="fas fa-check-circle" style="color: #2ecc71; font-size: 24px; margin-right: 10px;"></i>
+                                                <h3 style="color: white; margin: 0; font-size: 16px;">Delivered</h3>
+                                            </div>
+                                            <p style="color: white; font-size: 28px; font-weight: 600; margin: 0;">{{ delivery_stats.delivered }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filter Section -->
+                                <div style="background: white; padding: 20px;    margin-left: 10%; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 25px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                                        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                                            <div class="filter-group" style="position: relative;">
+                                                <i class="fas fa-filter" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #95a5a6;"></i>
+                                                <select id="statusFilter" onchange="filterOrders()" style="padding: 10px 15px 10px 35px; border: 2px solid #eee; border-radius: 8px; color: #2c3e50; cursor: pointer; font-size: 14px; min-width: 150px; appearance: none; background: white;">
+                                                    <option value="all">All Status</option>
+                                                    <option value="pending">Pending</option>
+                                                    <option value="out_for_delivery">Out for Delivery</option>
+                                                    <option value="delivered">Delivered</option>
+                                                </select>
+                                            </div>
+                                            <div class="filter-group" style="position: relative;">
+                                                <i class="fas fa-calendar" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #95a5a6;"></i>
+                                                <select id="dateFilter" onchange="filterOrders()" style="padding: 10px 15px 10px 35px; border: 2px solid #eee; border-radius: 8px; color: #2c3e50; cursor: pointer; font-size: 14px; min-width: 150px; appearance: none; background: white;">
+                                                    <option value="all">All Time</option>
+                                                    <option value="today">Today</option>
+                                                    <option value="week">This Week</option>
+                                                    <option value="month">This Month</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="search-group" style="position: relative; flex-grow: 1; max-width: 300px;">
+                                            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #95a5a6;"></i>
+                                            <input type="text" id="searchOrder" placeholder="Search orders..." onkeyup="filterOrders()" 
+                                                style="padding: 10px 15px 10px 35px; border: 2px solid #eee; border-radius: 8px; width: 100%; font-size: 14px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Orders Grid -->
+                            <div class="orders-grid" style="margin-left: 13%;display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+                                {% for order in my_orders %}
+                                <div class="order-card" data-status="{{ order.delivery_status|lower }}" data-date="{{ order.order_date|date:'Y-m-d' }}"
+                                    style="background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; transition: all 0.3s ease;">
+                                    
+                                    <!-- Order Header -->
+                                    <div style="background: linear-gradient(135deg, #1a5f7a 0%, #0f3443 100%); padding: 15px; color: white; position: relative;">
+                                        <h3 style="margin: 0; font-size: 16px;">Order #{{ order.id }}</h3>
+                                        <span style="position: absolute; top: 15px; right: 15px; font-size: 12px; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.2);">
+                                            {{ order.order_date|date:"M d, Y" }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Order Content -->
+                                    <div style="padding: 20px;">
+                                        <!-- Customer Info -->
+                                        <div style="margin-bottom: 20px;">
+                                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                                <i class="fas fa-user-circle" style="font-size: 20px; color: #1a5f7a; margin-right: 10px;"></i>
+                                                <div>
+                                                    <h4 style="margin: 0; font-size: 14px; color: #7f8c8d;">Customer</h4>
+                                                    <p style="margin: 5px 0 0; font-size: 16px; color: #2c3e50;">{{ order.user.name }}</p>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; align-items: center;">
+                                                <i class="fas fa-map-marker-alt" style="font-size: 20px; color: #1a5f7a; margin-right: 10px;"></i>
+                                                <div>
+                                                    <h4 style="margin: 0; font-size: 14px; color: #7f8c8d;">Delivery Location</h4>
+                                                    <p style="margin: 5px 0 0; font-size: 14px; color: #2c3e50;">
+                                                        {{ order.user.address }}, {{ order.user.district }}, {{ order.user.pincode }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Order Details -->
+                                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                                <div>
+                                                    <h4 style="margin: 0; font-size: 14px; color: #7f8c8d;">Product</h4>
+                                                    <p style="margin: 5px 0 0; font-size: 14px; color: #2c3e50;">{{ order.product.name }}</p>
+                                                </div>
+                                                <div>
+                                                    <h4 style="margin: 0; font-size: 14px; color: #7f8c8d;">Quantity</h4>
+                                                    <p style="margin: 5px 0 0; font-size: 14px; color: #2c3e50;">{{ order.quantity }}</p>
+                                                </div>
+                                                <div>
+                                                    <h4 style="margin: 0; font-size: 14px; color: #7f8c8d;">Amount</h4>
+                                                    <p style="margin: 5px 0 0; font-size: 16px; color: #2c3e50; font-weight: 600;">₹{{ order.amount.amount }}</p>
+                                                </div>
+                                                <div>
+                                                    <h4 style="margin: 0; font-size: 14px; color: #7f8c8d;">Status</h4>
+                                                    <span class="status-badge" style="
+                                                        display: inline-block;
+                                                        padding: 4px 12px;
+                                                        border-radius: 20px;
+                                                        font-size: 12px;
+                                                        font-weight: 500;
+                                                        margin-top: 5px;
+                                                        {% if order.delivery_status == 'Pending' %}
+                                                            background-color: #fff3e0;
+                                                            color: #e67e22;
+                                                        {% elif order.delivery_status == 'Out for Delivery' %}
+                                                            background-color: #e3f2fd;
+                                                            color: #2196f3;
+                                                        {% elif order.delivery_status == 'Delivered' %}
+                                                            background-color: #e8f5e9;
+                                                            color: #27ae60;
                                                         {% endif %}
                                                     ">
-                                                        {{ order.order_status }}
-                                                    </div>
-
-                                                    <!-- Order Details -->
-                                                    <div style="margin-top: 25px;">
-                                                        <h3 style="font-size: 1.2em; color: #2c3e50; margin-bottom: 15px;">Order #{{ order.id }}</h3>
-                                                        
-                                                        <div style="margin-bottom: 10px;">
-                                                            <p style="color: #7f8c8d; margin-bottom: 5px;">Customer</p>
-                                                            <p style="color: #2c3e50; font-weight: 500;">{{ order.user.username }}</p>
-                                                        </div>
-
-                                                        <div style="margin-bottom: 10px;">
-                                                            <p style="color: #7f8c8d; margin-bottom: 5px;">Delivery Location</p>
-                                                            <p style="color: #2c3e50; font-weight: 500;">
-                                                                {{ order.user.district }}{% if order.user.district %}, {% endif %}
-                                                                {{ order.user.home_town }}{% if order.user.home_town %}, {% endif %}
-                                                                {{ order.user.pincode }}
-                                                            </p>
-                                                        </div>
-
-                                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                                                            <div>
-                                                                <p style="color: #7f8c8d; margin-bottom: 5px;">Product</p>
-                                                                <p style="color: #2c3e50; font-weight: 500;">{{ order.product.name }}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p style="color: #7f8c8d; margin-bottom: 5px;">Quantity</p>
-                                                                <p style="color: #2c3e50; font-weight: 500;">{{ order.quantity }}</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                                                            <div>
-                                                                <p style="color: #7f8c8d; margin-bottom: 5px;">Order Date</p>
-                                                                <p style="color: #2c3e50; font-weight: 500;">{{ order.order_date|date:"Y-m-d H:i" }}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p style="color: #7f8c8d; margin-bottom: 5px;">Amount</p>
-                                                                <p style="color: #2c3e50; font-weight: 500;">₹{{ order.amount.amount }}</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Delivery Status -->
-                                                        <div style="margin-bottom: 20px;">
-                                                            <p style="color: #7f8c8d; margin-bottom: 5px;">Delivery Status</p>
-                                                            <span style="
-                                                                display: inline-block;
-                                                                padding: 5px 15px;
-                                                                border-radius: 20px;
-                                                                font-size: 14px;
-                                                                font-weight: 500;
-                                                                {% if not order.delivery_boy %}
-                                                                    background-color: #95a5a6;
-                                                                    color: white;
-                                                                {% elif order.delivery_status == 'Pending' %}
-                                                                    background-color: #e67e22;
-                                                                    color: white;
-                                                                {% elif order.delivery_status == 'Delivered' %}
-                                                                    background-color: #27ae60;
-                                                                    color: white;
-                                                                {% endif %}
-                                                            ">
-                                                                {% if not order.delivery_boy %}
-                                                                    Not Assigned
-                                                                {% else %}
-                                                                    {{ order.delivery_status }}
-                                                                {% endif %}
-                                                            </span>
-                                                        </div>
-
-                                                        <!-- Action Buttons -->
-                                                        <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                                                            {% if not order.delivery_boy %}
-                                                                <form method="post" style="display: inline;">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" name="order_id" value="{{ order.id }}">
-                                                                    <input type="hidden" name="action" value="accept">
-                                                                    <button type="submit" style="
-                                                                        background-color: #27ae60;
-                                                                        color: white;
-                                                                        border: none;
-                                                                        padding: 8px 15px;
-                                                                        border-radius: 20px;
-                                                                        cursor: pointer;
-                                                                        font-weight: 500;
-                                                                        transition: background-color 0.2s;
-                                                                    " onmouseover="this.style.backgroundColor='#219a52'"
-                                                                       onmouseout="this.style.backgroundColor='#27ae60'">
-                                                                        Accept Delivery
-                                                                    </button>
-                                                                </form>
-                                                            {% elif order.delivery_boy == request.user %}
-                                                                {% if order.delivery_status == 'Pending' %}
-                                                                    <form method="post" style="display: inline;">
-                                                                        {% csrf_token %}
-                                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
-                                                                        <input type="hidden" name="action" value="out_for_delivery">
-                                                                        <button type="submit" style="
-                                                                            background-color: #f1c40f;
-                                                                            color: black;
-                                                                            border: none;
-                                                                            padding: 8px 15px;
-                                                                            border-radius: 20px;
-                                                                            cursor: pointer;
-                                                                            font-weight: 500;
-                                                                            transition: background-color 0.2s;
-                                                                        " onmouseover="this.style.backgroundColor='#dbb10d'"
-                                                                           onmouseout="this.style.backgroundColor='#f1c40f'">
-                                                                            Mark Out for Delivery
-                                                                        </button>
-                                                                    </form>
-                                                                {% elif order.delivery_status == 'Out for Delivery' %}
-                                                                    <form method="post" style="display: inline;">
-                                                                        {% csrf_token %}
-                                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
-                                                                        <input type="hidden" name="action" value="delivered">
-                                                                        <button type="submit" style="
-                                                                            background-color: #3498db;
-                                                                            color: white;
-                                                                            border: none;
-                                                                            padding: 8px 15px;
-                                                                            border-radius: 20px;
-                                                                            cursor: pointer;
-                                                                            font-weight: 500;
-                                                                            transition: background-color 0.2s;
-                                                                        " onmouseover="this.style.backgroundColor='#2980b9'"
-                                                                           onmouseout="this.style.backgroundColor='#3498db'">
-                                                                            Mark as Delivered
-                                                                        </button>
-                                                                    </form>
-                                                                {% endif %}
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
+                                                        {{ order.delivery_status }}
+                                                    </span>
                                                 </div>
-                                                {% endfor %}
                                             </div>
-                                            {% else %}
-                                            <div style="
-                                                text-align: center;
-                                                padding: 40px 20px;
-                                                background: white;
-                                                border-radius: 12px;
-                                                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                                                margin: 20px;
-                                            ">
-                                                <p style="color: #7f8c8d; font-size: 18px;">No orders available in your area at the moment.</p>
-                                            </div>
+                                        </div>
+
+                                        <!-- Action Buttons -->
+                                        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                                            {% if order.delivery_status == 'Pending' %}
+                                            <button onclick="updateStatus('{{ order.id }}', 'out_for_delivery')" 
+                                                style="background: #f1c40f; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-truck"></i> Start Delivery
+                                            </button>
+                                            {% elif order.delivery_status == 'Out for Delivery' %}
+                                            <button onclick="updateStatus('{{ order.id }}', 'delivered')"
+                                                style="background: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-check"></i> Mark Delivered
+                                            </button>
                                             {% endif %}
                                         </div>
                                     </div>
                                 </div>
+                                {% endfor %}
                             </div>
                         </section>
                         <!--  section  end-->
@@ -431,5 +407,196 @@
         <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+            <script>
+            function filterOrders() {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const dateFilter = document.getElementById('dateFilter').value;
+                const searchText = document.getElementById('searchOrder').value.toLowerCase();
+                
+                const orders = document.querySelectorAll('.order-card');
+                
+                orders.forEach(order => {
+                    let showOrder = true;
+                    
+                    // Status filtering
+                    if (statusFilter !== 'all') {
+                        const orderStatus = order.querySelector('.status-badge').textContent.trim().toLowerCase().replace(/\s+/g, '_');
+                        if (orderStatus !== statusFilter) {
+                            showOrder = false;
+                        }
+                    }
+                    
+                    // Date filtering
+                    if (dateFilter !== 'all' && showOrder) {
+                        const orderDate = new Date(order.getAttribute('data-date'));
+                        const today = new Date();
+                        
+                        switch(dateFilter) {
+                            case 'today':
+                                if (orderDate.toDateString() !== today.toDateString()) {
+                                    showOrder = false;
+                                }
+                                break;
+                            case 'week':
+                                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                if (orderDate < weekAgo) {
+                                    showOrder = false;
+                                }
+                                break;
+                            case 'month':
+                                const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+                                if (orderDate < monthAgo) {
+                                    showOrder = false;
+                                }
+                                break;
+                        }
+                    }
+                    
+                    // Search filtering
+                    if (showOrder && searchText) {
+                        const orderContent = order.textContent.toLowerCase();
+                        if (!orderContent.includes(searchText)) {
+                            showOrder = false;
+                        }
+                    }
+                    
+                    order.style.display = showOrder ? 'block' : 'none';
+                });
+            }
+
+            // Add this to initialize the current filter on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                // Set initial filter if URL has 'out_for_delivery' in it
+                if (window.location.href.includes('out_for_delivery')) {
+                    document.getElementById('statusFilter').value = 'out_for_delivery';
+                    filterOrders();
+                }
+            });
+
+            function updateStatus(orderId, status) {
+                // Show loading state on the button
+                const button = event.target.closest('button');
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+                // Show confirmation dialog
+                Swal.fire({
+                    title: status === 'out_for_delivery' ? 'Start Delivery?' : 'Mark as Delivered?',
+                    text: status === 'out_for_delivery' ? 
+                        'Are you sure you want to start the delivery for this order?' : 
+                        'Are you sure you want to mark this order as delivered?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2ecc71',
+                    cancelButtonColor: '#95a5a6',
+                    confirmButtonText: 'Yes, proceed!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Create and submit form
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = window.location.href; // Current URL
+                        
+                        // Add CSRF token
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        
+                        form.innerHTML = `
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                            <input type="hidden" name="order_id" value="${orderId}">
+                            <input type="hidden" name="action" value="${status}">
+                        `;
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    } else {
+                        // Reset button if cancelled
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    // Reset button on error
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                    
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#2ecc71'
+                    });
+                });
+            }
+
+            // Add this to ensure CSRF token is available
+            document.addEventListener('DOMContentLoaded', function() {
+                // Check if CSRF token is missing and add if necessary
+                if (!document.querySelector('[name=csrfmiddlewaretoken]')) {
+                    const csrfToken = '{{ csrf_token }}';
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'csrfmiddlewaretoken';
+                    input.value = csrfToken;
+                    document.body.appendChild(input);
+                }
+            });
+            </script>
+            <style>
+            .stats-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .stats-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            }
+
+            .order-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .order-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            }
+
+            .filter-group select:hover,
+            .search-group input:focus {
+                border-color: #1a5f7a;
+            }
+
+            button {
+                transition: all 0.3s ease;
+            }
+
+            button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+            @media (max-width: 768px) {
+                .orders-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .filter-group select,
+                .search-group input {
+                    width: 100%;
+                }
+                
+                .filter-group {
+                    width: 100%;
+                }
+            }
+
+            @media (max-width: 480px) {
+                div[style*="margin: 20px auto"] {
+                    width: 98%;
+                    margin: 10px auto;
+                }
+            }
+            </style>
  </body>
 </html>

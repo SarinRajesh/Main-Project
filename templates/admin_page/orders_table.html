@@ -17,6 +17,87 @@
         <link type="text/css" rel="stylesheet" href="{% static 'index/css/yourstyle.css' %}">
         <!--=============== favicons ===============-->
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+        <style>
+            .custom-swal-popup {
+                width: 900px !important;
+                padding: 25px;
+                background: #f8f9fa;
+            }
+            
+            .details-container {
+                display: flex;
+                gap: 25px;
+                margin-top: 20px;
+            }
+            
+            .details-box {
+                flex: 1;
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .details-header {
+                font-size: 18px;
+                color: #2c3e50;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #3498db;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .details-content {
+                display: grid;
+                gap: 12px;
+            }
+            
+            .detail-item {
+                display: flex;
+                align-items: baseline;
+                gap: 10px;
+                font-size: 14px;
+            }
+            
+            .detail-label {
+                font-weight: 600;
+                color: #34495e;
+                min-width: 100px;
+            }
+            
+            .detail-value {
+                color: #2c3e50;
+            }
+            
+            .order-details {
+                margin-top: 20px;
+                background: #fff;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #2ecc71;
+            }
+            
+            .status-badge {
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+            }
+            
+            .status-active {
+                background-color: #2ecc71;
+                color: white;
+            }
+            
+            .status-inactive {
+                background-color: #e74c3c;
+                color: white;
+            }
+        </style>
     </head>
 
     <body>
@@ -156,9 +237,45 @@
                                                                 {% elif order.delivery_boy %}
                                                                     {{ order.delivery_boy.username }}
                                                                 {% elif order.order_status == 'Approved' %}
-                                                                    No delivery boy available
+                                                                    {% if order.available_delivery_boys %}
+                                                                        <form method="post" style="display: inline;" id="assignForm{{ order.id }}">
+                                                                            {% csrf_token %}
+                                                                            <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                                            <input type="hidden" name="action" value="assign_delivery_boy">
+                                                                            <select name="delivery_boy_id" 
+                                                                                    onchange="confirmAssignment(this, {{ order.id }}, 
+                                                                                        {
+                                                                                            customerId: '{{ order.user.id }}',
+                                                                                            customerName: '{{ order.user.name }}',
+                                                                                            customerPhone: '{{ order.user.phone }}',
+                                                                                            customerEmail: '{{ order.user.email }}',
+                                                                                            customerAddress: '{{ order.user.address }}',
+                                                                                            customerDistrict: '{{ order.user.district }}',
+                                                                                            customerPincode: '{{ order.user.pincode }}',
+                                                                                            orderAmount: '{{ order.amount.amount }}',
+                                                                                            orderProduct: '{{ order.product.name }}',
+                                                                                            orderQuantity: '{{ order.quantity }}'
+                                                                                        })" 
+                                                                                    style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+                                                                                <option value="">Select Delivery Boy</option>
+                                                                                {% for db in order.available_delivery_boys %}
+                                                                                    <option value="{{ db.id }}" 
+                                                                                            data-name="{{ db.name }}"
+                                                                                            data-phone="{{ db.phone }}"
+                                                                                            data-email="{{ db.email }}"
+                                                                                            data-district="{{ db.district }}"
+                                                                                            data-hometown="{{ db.home_town }}"
+                                                                                            data-status="{{ db.status }}">
+                                                                                        {{ db.name }} ({{ db.district }})
+                                                                                    </option>
+                                                                                {% endfor %}
+                                                                            </select>
+                                                                        </form>
+                                                                    {% else %}
+                                                                        <span style="color: #e74c3c;">No delivery boys available in {{ order.user.district }}</span>
+                                                                    {% endif %}
                                                                 {% else %}
-                                                                    <a href="{% url 'add_deliveryboy' %}" style="color: #3498db; text-decoration: none;">Add a delivery boy</a>
+                                                                    Cannot add delivery boy until order is approved
                                                                 {% endif %}
                                                             </td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_date|date:"Y-m-d H:i" }}</td>
@@ -209,11 +326,11 @@
                         <!--  social-wrap  -->
                         <div class="social-wrap fl-wrap">
                             <ul>
-                                <li><a href="#" target="_blank" ><i class="fa fa-facebook"></i></a></li>
-                                <li><a href="#" target="_blank"><i class="fa fa-twitter"></i></a></li>
-                                <li><a href="#" target="_blank" ><i class="fa fa-instagram"></i></a></li>
-                                <li><a href="#" target="_blank" ><i class="fa fa-pinterest"></i></a></li>
-                                <li><a href="#" target="_blank" ><i class="fa fa-tumblr"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa-brands fa-facebook-f"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa-brands fa-twitter"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa-brands fa-instagram"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa-brands fa-pinterest-p"></i></a></li>
+                                <li><a href="#" target="_blank"><i class="fa-brands fa-tumblr"></i></a></li>
                             </ul>
                         </div>
                         <!--  social-wrap  end-->
@@ -422,5 +539,188 @@
         <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
+            <script>
+            function confirmAssignment(selectElement, orderId, customerData) {
+                event.preventDefault();
+                
+                if (!selectElement.value) return;
+
+                const selectedOption = selectElement.options[selectElement.selectedIndex];
+                const deliveryBoyData = {
+                    id: selectElement.value,
+                    name: selectedOption.dataset.name,
+                    phone: selectedOption.dataset.phone,
+                    email: selectedOption.dataset.email,
+                    district: selectedOption.dataset.district,
+                    hometown: selectedOption.dataset.hometown,
+                    status: selectedOption.dataset.status
+                };
+
+                const detailsHtml = `
+                    <div class="details-container">
+                        <!-- Customer Details -->
+                        <div class="details-box">
+                            <div class="details-header">
+                                <i class="fa-solid fa-user-circle" style="color: #3498db;"></i>
+                                Customer Information
+                            </div>
+                            <div class="details-content">
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-user"></i> Name:</span>
+                                    <span class="detail-value">${customerData.customerName}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-phone"></i> Phone:</span>
+                                    <span class="detail-value">${customerData.customerPhone}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-envelope"></i> Email:</span>
+                                    <span class="detail-value">${customerData.customerEmail}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-location-dot"></i> Address:</span>
+                                    <span class="detail-value">${customerData.customerAddress}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-map"></i> District:</span>
+                                    <span class="detail-value">${customerData.customerDistrict}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-hashtag"></i> Pincode:</span>
+                                    <span class="detail-value">${customerData.customerPincode}</span>
+                                </div>
+                            </div>
+
+                            <div class="order-details">
+                                <div class="details-header" style="border-color: #2ecc71;">
+                                    <i class="fa-solid fa-shopping-cart" style="color: #2ecc71;"></i>
+                                    Order Details
+                                </div>
+                                <div class="details-content">
+                                    <div class="detail-item">
+                                        <span class="detail-label"><i class="fa-solid fa-box"></i> Product:</span>
+                                        <span class="detail-value">${customerData.orderProduct}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label"><i class="fa-solid fa-cubes"></i> Quantity:</span>
+                                        <span class="detail-value">${customerData.orderQuantity}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label"><i class="fa-solid fa-indian-rupee-sign"></i> Amount:</span>
+                                        <span class="detail-value">₹${customerData.orderAmount}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Boy Details -->
+                        <div class="details-box">
+                            <div class="details-header">
+                                <i class="fa-solid fa-motorcycle" style="color: #e74c3c;"></i>
+                                Delivery Boy Information
+                            </div>
+                            <div class="details-content">
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-user"></i> Name:</span>
+                                    <span class="detail-value">${deliveryBoyData.name}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-phone"></i> Phone:</span>
+                                    <span class="detail-value">${deliveryBoyData.phone}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-envelope"></i> Email:</span>
+                                    <span class="detail-value">${deliveryBoyData.email}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-map"></i> District:</span>
+                                    <span class="detail-value">${deliveryBoyData.district}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-house"></i> Home Town:</span>
+                                    <span class="detail-value">${deliveryBoyData.hometown}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fa-solid fa-circle-check"></i> Status:</span>
+                                    <span class="status-badge ${deliveryBoyData.status === 'active' ? 'status-active' : 'status-inactive'}">
+                                        ${deliveryBoyData.status.toUpperCase()}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                Swal.fire({
+                    title: '<span style="color: #2c3e50; font-size: 24px;"><i class="fa-solid fa-clipboard-check"></i> Confirm Delivery Assignment</span>',
+                    html: detailsHtml,
+                    icon: null,
+                    showCancelButton: true,
+                    confirmButtonColor: '#2ecc71',
+                    cancelButtonColor: '#95a5a6',
+                    confirmButtonText: '<i class="fa-solid fa-check"></i> Confirm Assignment',
+                    cancelButtonText: '<i class="fa-solid fa-xmark"></i> Cancel',
+                    customClass: {
+                        container: 'custom-swal-container',
+                        popup: 'custom-swal-popup',
+                        content: 'custom-swal-content',
+                        confirmButton: 'custom-confirm-button',
+                        cancelButton: 'custom-cancel-button'
+                    },
+                    buttonsStyling: true,
+                    reverseButtons: true,
+                    focusConfirm: false,
+                    showCloseButton: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Assigning Delivery Boy',
+                            html: `
+                                <div style="text-align: center;">
+                                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px;"></i>
+                                    <p style="margin: 0;">Please wait while we process your request...</p>
+                                </div>
+                            `,
+                            showConfirmButton: false,
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                document.getElementById(`assignForm${orderId}`).submit();
+                            }
+                        });
+                    } else {
+                        selectElement.value = "";
+                    }
+                });
+            }
+            </script>
+            <style>
+                .custom-swal-popup {
+                    width: 800px !important;
+                    padding: 20px;
+                }
+                
+                .custom-swal-content {
+                    text-align: left;
+                }
+                
+                .custom-swal-container {
+                    z-index: 9999;
+                }
+                
+                /* Additional styles for the details sections */
+                .custom-swal-content p {
+                    margin: 8px 0;
+                    font-size: 14px;
+                }
+                
+                .custom-swal-content h5 {
+                    font-size: 16px;
+                    font-weight: 600;
+                }
+                
+                .custom-swal-content strong {
+                    color: #34495e;
+                }
+            </style>
  </body>
 </html>

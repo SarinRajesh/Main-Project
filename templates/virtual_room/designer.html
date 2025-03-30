@@ -2000,7 +2000,8 @@
             const existingPositions = furniture.map(item => ({
                 x: item.position.x,
                 z: item.position.z,
-                category: item.userData.category
+                category: item.userData.category,
+                size: getModelSize(item)
             }));
             
             // Default position (room center)
@@ -2015,6 +2016,12 @@
             const modelSize = new THREE.Vector3();
             bbox.getSize(modelSize);
             
+            // Calculate model footprint (for collision detection)
+            const modelFootprint = {
+                width: modelSize.x,
+                depth: modelSize.z
+            };
+            
             // Special handling for lamps and tall objects
             if (category === 'lamp') {
                 // For lamps, we want the base to be on the floor
@@ -2028,20 +2035,36 @@
                 model.position.y = yOffset;
             }
             
+            // Define wall margins to prevent furniture from being placed too close to walls
+            const wallMargin = Math.max(modelFootprint.width, modelFootprint.depth) * 0.6;
+            
             // Now apply category-specific positioning rules for x and z coordinates
             switch(category) {
                 case 'bed':
-                    // Place bed against a wall, centered on one side
+                    // Place bed against a wall, centered on one side, with proper margin
                     targetPosition.x = room.length * 0.75;
                     targetPosition.z = room.width / 2;
                     model.rotation.y = Math.PI / 2; // Rotate to face into room
+                    
+                    // Ensure bed is not too close to the wall
+                    if (targetPosition.x + modelFootprint.width/2 > room.length - wallMargin) {
+                        targetPosition.x = room.length - wallMargin - modelFootprint.width/2;
+                    }
                     break;
                     
                 case 'sofa':
-                    // Place sofa against a wall, facing center
-                    targetPosition.x = room.length * 0.25;
-                    targetPosition.z = room.width * 0.75;
-                    model.rotation.y = -Math.PI / 2; // Rotate to face center
+                    // Place sofas against walls, facing into the room
+                    targetPosition.x = room.length * 0.8; // Near back wall
+                    targetPosition.z = room.width * 0.7; // Further into the room
+                    model.rotation.y = Math.PI; // Rotate to face into the room (away from wall)
+                    
+                    // Ensure sofa is not too close to the wall
+                    if (targetPosition.x + modelFootprint.width/2 > room.length - wallMargin) {
+                        targetPosition.x = room.length - wallMargin - modelFootprint.width/2;
+                    }
+                    if (targetPosition.z + modelFootprint.depth/2 > room.width - wallMargin) {
+                        targetPosition.z = room.width - wallMargin - modelFootprint.depth/2;
+                    }
                     break;
                     
                 case 'chair':
@@ -2055,51 +2078,133 @@
                             return prevDist < currDist ? prev : curr;
                         });
                         
-                        // Position near table with slight offset
-                        targetPosition.x = closestTable.x + (Math.random() * 0.5 + 0.5);
-                        targetPosition.z = closestTable.z + (Math.random() * 0.5 + 0.5);
+                        // Calculate table footprint
+                        const tableSize = closestTable.size || { width: 1.2, depth: 1.2 };
+                        
+                        // Position near table with proper spacing
+                        const chairSpacing = 0.6; // Space between chair and table
+                        
+                        // Choose a random position around the table
+                        const angle = Math.random() * Math.PI * 2;
+                        targetPosition.x = closestTable.x + (tableSize.width/2 + modelFootprint.width/2 + chairSpacing) * Math.cos(angle);
+                        targetPosition.z = closestTable.z + (tableSize.depth/2 + modelFootprint.depth/2 + chairSpacing) * Math.sin(angle);
+                        
                         // Face toward table
                         model.rotation.y = Math.atan2(closestTable.x - targetPosition.x, closestTable.z - targetPosition.z);
                     } else {
-                        // No tables, place in a corner
+                        // No tables, place in a corner with proper wall margins
                         targetPosition.x = room.length * 0.2;
                         targetPosition.z = room.width * 0.2;
+                        
+                        // Ensure chair is not too close to walls
+                        if (targetPosition.x - modelFootprint.width/2 < wallMargin) {
+                            targetPosition.x = wallMargin + modelFootprint.width/2;
+                        }
+                        if (targetPosition.z - modelFootprint.depth/2 < wallMargin) {
+                            targetPosition.z = wallMargin + modelFootprint.depth/2;
+                        }
+                        
+                        // Face toward center
+                        model.rotation.y = Math.atan2(roomCenter.x - targetPosition.x, roomCenter.z - targetPosition.z);
                     }
                     break;
                     
                 case 'table':
-                    // Place tables in center area
-                    targetPosition.x = roomCenter.x + (Math.random() * 0.4 - 0.2);
-                    targetPosition.z = roomCenter.z + (Math.random() * 0.4 - 0.2);
+                    // Place tables in center area, away from beds
+                    const beds = existingPositions.filter(p => p.category === 'bed');
+                    
+                    if (beds.length > 0) {
+                        // Avoid placing tables too close to beds
+                        const bedAvoidanceRadius = 2.0; // Minimum distance from bed center
+                        
+                        // Try to find a position away from beds
+                        let attempts = 0;
+                        let validPosition = false;
+                        
+                        while (!validPosition && attempts < 10) {
+                            // Generate a position in the center area
+                            targetPosition.x = roomCenter.x + (Math.random() * 0.6 - 0.3) * room.length;
+                            targetPosition.z = roomCenter.z + (Math.random() * 0.6 - 0.3) * room.width;
+                            
+                            // Check distance from all beds
+                            validPosition = beds.every(bed => {
+                                const distance = Math.hypot(bed.x - targetPosition.x, bed.z - targetPosition.z);
+                                return distance > bedAvoidanceRadius;
+                            });
+                            
+                            attempts++;
+                        }
+                        
+                        if (!validPosition) {
+                            // If we couldn't find a good position, default to room center
+                            targetPosition.x = roomCenter.x;
+                            targetPosition.z = roomCenter.z;
+                        }
+                    } else {
+                        // No beds, place in center area
+                        targetPosition.x = roomCenter.x + (Math.random() * 0.4 - 0.2) * room.length;
+                        targetPosition.z = roomCenter.z + (Math.random() * 0.4 - 0.2) * room.width;
+                    }
                     break;
                     
                 case 'dining':
-                    // Place dining tables in a designated dining area
+                    // Place dining tables in a designated dining area, away from beds
                     targetPosition.x = room.length * 0.7;
                     targetPosition.z = room.width * 0.3;
+                    
+                    // Ensure dining table is not too close to walls
+                    if (targetPosition.x + modelFootprint.width/2 > room.length - wallMargin) {
+                        targetPosition.x = room.length - wallMargin - modelFootprint.width/2;
+                    }
+                    if (targetPosition.z - modelFootprint.depth/2 < wallMargin) {
+                        targetPosition.z = wallMargin + modelFootprint.depth/2;
+                    }
                     break;
                     
                 case 'desk':
-                    // Place desks against walls
+                    // Place desks against walls but not in corners
                     targetPosition.x = room.length * 0.2;
                     targetPosition.z = room.width * 0.8;
                     model.rotation.y = Math.PI; // Face away from wall
+                    
+                    // Ensure desk is not too close to the wall
+                    if (targetPosition.z + modelFootprint.depth/2 > room.width - wallMargin) {
+                        targetPosition.z = room.width - wallMargin - modelFootprint.depth/2;
+                    }
+                    if (targetPosition.x - modelFootprint.width/2 < wallMargin) {
+                        targetPosition.x = wallMargin + modelFootprint.width/2;
+                    }
                     break;
                     
                 case 'lamp':
                     // Place lamps near furniture or in corners
-                    const furniture = existingPositions.filter(p => 
+                    const furnitureForLamps = existingPositions.filter(p => 
                         p.category === 'sofa' || p.category === 'bed' || p.category === 'desk');
                     
-                    if (furniture.length > 0) {
+                    if (furnitureForLamps.length > 0) {
                         // Find a piece of furniture to place lamp near
-                        const targetFurniture = furniture[Math.floor(Math.random() * furniture.length)];
-                        targetPosition.x = targetFurniture.x + 0.8;
-                        targetPosition.z = targetFurniture.z + 0.8;
+                        const targetFurniture = furnitureForLamps[Math.floor(Math.random() * furnitureForLamps.length)];
+                        const furnitureSize = targetFurniture.size || { width: 1.0, depth: 1.0 };
+                        
+                        // Calculate position near furniture with proper spacing
+                        const lampSpacing = 0.5; // Space between lamp and furniture
+                        
+                        // Choose a position beside the furniture, not behind it
+                        const angle = Math.random() * Math.PI; // Only use half circle to avoid placing behind
+                        targetPosition.x = targetFurniture.x + (furnitureSize.width/2 + modelFootprint.width/2 + lampSpacing) * Math.cos(angle);
+                        targetPosition.z = targetFurniture.z + (furnitureSize.depth/2 + modelFootprint.depth/2 + lampSpacing) * Math.sin(angle);
                     } else {
-                        // No furniture, place in a corner
+                        // No furniture, place in a corner with proper margins
                         targetPosition.x = room.length * 0.1;
                         targetPosition.z = room.width * 0.1;
+                        
+                        // Ensure lamp is not too close to walls
+                        if (targetPosition.x - modelFootprint.width/2 < wallMargin/2) {
+                            targetPosition.x = wallMargin/2 + modelFootprint.width/2;
+                        }
+                        if (targetPosition.z - modelFootprint.depth/2 < wallMargin/2) {
+                            targetPosition.z = wallMargin/2 + modelFootprint.depth/2;
+                        }
                     }
                     break;
                     
@@ -2108,19 +2213,41 @@
                     targetPosition.x = room.length * 0.9;
                     targetPosition.z = room.width * 0.2;
                     model.rotation.y = -Math.PI / 2; // Face into room
+                    
+                    // Ensure storage is not too close to the wall
+                    if (targetPosition.x + modelFootprint.width/2 > room.length - wallMargin) {
+                        targetPosition.x = room.length - wallMargin - modelFootprint.width/2;
+                    }
+                    if (targetPosition.z - modelFootprint.depth/2 < wallMargin) {
+                        targetPosition.z = wallMargin + modelFootprint.depth/2;
+                    }
                     break;
                     
                 case 'nightstand':
                     // Place nightstands near beds
-                    const beds = existingPositions.filter(p => p.category === 'bed');
-                    if (beds.length > 0) {
-                        const bed = beds[0]; // Use the first bed
-                        targetPosition.x = bed.x + 1.2;
+                    const bedsForNightstands = existingPositions.filter(p => p.category === 'bed');
+                    if (bedsForNightstands.length > 0) {
+                        const bed = bedsForNightstands[0]; // Use the first bed
+                        const bedSize = bed.size || { width: 2.0, depth: 1.4 };
+                        
+                        // Position beside the bed with proper spacing
+                        targetPosition.x = bed.x + bedSize.width/2 + modelFootprint.width/2 + 0.2;
                         targetPosition.z = bed.z;
+                        
+                        // Adjust if too close to wall
+                        if (targetPosition.x + modelFootprint.width/2 > room.length - wallMargin) {
+                            // Try other side of bed
+                            targetPosition.x = bed.x - bedSize.width/2 - modelFootprint.width/2 - 0.2;
+                        }
                     } else {
                         // No beds, place where a bed might go
                         targetPosition.x = room.length * 0.8;
                         targetPosition.z = room.width * 0.5;
+                        
+                        // Ensure nightstand is not too close to walls
+                        if (targetPosition.x + modelFootprint.width/2 > room.length - wallMargin) {
+                            targetPosition.x = room.length - wallMargin - modelFootprint.width/2;
+                        }
                     }
                     break;
                     
@@ -2141,22 +2268,52 @@
                     break;
                     
                 case 'electronics':
-                    // Place electronics against walls
+                    // Place electronics on walls instead of against walls
                     targetPosition.x = room.length * 0.1;
-                    targetPosition.z = room.width * 0.5;
-                    model.rotation.y = Math.PI / 2; // Face into room
+                    targetPosition.z = 0.1; // Very close to wall
+                    model.rotation.y = 0; // Face into room
+                    
+                    // Wall items should be higher up
+                    model.position.y = room.height * 0.5; // Higher on wall
+                    
+                    // Ensure electronics are not too close to corners
+                    if (targetPosition.x - modelFootprint.width/2 < wallMargin) {
+                        targetPosition.x = wallMargin + modelFootprint.width/2;
+                    }
                     break;
                     
                 case 'decor':
                     // Place decor items in corners or on other furniture
                     targetPosition.x = room.length * 0.8;
                     targetPosition.z = room.width * 0.8;
+                    
+                    // Ensure decor is not too close to walls
+                    if (targetPosition.x + modelFootprint.width/2 > room.length - wallMargin/2) {
+                        targetPosition.x = room.length - wallMargin/2 - modelFootprint.width/2;
+                    }
+                    if (targetPosition.z + modelFootprint.depth/2 > room.width - wallMargin/2) {
+                        targetPosition.z = room.width - wallMargin/2 - modelFootprint.depth/2;
+                    }
                     break;
                     
                 default:
-                    // For unknown categories, use a semi-random position
+                    // For unknown categories, use a semi-random position with wall margins
                     targetPosition.x = roomCenter.x + (Math.random() * room.length * 0.6 - room.length * 0.3);
                     targetPosition.z = roomCenter.z + (Math.random() * room.width * 0.6 - room.width * 0.3);
+                    
+                    // Ensure object is not too close to walls
+                    if (targetPosition.x - modelFootprint.width/2 < wallMargin) {
+                        targetPosition.x = wallMargin + modelFootprint.width/2;
+                    }
+                    if (targetPosition.x + modelFootprint.width/2 > room.length - wallMargin) {
+                        targetPosition.x = room.length - wallMargin - modelFootprint.width/2;
+                    }
+                    if (targetPosition.z - modelFootprint.depth/2 < wallMargin) {
+                        targetPosition.z = wallMargin + modelFootprint.depth/2;
+                    }
+                    if (targetPosition.z + modelFootprint.depth/2 > room.width - wallMargin) {
+                        targetPosition.z = room.width - wallMargin - modelFootprint.depth/2;
+                    }
                     break;
             }
             
@@ -2168,6 +2325,20 @@
             keepModelInRoom(model, room);
             
             console.log(`Positioned ${model.userData.type} (${category}) at:`, model.position);
+        }
+
+        // Add this helper function to get model size
+        function getModelSize(model) {
+            // Create a bounding box for the model
+            const bbox = new THREE.Box3().setFromObject(model);
+            const size = new THREE.Vector3();
+            bbox.getSize(size);
+            
+            return {
+                width: size.x,
+                height: size.y,
+                depth: size.z
+            };
         }
 
         // Add a helper function to check if a model is positioned correctly
@@ -2355,18 +2526,45 @@
             const halfWidth = modelSize.x / 2;
             const halfDepth = modelSize.z / 2;
             
+            // Add a safety margin to ensure no part of the model extends beyond walls
+            const safetyMargin = 0.1; // Additional margin in meters
+            
             // Constrain X position
-            if (model.position.x - halfWidth < 0) {
-                model.position.x = halfWidth;
-            } else if (model.position.x + halfWidth > room.length) {
-                model.position.x = room.length - halfWidth;
+            if (model.position.x - halfWidth < safetyMargin) {
+                model.position.x = halfWidth + safetyMargin;
+            } else if (model.position.x + halfWidth > room.length - safetyMargin) {
+                model.position.x = room.length - halfWidth - safetyMargin;
             }
             
             // Constrain Z position
-            if (model.position.z - halfDepth < 0) {
-                model.position.z = halfDepth;
-            } else if (model.position.z + halfDepth > room.width) {
-                model.position.z = room.width - halfDepth;
+            if (model.position.z - halfDepth < safetyMargin) {
+                model.position.z = halfDepth + safetyMargin;
+            } else if (model.position.z + halfDepth > room.width - safetyMargin) {
+                model.position.z = room.width - halfDepth - safetyMargin;
+            }
+            
+            // Double-check with bounding box after position adjustment
+            // This handles cases where the model's origin isn't at its center
+            bbox.setFromObject(model);
+            
+            // Ensure minimum X is positive (not outside left wall)
+            if (bbox.min.x < safetyMargin) {
+                model.position.x += (safetyMargin - bbox.min.x);
+            }
+            
+            // Ensure maximum X is less than room length (not outside right wall)
+            if (bbox.max.x > room.length - safetyMargin) {
+                model.position.x -= (bbox.max.x - (room.length - safetyMargin));
+            }
+            
+            // Ensure minimum Z is positive (not outside back wall)
+            if (bbox.min.z < safetyMargin) {
+                model.position.z += (safetyMargin - bbox.min.z);
+            }
+            
+            // Ensure maximum Z is less than room width (not outside front wall)
+            if (bbox.max.z > room.width - safetyMargin) {
+                model.position.z -= (bbox.max.z - (room.width - safetyMargin));
             }
         }
 
@@ -3015,6 +3213,47 @@
             
             contentContainer.appendChild(modeRow);
             
+            // Add height adjustment controls (NEW)
+            const heightControls = document.createElement('div');
+            heightControls.style.display = 'flex';
+            heightControls.style.alignItems = 'center';
+            heightControls.style.gap = '8px';
+            heightControls.style.marginBottom = '12px';
+            
+            const heightLabel = document.createElement('label');
+            heightLabel.style.minWidth = '100px';
+            heightLabel.style.fontWeight = 'bold';
+            heightLabel.textContent = 'Up/Down:';
+            
+            // Get current height position
+            const currentHeight = model.position.y;
+            
+            // Swap the order - Up button first
+            const moveUpBtn = document.createElement('button');
+            moveUpBtn.className = 'btn btn-sm btn-outline-secondary';
+            moveUpBtn.innerHTML = '↑';
+            moveUpBtn.title = 'Move up';
+            moveUpBtn.onclick = () => adjustModelHeight(model, 0.1);
+            
+            // Down button second
+            const moveDownBtn = document.createElement('button');
+            moveDownBtn.className = 'btn btn-sm btn-outline-secondary';
+            moveDownBtn.innerHTML = '↓';
+            moveDownBtn.title = 'Move down';
+            moveDownBtn.onclick = () => adjustModelHeight(model, -0.1);
+            
+            const heightValue = document.createElement('span');
+            heightValue.style.minWidth = '60px';
+            heightValue.style.textAlign = 'center';
+            heightValue.textContent = currentHeight.toFixed(1) + 'm';
+            
+            heightControls.appendChild(heightLabel);
+            heightControls.appendChild(moveUpBtn);
+            heightControls.appendChild(moveDownBtn);
+            heightControls.appendChild(heightValue);
+            
+            contentContainer.appendChild(heightControls);
+            
             // Create rotation controls
             const rotationControls = document.createElement('div');
             rotationControls.style.display = 'flex';
@@ -3122,12 +3361,22 @@
             resetBtn.onclick = () => {
                 model.rotation.set(0, 0, 0);
                 model.scale.set(1, 1, 1);
+                
+                // Reset height to floor level
+                const bbox = new THREE.Box3().setFromObject(model);
+                const bottomY = bbox.min.y;
+                model.position.y = -bottomY;
+                
+                // Update UI elements
                 scaleInput.value = 1;
                 scaleValue.textContent = '1.0x';
+                heightInput.value = model.position.y;
+                heightValue.textContent = model.position.y.toFixed(1) + 'm';
+                
                 showStatus('Transformations reset');
             };
             
-            // Delete button - NEW ADDITION
+            // Delete button
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'btn btn-danger';
             deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
@@ -3149,7 +3398,7 @@
             const shortcutsHint = document.createElement('div');
             shortcutsHint.className = 'mt-2 text-secondary';
             shortcutsHint.style.fontSize = '0.8rem';
-            shortcutsHint.innerHTML = 'Keyboard: <span class="key-hint">Q/E</span> Y-rotate <span class="key-hint">A/D</span> X-rotate <span class="key-hint">Z/C</span> Z-rotate <span class="key-hint">+/-</span> Scale <span class="key-hint">R</span> Reset <span class="key-hint">Del</span> Delete';
+            shortcutsHint.innerHTML = 'Keyboard: <span class="key-hint">Q/E</span> Y-rotate <span class="key-hint">A/D</span> X-rotate <span class="key-hint">Z/C</span> Z-rotate <span class="key-hint">W/S</span> Height <span class="key-hint">+/-</span> Scale <span class="key-hint">R</span> Reset <span class="key-hint">Del</span> Delete';
             contentContainer.appendChild(shortcutsHint);
             
             // Append the panel to the scene container
@@ -3160,6 +3409,139 @@
             controlsPanelVisible = true;
             return panel;
         }
+
+        // Add this new function to adjust model height
+        function adjustModelHeight(model, amount, absolute = false) {
+            // Get model dimensions using bounding box
+            const bbox = new THREE.Box3().setFromObject(model);
+            const modelHeight = bbox.max.y - bbox.min.y;
+            
+            // Calculate new position
+            let newY;
+            if (absolute) {
+                newY = amount; // Set to absolute value
+            } else {
+                newY = model.position.y + amount; // Adjust by relative amount
+            }
+            
+            // Ensure model stays within floor and ceiling bounds
+            const minY = 0; // Floor level (accounting for model's bottom)
+            const maxY = room.height - modelHeight; // Ceiling level (accounting for model's height)
+            
+            // Apply constraints
+            newY = Math.max(minY, Math.min(maxY, newY));
+            
+            // Apply the new position
+            model.position.y = newY;
+            
+            // Update UI if panel exists
+            const panel = document.getElementById('transform-controls-panel');
+            if (panel) {
+                const heightInput = panel.querySelector('input[type="range"]');
+                const heightValue = panel.querySelector('label:contains("Height:") + button + input + button + span');
+                if (heightInput) {
+                    heightInput.value = newY;
+                }
+                if (heightValue) {
+                    heightValue.textContent = newY.toFixed(1) + 'm';
+                }
+            }
+            
+            showStatus(`Height: ${newY.toFixed(2)}m`);
+        }
+
+        // Update keyboard event listener to include height adjustment
+        document.addEventListener('keydown', function(event) {
+            // Delete key pressed with a selected object
+            if ((event.key === 'Delete' || event.key === 'Del') && lastSelectedObject) {
+                // Delete the selected object
+                deleteObject(lastSelectedObject);
+            }
+            
+            // Check if Escape key is pressed
+            if (event.key === 'Escape') {
+                hideTransformControls();
+                // Make sure orbit controls are re-enabled
+                controls.enabled = true;
+            }
+            
+            // Only process other keyboard shortcuts if we have a last selected object
+            if (!lastSelectedObject) return;
+            
+            // Rotation - use Q/E for Y-axis, A/D for X-axis, Z/C for Z-axis
+            const rotationAmount = THREE.MathUtils.degToRad(15);
+            
+            switch(event.key.toLowerCase()) {
+                // Height adjustment (NEW)
+                case 'w': 
+                    adjustModelHeight(lastSelectedObject, 0.1);
+                    break;
+                case 's': 
+                    adjustModelHeight(lastSelectedObject, -0.1);
+                    break;
+                    
+                // Rotation controls
+                case 'q': 
+                    rotateModel(lastSelectedObject, 'y', -15);
+                    break;
+                case 'e': 
+                    rotateModel(lastSelectedObject, 'y', 15);
+                    break;
+                case 'a': 
+                    rotateModel(lastSelectedObject, 'x', -15);
+                    break;
+                case 'd': 
+                    rotateModel(lastSelectedObject, 'x', 15);
+                    break;
+                case 'z': 
+                    rotateModel(lastSelectedObject, 'z', -15);
+                    break;
+                case 'c': 
+                    rotateModel(lastSelectedObject, 'z', 15);
+                    break;
+                
+                // Scale controls
+                case '+':
+                case '=': // Same key on most keyboards
+                    scaleModel(lastSelectedObject, 1.1);
+                    break;
+                case '-':
+                    scaleModel(lastSelectedObject, 0.9);
+                    break;
+                
+                // Reset transformations with R
+                case 'r':
+                    lastSelectedObject.rotation.set(0, 0, 0);
+                    lastSelectedObject.scale.set(1, 1, 1);
+                    
+                    // Reset height to floor level (NEW)
+                    const bbox = new THREE.Box3().setFromObject(lastSelectedObject);
+                    const bottomY = bbox.min.y;
+                    lastSelectedObject.position.y = -bottomY;
+                    
+                    showStatus('Transformations reset');
+                    
+                    // Update UI if panel exists
+                    const panel = document.getElementById('transform-controls-panel');
+                    if (panel) {
+                        const scaleInput = panel.querySelector('input[type="range"]');
+                        const scaleValue = panel.querySelector('span');
+                        const heightInput = panel.querySelector('input[type="range"]:not([min="0.1"])');
+                        const heightValue = panel.querySelector('label:contains("Height:") + button + input + button + span');
+                        
+                        if (scaleInput && scaleValue) {
+                            scaleInput.value = 1;
+                            scaleValue.textContent = '1.0x';
+                        }
+                        
+                        if (heightInput && heightValue) {
+                            heightInput.value = lastSelectedObject.position.y;
+                            heightValue.textContent = lastSelectedObject.position.y.toFixed(1) + 'm';
+                        }
+                    }
+                    break;
+            }
+        });
 
         // Add this new function to handle object deletion
         function deleteObject(object) {
@@ -3757,9 +4139,15 @@
                 y: 0.01, // Slightly above floor
                 rotation: { x: 0, y: 0, z: 0 } // Center of room
             },
+            tv: { 
+                x: 2.5, 
+                z: -2, 
+                y: 0.5, // Elevated from floor
+                rotation: { x: 0, y: -Math.PI / 2, z: 0 } // Facing opposite to sofa
+            },
             default: { 
                 x: 0, 
-                z: 0, 
+                z: 0,
                 y: 0,
                 rotation: { x: 0, y: 0, z: 0 }
             }
@@ -3793,6 +4181,8 @@
                     category = 'plant';
                 } else if (filename.includes('carpet') || filename.includes('rug')) {
                     category = 'carpet';
+                } else if (filename.includes('tv') || filename.includes('television')) {
+                    category = 'tv';
                 }
 
                 // Get position and rotation based on category
