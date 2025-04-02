@@ -14,11 +14,14 @@ source .venv/bin/activate
 # Upgrade pip
 pip install --upgrade pip
 
-# Install dependencies in specific order
+# Install core dependencies first
 pip install numpy==1.24.3
 pip install scipy==1.10.1
 pip install scikit-learn==1.2.2
+pip install gast==0.4.0
 pip install tensorflow==2.12.0
+
+# Install other dependencies
 pip install -r requirements.txt
 
 # Collect static files
