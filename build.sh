@@ -1,26 +1,23 @@
-#!/usr/bin/env bash
-# exit on error
-set -o errexit
+#!/bin/bash
 
-# Clean up any existing virtual environment
-rm -rf .venv
+# Exit on error
+set -e
 
-# Create a new virtual environment
-python -m venv .venv
+echo "Starting build process..."
 
-# Activate virtual environment
-source .venv/bin/activate
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate
 
 # Upgrade pip
-pip install --upgrade pip
+python -m pip install --upgrade pip
 
 # Install core dependencies first
-pip install numpy==1.24.3
-pip install scipy==1.10.1
-pip install scikit-learn==1.2.2
-pip install gast==0.4.0
-pip install keras==2.12.1
+pip install wheel setuptools
+
+# Install tensorflow and keras first
 pip install tensorflow==2.12.0
+pip install keras==2.12.0
 
 # Install other dependencies
 pip install -r requirements.txt
@@ -28,5 +25,4 @@ pip install -r requirements.txt
 # Collect static files
 python manage.py collectstatic --noinput
 
-# Apply database migrations
-python manage.py migrate 
+echo "Build completed successfully!" 
