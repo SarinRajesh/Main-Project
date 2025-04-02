@@ -15,6 +15,9 @@ python -m pip install --upgrade pip
 # Install core dependencies first
 pip install wheel setuptools
 
+# Install protobuf first (since it's a core dependency)
+pip install protobuf==3.20.3
+
 # Install numpy first (since it's a core dependency)
 pip install numpy==1.23.5
 
