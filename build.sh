@@ -16,10 +16,19 @@ python -m pip install --upgrade pip
 pip install wheel setuptools
 
 # Install protobuf first (since it's a core dependency)
-pip install protobuf==5.26.1
+pip install protobuf==4.21.6
 
 # Install numpy first (since it's a core dependency)
 pip install numpy==1.23.5
+
+# Install Google packages first
+pip install google-api-core==2.24.1
+pip install google-auth==2.31.0
+pip install google-auth-httplib2==0.2.0
+pip install google-auth-oauthlib==1.2.1
+pip install google-generativeai==0.8.4
+pip install google-pasta==0.2.0
+pip install googleapis-common-protos==1.66.0
 
 # Install grpcio and grpcio-status
 pip install grpcio==1.70.0
