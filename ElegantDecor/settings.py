@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'home',
-     'corsheaders.middleware.CorsMiddleware',
+     'corsheaders',
     'allauth',
     'allauth.socialaccount',
     'django.contrib.sites',
@@ -92,6 +92,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware'
+    
 ]
 
 ROOT_URLCONF = 'ElegantDecor.urls'
