@@ -18,10 +18,11 @@ pip install wheel setuptools
 # Install numpy first (since it's a core dependency)
 pip install numpy==1.23.5
 
-# Install tensorflow and related packages
+# Install tensorflow ecosystem packages in correct order
 pip install tensorflow==2.12.0
 pip install keras==2.12.0
 pip install tensorboard==2.12.3
+pip install tensorboard-data-server==0.7.2
 
 # Install other dependencies
 pip install -r requirements.txt
