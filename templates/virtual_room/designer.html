@@ -2296,6 +2296,72 @@
                     }
                     break;
                     
+                case 'window':
+                    // Place windows on walls at a reasonable height
+                    const wallChoice = Math.random(); // Randomly choose which wall
+                    
+                    if (wallChoice < 0.5) {
+                        // Place on left/right walls
+                        targetPosition.x = wallChoice < 0.25 ? 0.1 : room.length - 0.1;
+                        targetPosition.z = room.width * (0.3 + Math.random() * 0.4); // Random position along wall
+                        model.rotation.y = wallChoice < 0.25 ? Math.PI/2 : -Math.PI/2;
+                    } else {
+                        // Place on front/back walls
+                        targetPosition.x = room.length * (0.3 + Math.random() * 0.4);
+                        targetPosition.z = wallChoice < 0.75 ? 0.1 : room.width - 0.1;
+                        model.rotation.y = wallChoice < 0.75 ? 0 : Math.PI;
+                    }
+                    
+                    // Set window height
+                    model.position.y = room.height * 0.5; // Center on wall
+                    
+                    // Ensure windows don't overlap with corners
+                    if (targetPosition.x - modelFootprint.width/2 < wallMargin) {
+                        targetPosition.x = wallMargin + modelFootprint.width/2;
+                    }
+                    if (targetPosition.x + modelFootprint.width/2 > room.length - wallMargin) {
+                        targetPosition.x = room.length - wallMargin - modelFootprint.width/2;
+                    }
+                    if (targetPosition.z - modelFootprint.depth/2 < wallMargin) {
+                        targetPosition.z = wallMargin + modelFootprint.depth/2;
+                    }
+                    if (targetPosition.z + modelFootprint.depth/2 > room.width - wallMargin) {
+                        targetPosition.z = room.width - wallMargin - modelFootprint.depth/2;
+                    }
+                    break;
+                    
+                case 'fan':
+                    // Place fans on the ceiling with better centering
+                    targetPosition.x = room.length * 0.5; // Center of room length
+                    targetPosition.z = room.width * 0.5;  // Center of room width
+                    targetPosition.y = room.height - 0.1; // Very close to ceiling
+                    
+                    // Rotate fan to proper orientation if needed
+                    model.rotation.x = 0;
+                    model.rotation.y = 0;
+                    model.rotation.z = 0;
+                    
+                    // Enforce minimum distance from walls
+                    const minWallDistance = Math.max(room.width, room.length) * 0.2; // 20% of room size
+                    
+                    // Ensure fan stays in a safe central zone
+                    if (targetPosition.x < minWallDistance) {
+                        targetPosition.x = minWallDistance;
+                    } else if (targetPosition.x > room.length - minWallDistance) {
+                        targetPosition.x = room.length - minWallDistance;
+                    }
+                    
+                    if (targetPosition.z < minWallDistance) {
+                        targetPosition.z = minWallDistance;
+                    } else if (targetPosition.z > room.width - minWallDistance) {
+                        targetPosition.z = room.width - minWallDistance;
+                    }
+                    
+                    // Scale adjustment if needed
+                    const fanScale = 1.0; // Adjust this value if fan appears too large/small
+                    model.scale.set(fanScale, fanScale, fanScale);
+                    break;
+                    
                 default:
                     // For unknown categories, use a semi-random position with wall margins
                     targetPosition.x = roomCenter.x + (Math.random() * room.length * 0.6 - room.length * 0.3);

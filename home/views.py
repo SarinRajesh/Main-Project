@@ -39,6 +39,8 @@ from django.http import JsonResponse
 from django.core.serializers import serialize
 from django.forms.models import model_to_dict
 from django.core.files.storage import default_storage
+from django.http import HttpResponseForbidden
+from xhtml2pdf import pisa
 
 
 
@@ -2272,29 +2274,52 @@ from io import BytesIO
 
 @login_required
 def download_receipt(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    
-    if order.order_status != 'Completed':
-        messages.error(request, "Receipt is only available for completed orders.")
-        return redirect('my_orders')
+    try:
+        # Get the order and verify ownership
+        order = Order.objects.select_related(
+            'user', 
+            'product', 
+            'payment_type',
+            'amount'
+        ).get(id=order_id)
 
-    # Render the receipt HTML
-    template = get_template('receipt.html')
-    context = {'order': order}
-    html = template.render(context)
+        # Security check: Ensure user owns this order or is staff
+        if order.user != request.user and not request.user.is_staff:
+            return HttpResponseForbidden("You don't have permission to access this receipt.")
 
-    # Create a PDF
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
-    
-    if not pdf.err:
-        # Generate response
+        # Verify order status
+        if not (order.order_status == 'Approved' and order.delivery_status == 'Delivered'):
+            return HttpResponseForbidden("Receipt is only available for delivered orders.")
+
+        # Generate PDF
+        template = get_template('receipt.html')
+        context = {
+            'order': order,
+            'generated_date': timezone.now(),
+        }
+        html = template.render(context)
+
+        # Create PDF
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="receipt_order_{order.id}.pdf"'
-        response.write(result.getvalue())
+        response['Content-Disposition'] = f'attachment; filename="order_receipt_{order_id}.pdf"'
+
+        # Convert HTML to PDF
+        pisa_status = pisa.CreatePDF(
+            html, 
+            dest=response,
+            encoding='utf-8'
+        )
+
+        # Return PDF if successful
+        if pisa_status.err:
+            return HttpResponse('Error generating PDF', status=500)
         return response
 
-    return HttpResponse('Error generating PDF', status=400)
+    except Order.DoesNotExist:
+        return HttpResponse('Order not found', status=404)
+    except Exception as e:
+        print(f"Error generating receipt: {str(e)}")
+        return HttpResponse('Error generating receipt', status=500)
 
 import cv2
 import numpy as np
