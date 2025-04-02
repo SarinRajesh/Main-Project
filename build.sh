@@ -16,10 +16,14 @@ python -m pip install --upgrade pip
 pip install wheel setuptools
 
 # Install protobuf first (since it's a core dependency)
-pip install protobuf==3.20.3
+pip install protobuf==5.26.1
 
 # Install numpy first (since it's a core dependency)
 pip install numpy==1.23.5
+
+# Install grpcio and grpcio-status
+pip install grpcio==1.70.0
+pip install grpcio-status==1.59.3
 
 # Install tensorflow ecosystem packages in correct order
 pip install tensorflow==2.12.0
