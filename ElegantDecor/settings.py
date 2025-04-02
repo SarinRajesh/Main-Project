@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'home',
-     'corsheaders',
+     'corsheaders.middleware.CorsMiddleware',
     'allauth',
     'allauth.socialaccount',
     'django.contrib.sites',
