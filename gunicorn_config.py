@@ -1,8 +1,11 @@
-workers = 2
-threads = 2
-timeout = 120
+workers = 1
+threads = 4
+timeout = 180
 keepalive = 5
-max_requests = 1000
-max_requests_jitter = 50
+max_requests = 100
+max_requests_jitter = 10
 worker_class = 'gthread'
-bind = "0.0.0.0:10000" 
+bind = "0.0.0.0:10000"
+worker_tmp_dir = "/dev/shm"
+max_worker_lifetime = 1800
+graceful_timeout = 180 
