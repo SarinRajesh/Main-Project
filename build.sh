@@ -15,9 +15,13 @@ python -m pip install --upgrade pip
 # Install core dependencies first
 pip install wheel setuptools
 
-# Install tensorflow and keras first
+# Install numpy first (since it's a core dependency)
+pip install numpy==1.23.5
+
+# Install tensorflow and related packages
 pip install tensorflow==2.12.0
 pip install keras==2.12.0
+pip install tensorboard==2.12.3
 
 # Install other dependencies
 pip install -r requirements.txt
