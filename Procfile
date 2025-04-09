@@ -1,1 +1,0 @@
-web: gunicorn ElegantDecor.wsgi:application -c gunicorn_config.py 
