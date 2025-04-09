@@ -27,9 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["elegantdecor.onrender.com"]
+ALLOWED_HOSTS = ["elegantdecor.onrender.com", "localhost", "127.0.0.1"]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -44,14 +44,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'home',
-     'corsheaders',
+    'corsheaders',
     'allauth',
     'allauth.socialaccount',
     'django.contrib.sites',
     'allauth.account',
     'allauth.socialaccount.providers.google',
-    
-
 ]
 
 LOGIN_REDIRECT_URL = '/custom_login_redirect/'
@@ -118,7 +116,7 @@ TEMPLATES = [
     },
 ]
 
-#WSGI_APPLICATION = 'home.wsgi.application'
+WSGI_APPLICATION = 'ElegantDecor.wsgi.application'
 
 
 # Database
@@ -172,7 +170,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Security settings
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
@@ -212,3 +210,22 @@ CACHES = {
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
+
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://elegantdecor.onrender.com",
+]
+
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://elegantdecor.onrender.com",
+]
+CSRF_COOKIE_SECURE = True
+CSRF_USE_SESSIONS = True
+CSRF_COOKIE_HTTPONLY = True
