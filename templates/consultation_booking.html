@@ -322,21 +322,33 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmButtonText: 'OK'
         });
     }
-});
 
-document.addEventListener("DOMContentLoaded", function() {
+    // Add input event listener to design preferences textarea
+    document.getElementById('design_preferences').addEventListener('input', function(e) {
+        var value = this.value;
+        
+        // Replace multiple spaces with a single space
+        if (/\s\s+/.test(value)) {
+            this.value = value.replace(/\s\s+/g, ' ');
+        }
+    });
+    
     document.getElementById('bookConsultation').addEventListener('click', function(event) {
         event.preventDefault();
         
         if (validateForm()) {
             initializeRazorpay();
         } else {
-            Swal.fire({
-                title: 'Form Incomplete',
-                text: 'Please fill in all required fields before proceeding.',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
+            // The error message is now shown in validateForm() if the specific space issue is found
+            // This will run for other validation failures
+            if (!/\s\s+/.test(document.getElementById('design_preferences').value)) {
+                Swal.fire({
+                    title: 'Form Incomplete',
+                    text: 'Please fill in all required fields before proceeding.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+            }
         }
     });
 });
@@ -348,9 +360,22 @@ function validateForm() {
     var roomHeight = document.getElementById('room_height').value;
     var designPreferences = document.getElementById('design_preferences').value;
 
+    // Check if any required field is empty
     if (!scheduleDate || !roomLength || !roomWidth || !roomHeight || !designPreferences) {
         return false;
     }
+    
+    // Check for more than one consecutive space in design preferences
+    if (/\s\s+/.test(designPreferences)) {
+        Swal.fire({
+            title: 'Format Error',
+            text: 'Design preferences should not contain more than one consecutive space.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return false;
+    }
+    
     return true;
 }
 

@@ -298,7 +298,7 @@
                                                                             Cancel
                                                                         </button>
                                                                     </form>
-                                                                {% elif order.order_status == 'Approved' %}
+                                                                {% elif order.order_status == 'Approved' and order.delivery_status != 'Delivered' %}
                                                                     <form method="post" style="display: inline;">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" name="order_id" value="{{ order.id }}">
@@ -307,6 +307,10 @@
                                                                             Cancel
                                                                         </button>
                                                                     </form>
+                                                                {% elif order.delivery_status == 'Delivered' %}
+                                                                    <span style="color: #27ae60; font-weight: bold;">
+                                                                        <i class="fas fa-check-circle"></i> Order Completed
+                                                                    </span>
                                                                 {% endif %}
                                                             </td>
                                                         </tr>

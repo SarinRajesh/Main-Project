@@ -374,8 +374,8 @@
                     dayMaxEventRows: true,
                     aspectRatio: 1.35,
                     slotDuration: '00:30:00',  // 30-minute slots
-                    slotMinTime: '09:00:00',   // Start at 9 AM
-                    slotMaxTime: '18:00:00',    // End at 6 PM
+                    slotMinTime: '08:00:00',   // Start at 8 AM
+                    slotMaxTime: '17:00:00',   // End at 5 PM
                     eventContent: function(arg) {
                         return {
                             html: `
@@ -417,7 +417,8 @@
                         html: `
                             <p>Select a time for the consultation on ${date}:</p>
                             <p>Note: Consultations must be at least one hour apart.</p>
-                            <input type="time" id="consultation-time" min="09:00" max="18:00" step="1800" required>
+                            <input type="time" id="consultation-time" min="08:00" max="17:00" step="1800" required>
+                            <p class="text-muted small mt-2">Available times: 8:00 AM - 5:00 PM</p>
                         `,
                         icon: 'question',
                         showCancelButton: true,
@@ -428,6 +429,13 @@
                             const time = document.getElementById('consultation-time').value;
                             if (!time) {
                                 Swal.showValidationMessage('Please select a time');
+                                return false;
+                            }
+
+                            // Validate time is between 8 AM and 5 PM
+                            const hour = parseInt(time.split(':')[0], 10);
+                            if (hour < 8 || hour >= 17) {
+                                Swal.showValidationMessage('Consultation times must be between 8:00 AM and 5:00 PM');
                                 return false;
                             }
 

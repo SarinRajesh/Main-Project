@@ -151,29 +151,6 @@
                                                         </div>
                                                     </div>
 
-                                                    {% if project.status != 'Completed' %}
-                                                    <div id="update-controls-{{ project.id }}" style="margin-top: 25px;">
-                                                        {% if not project.start_date %}
-                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Not Started" style="background-color: #ffeeba; color: #856404; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                                            <i class="fas fa-hourglass-start"></i> Not Started
-                                                        </button>
-                                                        <button class="btn date-picker" data-project-id="{{ project.id }}" data-date-type="start" style="background-color: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                                            <i class="far fa-calendar-alt"></i> Set Start Date
-                                                        </button>
-                                                        {% else %}
-                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="In Progress" style="background-color: #b8daff; color: #004085; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                                            <i class="fas fa-spinner fa-spin"></i> In Progress
-                                                        </button>
-                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="On Hold" style="background-color: #f5c6cb; color: #721c24; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                                            <i class="fas fa-pause-circle"></i> On Hold
-                                                        </button>
-                                                        <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Completed" style="background-color: #c3e6cb; color: #155724; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                                            <i class="fas fa-check-circle"></i> Completed
-                                                        </button>
-                                                        {% endif %}
-                                                    </div>
-                                                    {% endif %}
-                                                    
                                                     <!-- Payment status section -->
                                                     <p style="margin-top: 25px; font-size: 1.1em;">
                                                         <strong style="color: #555;">Payment Status:</strong> 
@@ -183,6 +160,36 @@
                                                             {{ project.payment|title }}
                                                         </span>
                                                     </p>
+                                                    
+                                                    {% if project.status != 'Completed' %}
+                                                    <div id="update-controls-{{ project.id }}" style="margin-top: 25px;">
+                                                        {% if project.payment == 'paid' %}
+                                                            {% if not project.start_date %}
+                                                            <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Not Started" style="background-color: #ffeeba; color: #856404; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                                                <i class="fas fa-hourglass-start"></i> Not Started
+                                                            </button>
+                                                            <button class="btn date-picker" data-project-id="{{ project.id }}" data-date-type="start" style="background-color: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                                                <i class="far fa-calendar-alt"></i> Set Start Date
+                                                            </button>
+                                                            {% else %}
+                                                            <button class="btn update-status" data-project-id="{{ project.id }}" data-status="In Progress" style="background-color: #b8daff; color: #004085; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                                                <i class="fas fa-spinner fa-spin"></i> In Progress
+                                                            </button>
+                                                            <button class="btn update-status" data-project-id="{{ project.id }}" data-status="On Hold" style="background-color: #f5c6cb; color: #721c24; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                                                <i class="fas fa-pause-circle"></i> On Hold
+                                                            </button>
+                                                            <button class="btn update-status" data-project-id="{{ project.id }}" data-status="Completed" style="background-color: #c3e6cb; color: #155724; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                                                <i class="fas fa-check-circle"></i> Completed
+                                                            </button>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 10px; text-align: center; margin-top: 10px;">
+                                                                <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
+                                                                Payment pending. Project controls will be available after payment is received.
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endif %}
                                                     
                                                     <!-- Feedback section -->
                                                     <div style="margin-top: 25px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
