@@ -41,6 +41,8 @@ from django.forms.models import model_to_dict
 from django.core.files.storage import default_storage
 from django.http import HttpResponseForbidden
 from xhtml2pdf import pisa
+from openpyxl import Workbook
+from io import BytesIO
 
 
 
@@ -1810,38 +1812,157 @@ from xhtml2pdf import pisa
 from openpyxl import Workbook
 from io import BytesIO
 
+def generate_pdf_response(template_path, context, filename):
+    """Helper function to generate PDF response"""
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    template = get_template(template_path)
+    html = template.render(context)
+    
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+
 def download_pdf(request, data_type, user_type=None):
     template_path = 'admin_page/table_pdf_template.html'
     
+    # Add custom styles for the PDF
+    styles = """
+    @page {
+        size: landscape;
+        margin: 1cm;
+    }
+    body {
+        font-family: Arial, sans-serif;
+    }
+    .header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .header h1 {
+        color: #2c3e50;
+        font-size: 24px;
+        margin: 0;
+    }
+    .generated-date {
+        color: #7f8c8d;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th {
+        background-color: #2c3e50;
+        color: white;
+        padding: 12px 8px;
+        text-align: left;
+        font-size: 14px;
+    }
+    td {
+        padding: 8px;
+        border-bottom: 1px solid #bdc3c7;
+        font-size: 12px;
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    """
+
+    # Additional styles for users tables only
+    user_table_styles = """
+    table {
+        table-layout: fixed;
+    }
+    th, td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-wrap: break-word;
+    }
+    .col-name { width: 15%; }
+    .col-email { width: 20%; }
+    .col-phone { width: 12%; }
+    .col-address { width: 15%; }
+    .col-hometown { width: 10%; }
+    .col-district { width: 10%; }
+    .col-state { width: 8%; }
+    .col-pincode { width: 8%; }
+    .col-status { width: 8%; }
+    """
+
     if data_type == 'users':
         if user_type == 'customer':
             filename = 'customers_table.pdf'
             title = 'Customers'
             users = Users.objects.filter(user_type_id__user_type='Customer')
+            styles += user_table_styles
+            headers = [
+                {'name': 'Name', 'class': 'col-name'},
+                {'name': 'Email', 'class': 'col-email'},
+                {'name': 'Phone', 'class': 'col-phone'},
+                {'name': 'Address', 'class': 'col-address'},
+                {'name': 'Home Town', 'class': 'col-hometown'},
+                {'name': 'District', 'class': 'col-district'},
+                {'name': 'State', 'class': 'col-state'},
+                {'name': 'Pincode', 'class': 'col-pincode'},
+                {'name': 'Status', 'class': 'col-status'}
+            ]
         elif user_type == 'designer':
             filename = 'designers_table.pdf'
             title = 'Designers'
             users = Users.objects.filter(user_type_id__user_type='Designer')
-        else:  # all users
+            styles += user_table_styles
+            headers = [
+                {'name': 'Name', 'class': 'col-name'},
+                {'name': 'Email', 'class': 'col-email'},
+                {'name': 'Phone', 'class': 'col-phone'},
+                {'name': 'Address', 'class': 'col-address'},
+                {'name': 'Home Town', 'class': 'col-hometown'},
+                {'name': 'District', 'class': 'col-district'},
+                {'name': 'State', 'class': 'col-state'},
+                {'name': 'Pincode', 'class': 'col-pincode'},
+                {'name': 'Status', 'class': 'col-status'}
+            ]
+        else:
             filename = 'all_users_table.pdf'
             title = 'All Users'
             users = Users.objects.exclude(user_type_id__user_type='Admin')
+            headers = ['Name', 'Email', 'Phone', 'Address', 'Home Town', 'District', 'State', 'Pincode', 'Status', 'User Type']
 
-        headers = ['Name', 'Email', 'Phone', 'Address', 'Home Town', 'District', 'State', 'Pincode', 'Status', 'User Type']
-        items = [
-            [
-                user.name,
-                user.email,
-                user.phone,
-                user.address,
-                user.home_town,
-                user.district,
-                user.state,
-                user.pincode,
-                user.status,
-                user.user_type_id.user_type if user.user_type_id else 'N/A'
-            ] for user in users
-        ]
+        if user_type in ['customer', 'designer']:
+            items = [
+                [
+                    user.name or 'N/A',
+                    user.email or 'N/A',
+                    user.phone or 'N/A',
+                    user.address or 'N/A',
+                    user.home_town or 'N/A',
+                    user.district or 'N/A',
+                    user.state or 'N/A',
+                    user.pincode or 'N/A',
+                    user.status or 'N/A'
+                ] for user in users
+            ]
+        else:
+            items = [
+                [
+                    user.name or 'N/A',
+                    user.email or 'N/A',
+                    user.phone or 'N/A',
+                    user.address or 'N/A',
+                    user.home_town or 'N/A',
+                    user.district or 'N/A',
+                    user.state or 'N/A',
+                    user.pincode or 'N/A',
+                    user.status or 'N/A',
+                    user.user_type_id.user_type if user.user_type_id else 'N/A'
+                ] for user in users
+            ]
+
     elif data_type == 'designs':
         filename = 'designs_table.pdf'
         title = 'Designs'
@@ -1850,62 +1971,76 @@ def download_pdf(request, data_type, user_type=None):
         items = [
             [
                 design.name,
-                design.description[:50] + ('...' if len(design.description) > 50 else ''),
+                design.description[:100] + ('...' if len(design.description) > 100 else ''),
                 design.designer_id.name,
-                str(design.amount.amount),
+                f"₹{design.amount.amount:,.2f}",
                 design.category,
-                str(design.sqft)
+                f"{design.sqft} sq ft"
             ] for design in designs
         ]
+
+    elif data_type == 'orders':
+        filename = 'orders_table.pdf'
+        title = 'Orders'
+        headers = ['Order ID', 'User', 'Product', 'Quantity', 'Amount', 'Order Date', 'Order Status', 'Payment Type', 'Payment Status', 'Delivery Boy', 'Delivery Status', 'Delivery Date']
+        orders = Order.objects.select_related('user', 'product', 'amount', 'payment_type', 'delivery_boy').all()
+        items = [
+            [
+                f"#{order.id}",
+                order.user.username,
+                order.product.name,
+                str(order.quantity),
+                f"₹{order.amount.amount:,.2f}",
+                order.order_date.strftime('%Y-%m-%d %H:%M'),
+                order.order_status,
+                order.payment_type.payment_type,
+                order.payment_status,
+                order.delivery_boy.username if order.delivery_boy else 'Not Assigned',
+                order.delivery_status if order.delivery_status else 'Pending',
+                order.delivery_date.strftime('%Y-%m-%d') if order.delivery_date else 'Not Delivered'
+            ] for order in orders
+        ]
+
+    elif data_type == 'products':
+        filename = 'products_table.pdf'
+        title = 'Products'
+        headers = ['Name', 'Description', 'Amount', 'Stock', 'Category', 'Color']
+        products = Product.objects.select_related('amount').all()
+        items = [
+            [
+                product.name,
+                product.description[:100] + ('...' if len(product.description) > 100 else ''),
+                f"₹{product.amount.amount:,.2f}",
+                str(product.stock),
+                product.category,
+                product.color or 'N/A'
+            ] for product in products
+        ]
+
     elif data_type == 'consultations':
         filename = 'consultations_table.pdf'
         title = 'Consultations'
         headers = ['Customer', 'Designer', 'Design', 'Status', 'Scheduled Date', 'Payment Type', 'Payment Status', 'Amount']
-        consultations = Consultation.objects.select_related('customer_id', 'designer_id', 'design_id', 'payment_type', 'amount').all()
+        consultations = Consultation.objects.select_related(
+            'customer_id', 
+            'designer_id', 
+            'design_id', 
+            'payment_type', 
+            'amount'
+        ).all()
         items = [
             [
                 consultation.customer_id.name,
                 consultation.designer_id.name,
                 consultation.design_id.name,
                 consultation.consultation_status,
-                str(consultation.schedule_date_time),
+                consultation.schedule_date_time.strftime('%Y-%m-%d %H:%M') if consultation.schedule_date_time else 'Not Scheduled',
                 consultation.payment_type.payment_type,
                 consultation.payment_status,
-                str(consultation.amount.amount)
+                f"₹{consultation.amount.amount:,.2f}" if consultation.amount else 'N/A'
             ] for consultation in consultations
         ]
-    elif data_type == 'products':
-        filename = 'products_table.pdf'
-        title = 'Products'
-        headers = ['Name', 'Description', 'Amount', 'Stock', 'Category']
-        products = Product.objects.select_related('amount').all()
-        items = [
-            [
-                product.name,
-                product.description[:50] + ('...' if len(product.description) > 50 else ''),
-                str(product.amount.amount),
-                str(product.stock),
-                product.category
-            ] for product in products
-        ]
-    elif data_type == 'orders':
-        filename = 'orders_table.pdf'
-        title = 'Orders'
-        headers = ['Order ID', 'User', 'Product', 'Quantity', 'Amount', 'Order Date', 'Order Status', 'Payment Type', 'Payment Status']
-        orders = Order.objects.select_related('user', 'product', 'amount', 'payment_type').all()
-        items = [
-            [
-                str(order.id),
-                order.user.username,
-                order.product.name,
-                str(order.quantity),
-                str(order.amount.amount),
-                order.order_date.strftime('%Y-%m-%d %H:%M'),
-                order.order_status,
-                order.payment_type.payment_type,
-                order.payment_status
-            ] for order in orders
-        ]
+
     elif data_type == 'projects':
         filename = 'projects_table.pdf'
         title = 'Projects'
@@ -1913,39 +2048,34 @@ def download_pdf(request, data_type, user_type=None):
         projects = Project.objects.select_related('customer', 'designer', 'design').all()
         items = [
             [
-                str(project.id),
+                f"#{project.id}",
                 project.customer.name,
                 project.designer.name,
                 project.design.name,
                 project.status,
-                str(project.start_date) if project.start_date else 'N/A',
-                str(project.completed_date) if project.completed_date else 'N/A',
-                f"{project.room_length}x{project.room_width}x{project.room_height}",
+                project.start_date.strftime('%Y-%m-%d') if project.start_date else 'Not Started',
+                project.completed_date.strftime('%Y-%m-%d') if project.completed_date else 'In Progress',
+                f"{project.room_length}L x {project.room_width}W x {project.room_height}H",
                 project.payment
             ] for project in projects
         ]
+
     else:
         return HttpResponse('Invalid data type')
+
+    # Get current date and time
+    generated_date = timezone.now().strftime("%B %d, %Y %H:%M")
 
     context = {
         'title': title,
         'headers': headers,
         'items': items,
+        'styles': styles,
+        'generated_date': generated_date,
+        'is_user_table': data_type == 'users' and user_type in ['customer', 'designer']
     }
-    # Create a Django response object, and specify content_type as pdf
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    
-    # find the template and render it.
-    template = get_template(template_path)
-    html = template.render(context)
 
-    # create a pdf
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    # if error then show some funny view
-    if pisa_status.err:
-        return HttpResponse('We had some errors <pre>' + html + '</pre>')
-    return response
+    return generate_pdf_response(template_path, context, filename)
 
 def download_excel(request, data_type, user_type=None):
     workbook = Workbook()
@@ -2001,10 +2131,10 @@ def download_excel(request, data_type, user_type=None):
     elif data_type == 'orders':
         filename = 'orders_table.xlsx'
         worksheet.title = 'Orders'
-        headers = ['Order ID', 'User', 'Product', 'Quantity', 'Amount', 'Order Date', 'Order Status', 'Payment Type', 'Payment Status']
+        headers = ['Order ID', 'User', 'Product', 'Quantity', 'Amount', 'Order Date', 'Order Status', 'Payment Type', 'Payment Status', 'Delivery Boy', 'Delivery Status', 'Delivery Date']
         worksheet.append(headers)
         
-        orders = Order.objects.select_related('user', 'product', 'amount', 'payment_type').all()
+        orders = Order.objects.select_related('user', 'product', 'amount', 'payment_type', 'delivery_boy').all()
         for order in orders:
             worksheet.append([
                 str(order.id),
@@ -2015,7 +2145,10 @@ def download_excel(request, data_type, user_type=None):
                 order.order_date.strftime('%Y-%m-%d %H:%M'),
                 order.order_status,
                 order.payment_type.payment_type,
-                order.payment_status
+                order.payment_status,
+                order.delivery_boy.username if order.delivery_boy else 'Not Assigned',
+                order.delivery_status if order.delivery_status else 'Pending',
+                order.delivery_date.strftime('%Y-%m-%d') if order.delivery_date else 'Not Delivered'
             ])
         
         # Create a BytesIO buffer for the Excel file
@@ -2136,6 +2269,13 @@ def consultations_table(request):
 @login_required
 def orders_table(request):
     orders = Order.objects.all().order_by('-order_date')
+    
+    # Handle download requests
+    if 'download' in request.GET:
+        if request.GET['download'] == 'pdf':
+            return download_pdf(request, 'orders')
+        elif request.GET['download'] == 'excel':
+            return download_excel(request, 'orders')
     
     if request.method == 'POST':
         order_id = request.POST.get('order_id')

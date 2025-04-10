@@ -2,43 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ title }} Table</title>
+    <title>{{ title }}</title>
     <style>
-        @page {
-            size: landscape;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 8px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 3px;
-            text-align: left;
-            word-wrap: break-word;
-            max-width: 100px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
+        {{ styles|safe }}
     </style>
 </head>
 <body>
-    <h1>{{ title }} Table</h1>
+    <div class="header">
+        <h1>{{ title }}</h1>
+        <div class="generated-date">Generated on: {{ generated_date }}</div>
+    </div>
+
     <table>
         <thead>
             <tr>
-                {% for header in headers %}
-                    <th>{{ header }}</th>
-                {% endfor %}
+                {% if is_user_table %}
+                    {% for header in headers %}
+                        <th class="{{ header.class }}">{{ header.name }}</th>
+                    {% endfor %}
+                {% else %}
+                    {% for header in headers %}
+                        <th>{{ header }}</th>
+                    {% endfor %}
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for item in items %}
                 <tr>
                     {% for value in item %}
-                        <td>{{ value|truncatechars:50 }}</td>
+                        <td>{{ value }}</td>
                     {% endfor %}
                 </tr>
             {% endfor %}
