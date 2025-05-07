@@ -57,7 +57,7 @@
                         <li>
                             <a href="{% url 'admin_index' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Home</a>
                         </li>
-                        <li>
+                         <li>
                             <a href="{% url 'customers_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Customers Table</a>
                         </li>
                         <li>
@@ -114,43 +114,78 @@
                                     <!-- Centered Tables Container -->
                                     <div style="width: 80%; max-width: 1200px; margin: 40px auto;">
                                         
-                                        <!-- Designs Table -->
+                                        <!-- Delivery Boys Table -->
                                         <div style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 20px;margin-top: -9%; border-radius: 8px; background-color: white;">
-                                            <h2 style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; color: #34495e; margin-bottom: 20px;">Designs</h2>
+                                            <h2 style="text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; color: #34495e; margin-bottom: 20px;">Delivery Boys</h2>
                                             
                                             <div style="text-align: right; margin-bottom: 20px;">
-                                                <a href="{% url 'designs_table' %}?download=pdf" class="btn" style="background-color: #e74c3c; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Download as PDF</a>
-                                                <a href="{% url 'designs_table' %}?download=excel" class="btn" style="background-color: #27ae60; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Download as Excel</a>
+                                                <a href="{% url 'deliveryboys_table' %}?download=pdf&user_type=delivery_boy" class="btn" style="background-color: #e74c3c; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Download as PDF</a>
+                                                <a href="{% url 'deliveryboys_table' %}?download=excel&user_type=delivery_boy" class="btn" style="background-color: #27ae60; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Download as Excel</a>
                                             </div>
                                             <div style="overflow-x: auto; width: 100%;">
                                                 <table style="width: 100%; border-collapse: collapse;">
                                                     <thead>
                                                         <tr>
-                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Name</th>
-                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Description</th>
-                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Designer</th>
-                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Amount</th>
-                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Category</th>
-                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Square Feet</th>
-                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Image</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Image</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Name</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Email</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Phone</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Address</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Home Town</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">District</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">State</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Pincode</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Status</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {% for design in designs %}
+                                                        {% for delivery_boy in delivery_boys %}
                                                         <tr>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ design.name }}</td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ design.description|slice:":50" }}{% if design.description|length > 50 %}...{% endif %}</td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ design.designer_id.name }}</td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ design.amount.amount }}</td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ design.category }}</td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ design.sqft }}</td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;"><img src="{{ design.image.url }}" alt="Design Image" style="width: 50px; height: 50px;"></td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">
+                                                                {% if delivery_boy.photo %}
+                                                                    <img src="{{ delivery_boy.photo.url }}" alt="Delivery Boy Image" style="width: 50px; height: 50px; border-radius: 50%; display: block;">
+                                                                {% else %}
+                                                                    <img src="{% static 'signup/images/profile.png' %}" alt="Default Image" style="width: 50px; height: 50px; border-radius: 50%; display: block;">
+                                                                {% endif %}
+                                                            </td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">{{ delivery_boy.name }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">{{ delivery_boy.email }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">{{ delivery_boy.phone }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">{{ delivery_boy.address }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">{{ delivery_boy.home_town }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">{{ delivery_boy.district }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">{{ delivery_boy.state }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">{{ delivery_boy.pincode }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px; vertical-align: middle;">
+                                                                <form method="POST" action="{% url 'update_user_status' %}" style="display: inline;">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="user_id" value="{{ delivery_boy.id }}">
+                                                                    <input type="hidden" name="user_type" value="Delivery Boy">
+                                                                    {% if delivery_boy.status == 'active' %}
+                                                                        <button type="button" 
+                                                                            class="status-button deactivate"
+                                                                            style="background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100px;"
+                                                                            onclick="confirmDeactivation('{{ delivery_boy.id }}', '{{ delivery_boy.name }}', 'Delivery Boy')">
+                                                                            Deactivate
+                                                                        </button>
+                                                                    {% else %}
+                                                                        <button type="submit" name="action" value="activate" 
+                                                                            class="status-button activate"
+                                                                            style="background-color: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100px;">
+                                                                            Activate
+                                                                        </button>
+                                                                    {% endif %}
+                                                                </form>
+                                                            </td>
                                                         </tr>
                                                         {% endfor %}
                                                     </tbody>
                                                 </table>
                                             </div>
                                         </div>
+                                        
+                                     
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -221,7 +256,6 @@
             </div>
             <!-- wrapper end -->
             <!--search-form-holder -->
-
            
 <footer class="main-footer" style="width: 15%; background-color: #000000; padding: 20px 10px 20px 20px; height: calc(100vh - 80px); position: fixed; left: 0; top: 80px;">
     <div class="footer-admin-links" style="
@@ -232,20 +266,29 @@
         scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
         padding-right: 10px;
     ">
+
+
+
         <div style="width: 100%;">
             <ul style="list-style: none; padding: 0; margin: 0;">
-                <li style="margin-bottom: 30px; text-align: center;"></li>
+                <li style="margin-bottom: 30px; text-align: center;">
                     <a href="{% url 'admin_index' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
                     onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
                     onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
                        Home
                     </a>
                 </li>
+
                 <li style="margin-bottom: 30px; text-align: center;">
-                <a href="{% url 'designers_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-               
+                    <a href="{% url 'customers_table' %}" 
+                       style="color: #000000; 
+                              text-decoration: none; 
+                              font-size: 18px; 
+                              font-weight: bold; 
+                              display: block; 
+                              padding: 15px 20px; 
+                              background-color: #ffffff;
+                              border-radius: 4px;">
                         Customers Table
                     </a>
                 </li>
@@ -256,25 +299,18 @@
                         Designers Table
                     </a>
                 </li>
-                <li style="margin-bottom: 30px; text-align: center;">
-                    <a href="{% url 'deliveryboys_table' %}" 
-                    style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
-                    onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
-                    onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
-                        Delivery Boys Table
-                    </a>
-                </li>
+                 <li style="margin-bottom: 30px; text-align: center;">
+                                <a href="{% url 'deliveryboys_table' %}" 
+                                style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                    Delivery Boys Table
+                                </a>
+                            </li>
                 <li style="margin-bottom: 20px;">
-                    <li style="margin-bottom: 30px; text-align: center;">
-                        <a href="{% url 'customers_table' %}" 
-                           style="color: #000000; 
-                                  text-decoration: none; 
-                                  font-size: 18px; 
-                                  font-weight: bold; 
-                                  display: block; 
-                                  padding: 15px 20px; 
-                                  background-color: #ffffff;
-                                  border-radius: 4px;">
+                    <a href="{% url 'designs_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                        onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                        onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
                         Designs Table
                     </a>
                 </li>
@@ -377,7 +413,6 @@
     }
 </style>
 
-
             <!-- footer end-->
         </div>
         <!-- Main end -->
@@ -385,6 +420,141 @@
         <script type="text/javascript" src="{% static 'index/js/jquery.min.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
-       
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+            function confirmDeactivation(userId, userName, userType) {
+                Swal.fire({
+                    title: 'Deactivate Account',
+                    html: `
+                        <div style="text-align: center;">
+                            <p style="color: #555; font-size: 16px; margin-bottom: 20px;">
+                                You are about to deactivate the account for ${userName}
+                            </p>
+                            <p style="color: #555; font-size: 16px; margin-bottom: 10px;">
+                                Please provide a reason for deactivation:
+                            </p>
+                            <textarea id="reason" 
+                                class="swal2-textarea" 
+                                placeholder="Enter detailed reason for deactivation" 
+                                style="width: 90%; height: 100px; padding: 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; resize: none; margin: 0 auto 15px; display: block; background: #fff;"
+                            ></textarea>
+                            <p style="color: #6c757d; font-size: 13px; margin-bottom: 0;">
+                                Note: An email notification will be sent to the user with this reason.
+                            </p>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'CONFIRM DEACTIVATION',
+                    cancelButtonText: 'CANCEL',
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    width: '560px',
+                    customClass: {
+                        container: 'swal-container',
+                        popup: 'swal-popup',
+                        confirmButton: 'swal-button confirm',
+                        cancelButton: 'swal-button cancel'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = "{% url 'update_user_status' %}";
+                        
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = '{{ csrf_token }}';
+                        
+                        const userIdInput = document.createElement('input');
+                        userIdInput.type = 'hidden';
+                        userIdInput.name = 'user_id';
+                        userIdInput.value = userId;
+                        
+                        const userTypeInput = document.createElement('input');
+                        userTypeInput.type = 'hidden';
+                        userTypeInput.name = 'user_type';
+                        userTypeInput.value = userType;
+                        
+                        const actionInput = document.createElement('input');
+                        actionInput.type = 'hidden';
+                        actionInput.name = 'action';
+                        actionInput.value = 'deactivate';
+                        
+                        const reasonInput = document.createElement('input');
+                        reasonInput.type = 'hidden';
+                        reasonInput.name = 'reason';
+                        reasonInput.value = document.getElementById('reason').value.trim();
+                        
+                        form.appendChild(csrfInput);
+                        form.appendChild(userIdInput);
+                        form.appendChild(userTypeInput);
+                        form.appendChild(actionInput);
+                        form.appendChild(reasonInput);
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            }
+            </script>
+
+<style>
+.swal-container {
+    padding: 0 !important;
+}
+
+.swal-popup {
+    padding: 20px;
+    border-radius: 8px;
+    overflow: visible !important;
+}
+
+.swal2-title {
+    font-size: 24px !important;
+    color: #333 !important;
+    padding: 0 !important;
+    margin-bottom: 20px !important;
+}
+
+.swal2-html-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+.swal2-actions {
+    margin-top: 25px !important;
+    gap: 10px !important;
+}
+
+.swal-button {
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    padding: 12px 24px !important;
+    border-radius: 4px !important;
+}
+
+.swal-button.confirm {
+    background: #dc3545 !important;
+}
+
+.swal-button.cancel {
+    background: #6c757d !important;
+}
+
+.swal2-textarea {
+    box-shadow: none !important;
+    margin: 0 auto !important;
+}
+
+.swal2-textarea:focus {
+    box-shadow: none !important;
+    border-color: #80bdff !important;
+}
+</style>
  </body>
 </html>
+
+
+

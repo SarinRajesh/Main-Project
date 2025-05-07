@@ -23,6 +23,49 @@
 
         <!-- Add this in the head section after the SweetAlert2 CSS -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <!-- Add this in the head section after other CSS links -->
+        <style>
+        .otp-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .otp-section.active {
+            display: block;
+        }
+
+        .otp-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #eee;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .otp-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        .otp-status.pending {
+            background-color: #fff3e0;
+            color: #e67e22;
+        }
+
+        .otp-status.verified {
+            background-color: #e8f5e9;
+            color: #27ae60;
+        }
+        </style>
     </head>
 
     <body>
@@ -167,7 +210,7 @@
                                     <div style="background: linear-gradient(135deg, #1a5f7a 0%, #0f3443 100%); padding: 15px; color: white; position: relative;">
                                         <h3 style="margin: 0; font-size: 16px;">Order #{{ order.id }}</h3>
                                         <span style="position: absolute; top: 15px; right: 15px; font-size: 12px; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.2);">
-                                            {{ order.order_date|date:"M d, Y" }}
+                                            {{ order.order_date|date:"M d, Y h:i A" }}
                                         </span>
                                     </div>
 
@@ -231,6 +274,57 @@
                                                         {{ order.delivery_status }}
                                                     </span>
                                                 </div>
+                                                <div>
+                                                    <h4 style="margin: 0; font-size: 14px; color: #7f8c8d;">Delivery Date</h4>
+                                                    <p style="margin: 5px 0 0; font-size: 14px; color: #2c3e50;">
+                                                        {% if order.delivery_date %}
+                                                            {{ order.delivery_date|date:"M d, Y h:i A" }}
+                                                        {% else %}
+                                                            Not Delivered Yet
+                                                        {% endif %}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <h4 style="margin: 0; font-size: 14px; color: #7f8c8d;">Delivery Charge</h4>
+                                                    <span style="
+                                                        display: inline-block;
+                                                        padding: 4px 12px;
+                                                        border-radius: 20px;
+                                                        font-size: 12px;
+                                                        font-weight: 500;
+                                                        margin-top: 5px;
+                                                        {% if order.delivery_payment_status %}
+                                                            background-color: #e8f5e9;
+                                                            color: #27ae60;
+                                                        {% else %}
+                                                            background-color: #ffebee;
+                                                            color: #e74c3c;
+                                                        {% endif %}
+                                                    ">
+                                                        {% if order.delivery_payment_status %}
+                                                            ₹100 Received
+                                                        {% else %}
+                                                            ₹100 Pending
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- OTP Section -->
+                                        <div class="otp-section" id="otp-section-{{ order.id }}" style="display: none;">
+                                            <div style="margin-bottom: 10px;">
+                                                <h4 style="margin: 0; font-size: 14px; color: #7f8c8d;">Delivery OTP</h4>
+                                                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                                    <input type="text" class="otp-input" id="otp-input-{{ order.id }}" placeholder="Enter 6-digit OTP" maxlength="6">
+                                                    <button onclick="verifyOTP('{{ order.id }}')" 
+                                                        style="background: #1a5f7a; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">
+                                                        Verify OTP
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div id="otp-status-{{ order.id }}" class="otp-status pending">
+                                                OTP Required
                                             </div>
                                         </div>
 
@@ -242,8 +336,13 @@
                                                 <i class="fas fa-truck"></i> Start Delivery
                                             </button>
                                             {% elif order.delivery_status == 'Out for Delivery' %}
+                                            <button onclick="sendOTP('{{ order.id }}')" 
+                                                style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-paper-plane"></i> Send OTP
+                                            </button>
                                             <button onclick="updateStatus('{{ order.id }}', 'delivered')"
-                                                style="background: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                                                style="background: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;"
+                                                {% if not order.otp_verified %}disabled{% endif %}>
                                                 <i class="fas fa-check"></i> Mark Delivered
                                             </button>
                                             {% endif %}
@@ -497,7 +596,7 @@
                         // Create and submit form
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = window.location.href; // Current URL
+                        form.action = window.location.href;
                         
                         // Add CSRF token
                         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -542,6 +641,142 @@
                     document.body.appendChild(input);
                 }
             });
+
+            function sendOTP(orderId) {
+                // Show loading state
+                const button = event.target.closest('button');
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+                // Send OTP request
+                fetch('{% url "send_delivery_otp" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `order_id=${orderId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Show OTP section
+                        document.getElementById(`otp-section-${orderId}`).style.display = 'block';
+                        Swal.fire({
+                            title: 'OTP Sent!',
+                            text: 'OTP has been sent to the customer\'s email.',
+                            icon: 'success',
+                            confirmButtonColor: '#2ecc71'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message,
+                            icon: 'error',
+                            confirmButtonColor: '#2ecc71'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#2ecc71'
+                    });
+                })
+                .finally(() => {
+                    // Reset button state
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                });
+            }
+
+            function verifyOTP(orderId) {
+                const otpInput = document.getElementById(`otp-input-${orderId}`);
+                const otp = otpInput.value;
+                
+                if (!otp || otp.length !== 6) {
+                    Swal.fire({
+                        title: 'Invalid OTP',
+                        text: 'Please enter a valid 6-digit OTP',
+                        icon: 'error',
+                        confirmButtonColor: '#2ecc71'
+                    });
+                    return;
+                }
+
+                // Show loading state
+                const button = event.target.closest('button');
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+
+                // Verify OTP
+                fetch('{% url "verify_delivery_otp" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `order_id=${orderId}&otp=${otp}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Update OTP status
+                        const statusElement = document.getElementById(`otp-status-${orderId}`);
+                        statusElement.textContent = 'OTP Verified';
+                        statusElement.className = 'otp-status verified';
+                        
+                        // Hide OTP input section
+                        const otpSection = document.getElementById(`otp-section-${orderId}`);
+                        otpSection.style.display = 'none';
+                        
+                        // Hide Send OTP button
+                        const sendOtpButton = otpSection.closest('.order-card').querySelector('button[onclick*="sendOTP"]');
+                        if (sendOtpButton) {
+                            sendOtpButton.style.display = 'none';
+                        }
+                        
+                        // Enable deliver button
+                        const deliverButton = button.closest('.order-card').querySelector('button[onclick*="delivered"]');
+                        if (deliverButton) {
+                            deliverButton.disabled = false;
+                        }
+                        
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'OTP verified successfully',
+                            icon: 'success',
+                            confirmButtonColor: '#2ecc71'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message,
+                            icon: 'error',
+                            confirmButtonColor: '#2ecc71'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#2ecc71'
+                    });
+                })
+                .finally(() => {
+                    // Reset button state
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                });
+            }
             </script>
             <style>
             .stats-card {

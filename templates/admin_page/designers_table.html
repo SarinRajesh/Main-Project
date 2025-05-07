@@ -64,6 +64,9 @@
                             <a href="{% url 'designers_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designers Table</a>
                         </li>
                         <li>
+                            <a href="{% url 'deliveryboys_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Delivery Boys Table</a>
+                        </li>
+                        <li>
                             <a href="{% url 'designs_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designs Table</a>
                         </li>
                         <li>
@@ -154,17 +157,24 @@
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.state }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ designer.pincode }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">
-                                                                <form action="{% url 'designers_table' %}" method="post" class="deactivate-form">
+                                                                <form method="POST" action="{% url 'update_user_status' %}" style="display: inline;">
                                                                     {% csrf_token %}
                                                                     <input type="hidden" name="user_id" value="{{ designer.id }}">
-                                                                    <button type="button" class="deactivate-button" 
-                                                                        style="background-color: {% if designer.status == 'active' %} red {% else %} green {% endif %}; color: white; border: none; padding: 10px; border-radius: 5px;">
-                                                                        {% if designer.status == 'active' %}
+                                                                    <input type="hidden" name="user_type" value="Designer">
+                                                                    {% if designer.status == 'active' %}
+                                                                        <button type="button" 
+                                                                            class="status-button deactivate"
+                                                                            style="background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100px;"
+                                                                            onclick="confirmDeactivation('{{ designer.id }}', '{{ designer.name }}', 'Designer')">
                                                                             Deactivate
-                                                                        {% else %}
+                                                                        </button>
+                                                                    {% else %}
+                                                                        <button type="submit" name="action" value="activate" 
+                                                                            class="status-button activate"
+                                                                            style="background-color: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100px;">
                                                                             Activate
-                                                                        {% endif %}
-                                                                    </button>
+                                                                        </button>
+                                                                    {% endif %}
                                                                 </form>
                                                             </td>
                                                         </tr>
@@ -287,7 +297,14 @@
                         </a>
                     </li>
                     
-                       
+                    <li style="margin-bottom: 30px; text-align: center;">
+                        <a href="{% url 'deliveryboys_table' %}" 
+                        style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                        onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                        onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                            Delivery Boys Table
+                        </a>
+                    </li>
                 <li style="margin-bottom: 20px;">
                     <a href="{% url 'designs_table' %}" style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
                         onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
@@ -403,52 +420,136 @@
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script>
-                document.querySelectorAll('.deactivate-button').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const form = this.closest('form');
-                        const isDeactivate = this.textContent.trim() === 'Deactivate'; // Check if the button is for deactivation
-
-                        if (isDeactivate) {
-                            // Show reason for deactivation
-                            Swal.fire({
-                                title: 'Reason for Deactivation',
-                                input: 'textarea',
-                                inputPlaceholder: 'Type your reason here...',
-                                showCancelButton: true,
-                                confirmButtonText: 'Submit',
-                                preConfirm: (reason) => {
-                                    if (!reason) {
-                                        Swal.showValidationMessage('You need to provide a reason!');
-                                    }
-                                    return reason;
-                                }
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    const reasonInput = document.createElement('input');
-                                    reasonInput.type = 'hidden';
-                                    reasonInput.name = 'reason';
-                                    reasonInput.value = result.value;
-                                    form.appendChild(reasonInput);
-                                    form.submit();
-                                }
-                            });
-                        } else {
-                            // Show confirmation for activation
-                            Swal.fire({
-                                title: 'Confirm Activation',
-                                text: "Are you sure you want to activate this user?",
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonText: 'Yes, activate it!',
-                                cancelButtonText: 'No, cancel!'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    form.submit(); // Submit the form for activation
-                                }
-                            });
-                        }
-                    });
+            function confirmDeactivation(userId, userName, userType) {
+                Swal.fire({
+                    title: 'Deactivate Account',
+                    html: `
+                        <div style="text-align: center;">
+                            <p style="color: #555; font-size: 16px; margin-bottom: 20px;">
+                                You are about to deactivate the account for ${userName}
+                            </p>
+                            <p style="color: #555; font-size: 16px; margin-bottom: 10px;">
+                                Please provide a reason for deactivation:
+                            </p>
+                            <textarea id="reason" 
+                                class="swal2-textarea" 
+                                placeholder="Enter detailed reason for deactivation" 
+                                style="width: 90%; height: 100px; padding: 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; resize: none; margin: 0 auto 15px; display: block; background: #fff;"
+                            ></textarea>
+                            <p style="color: #6c757d; font-size: 13px; margin-bottom: 0;">
+                                Note: An email notification will be sent to the user with this reason.
+                            </p>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'CONFIRM DEACTIVATION',
+                    cancelButtonText: 'CANCEL',
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    width: '560px',
+                    customClass: {
+                        container: 'swal-container',
+                        popup: 'swal-popup',
+                        confirmButton: 'swal-button confirm',
+                        cancelButton: 'swal-button cancel'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = "{% url 'update_user_status' %}";
+                        
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = '{{ csrf_token }}';
+                        
+                        const userIdInput = document.createElement('input');
+                        userIdInput.type = 'hidden';
+                        userIdInput.name = 'user_id';
+                        userIdInput.value = userId;
+                        
+                        const userTypeInput = document.createElement('input');
+                        userTypeInput.type = 'hidden';
+                        userTypeInput.name = 'user_type';
+                        userTypeInput.value = userType;
+                        
+                        const actionInput = document.createElement('input');
+                        actionInput.type = 'hidden';
+                        actionInput.name = 'action';
+                        actionInput.value = 'deactivate';
+                        
+                        const reasonInput = document.createElement('input');
+                        reasonInput.type = 'hidden';
+                        reasonInput.name = 'reason';
+                        reasonInput.value = document.getElementById('reason').value.trim();
+                        
+                        form.appendChild(csrfInput);
+                        form.appendChild(userIdInput);
+                        form.appendChild(userTypeInput);
+                        form.appendChild(actionInput);
+                        form.appendChild(reasonInput);
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
                 });
+            }
             </script>
+
+<style>
+.swal-container {
+    padding: 0 !important;
+}
+
+.swal-popup {
+    padding: 20px;
+    border-radius: 8px;
+    overflow: visible !important;
+}
+
+.swal2-title {
+    font-size: 24px !important;
+    color: #333 !important;
+    padding: 0 !important;
+    margin-bottom: 20px !important;
+}
+
+.swal2-html-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+.swal2-actions {
+    margin-top: 25px !important;
+    gap: 10px !important;
+}
+
+.swal-button {
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    padding: 12px 24px !important;
+    border-radius: 4px !important;
+}
+
+.swal-button.confirm {
+    background: #dc3545 !important;
+}
+
+.swal-button.cancel {
+    background: #6c757d !important;
+}
+
+.swal2-textarea {
+    box-shadow: none !important;
+    margin: 0 auto !important;
+}
+
+.swal2-textarea:focus {
+    box-shadow: none !important;
+    border-color: #80bdff !important;
+}
+</style>
  </body>
 </html>

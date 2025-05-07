@@ -159,7 +159,7 @@
                                                         <p style="margin: 0; color: #64748b; font-size: 13px;">Status</p>
                                                         <span style="display: inline-block; margin-top: 5px; font-size: 14px; font-weight: 500; padding: 4px 12px; border-radius: 20px;
                                                             {% if order.order_status == 'Approved' %}
-                                                                {% if order.delivery_status == 'Pending' %}
+                                                                {% if order.delivery_status == 'Pending' or not order.delivery_boy %}
                                                                     background-color: #fff7ed; color: #c2410c;
                                                                 {% elif order.delivery_status == 'Out for Delivery' %}
                                                                     background-color: #eff6ff; color: #1e40af;
@@ -171,16 +171,31 @@
                                                                     background-color: #f0fdf4; color: #166534;
                                                                 {% elif order.order_status == 'Processing' %}
                                                                     background-color: #fff7ed; color: #c2410c;
+                                                                {% elif order.order_status == 'Cancelled' %}
+                                                                    background-color: #fef2f2; color: #991b1b;
                                                                 {% else %}
                                                                     background-color: #fef2f2; color: #991b1b;
                                                                 {% endif %}
                                                             {% endif %}">
                                                             {% if order.order_status == 'Approved' %}
-                                                                {{ order.delivery_status }}
+                                                                {% if not order.delivery_boy %}
+                                                                    Pending
+                                                                {% else %}
+                                                                    {{ order.delivery_status }}
+                                                                {% endif %}
                                                             {% else %}
                                                                 {{ order.order_status }}
                                                             {% endif %}
                                                         </span>
+                                                        {% if order.order_status == 'Cancelled' and order.refund_status == 'Completed' %}
+                                                        <p style="margin: 8px 0 0; color: #27ae60; font-size: 12px; font-style: italic;">
+                                                            <i class="fa fa-check-circle"></i> Refund Processed Successfully
+                                                        </p>
+                                                        {% elif order.order_status == 'Cancelled' and order.refund_status != 'Completed' %}
+                                                        <p style="margin: 8px 0 0; color: #f39c12; font-size: 12px; font-style: italic;">
+                                                            <i class="fa fa-clock-o"></i> Refund will be initiated within 4-5 working days
+                                                        </p>
+                                                        {% endif %}
                                                     </div>
 
                                                     <div style="background: #f8fafc; padding: 15px; border-radius: 8px;">
@@ -197,12 +212,20 @@
                                                 <span style="color: #64748b; font-size: 14px;">Payment Method:</span>
                                                 <span style="color: #0f3443; font-weight: 500;">{{ order.payment_type.payment_type }}</span>
                                             </div>
-                                            {% if order.order_status == 'Approved' and order.delivery_status == 'Delivered' %}
-                                            <a href="{% url 'download_receipt' order.id %}" 
-                                                style="background-color: #1a5f7a; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; hover: {background-color: #0f3443};">
-                                                <i class="fa fa-download"></i> Download Receipt
-                                            </a>
-                                            {% endif %}
+                                            <div style="display: flex; gap: 10px;">
+                                                {% if order.delivery_status != 'Delivered' and order.order_status != 'Cancelled' %}
+                                                    <button onclick="confirmCancel({{ order.id }})" 
+                                                        style="background-color: #dc2626; color: #ffffff; padding: 8px 16px; border: none; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; cursor: pointer;">
+                                                        <i class="fa fa-times"></i> Cancel Order
+                                                    </button>
+                                                {% endif %}
+                                                {% if order.order_status == 'Approved' and order.delivery_status == 'Delivered' %}
+                                                    <a href="{% url 'download_receipt' order.id %}" 
+                                                        style="background-color: #1a5f7a; color: #ffffff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; hover: {background-color: #0f3443};">
+                                                        <i class="fa fa-download"></i> Download Receipt
+                                                    </a>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
                                     {% empty %}
@@ -322,5 +345,56 @@
         <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
         <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
        
+        <script>
+        function confirmCancel(orderId) {
+            Swal.fire({
+                title: 'Cancel Order',
+                text: 'Are you sure you want to cancel this order?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, cancel it!',
+                cancelButtonText: 'No, keep it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send AJAX request to cancel the order
+                    $.ajax({
+                        url: '{% url "cancel_order" %}',
+                        type: 'POST',
+                        data: {
+                            'order_id': orderId,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                Swal.fire({
+                                    title: 'Cancelled!',
+                                    text: 'Your order has been cancelled.',
+                                    icon: 'success'
+                                }).then(() => {
+                                    // Reload the page to show updated status
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: response.message || 'Failed to cancel order.',
+                                    icon: 'error'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Something went wrong. Please try again.',
+                                icon: 'error'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+        </script>
     </body>
 </html>

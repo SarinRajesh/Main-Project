@@ -19,6 +19,8 @@
         <link rel="shortcut icon" href="{% static 'index/images/favicon.ico' %}">
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <style>
             .custom-swal-popup {
                 width: 900px !important;
@@ -97,7 +99,134 @@
                 background-color: #e74c3c;
                 color: white;
             }
+            
+            /* Tooltip styles */
+            .tooltip {
+                position: relative;
+                display: inline-block;
+            }
+
+            .tooltip .tooltip-content {
+                visibility: hidden;
+                background-color: #2c3e50;
+                color: white;
+                text-align: left;
+                padding: 10px;
+                border-radius: 6px;
+                position: absolute;
+                z-index: 1;
+                bottom: 125%;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 200px;
+                opacity: 0;
+                transition: opacity 0.3s;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                font-size: 12px;
+            }
+
+            .tooltip .tooltip-content::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                margin-left: -5px;
+                border-width: 5px;
+                border-style: solid;
+                border-color: #2c3e50 transparent transparent transparent;
+            }
+
+            .tooltip:hover .tooltip-content {
+                visibility: visible;
+                opacity: 1;
+            }
+
+            .tooltip-detail {
+                margin: 5px 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .tooltip-detail i {
+                width: 16px;
+                color: #3498db;
+            }
         </style>
+        <script>
+            function initializeRazorpay(orderId) {
+                var options = {
+                    "key": "rzp_test_3ybzcJKABRAGdi",
+                    "amount": 10000, // Rs. 100 in paise
+                    "currency": "INR",
+                    "name": "ElegantDecor",
+                    "description": "Delivery Payment",
+                    "image": "{% static 'index/images/ElegantDecor.gif' %}",
+                    "handler": function (response) {
+                        // On successful payment, update the delivery payment status
+                        $.ajax({
+                            url: '{% url "update_delivery_payment" %}',
+                            type: 'POST',
+                            data: {
+                                'order_id': orderId,
+                                'payment_id': response.razorpay_payment_id,
+                                'csrfmiddlewaretoken': '{{ csrf_token }}'
+                            },
+                            success: function(data) {
+                                if(data.status === 'success') {
+                                    Swal.fire({
+                                        title: 'Payment Successful!',
+                                        text: 'Delivery payment has been processed successfully.',
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            window.location.reload();
+                                        }
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: data.message || 'Failed to process payment. Please try again.',
+                                        icon: 'error',
+                                        confirmButtonText: 'OK'
+                                    });
+                                }
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'An error occurred. Please try again.',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        });
+                    },
+                    "prefill": {
+                        "name": "{{ user.name }}",
+                        "email": "{{ user.email }}",
+                        "contact": "{{ user.phone }}"
+                    },
+                    "theme": {
+                        "color": "#3399cc"
+                    }
+                };
+
+                try {
+                    var rzp1 = new Razorpay(options);
+                    rzp1.open();
+                } catch (error) {
+                    console.error("Razorpay checkout failed: ", error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to open Razorpay checkout. Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            }
+        </script>
     </head>
 
     <body>
@@ -145,6 +274,9 @@
                             <a href="{% url 'designers_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designers Table</a>
                         </li>
                         <li>
+                            <a href="{% url 'deliveryboys_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Delivery Boys Table</a>
+                        </li>
+                         <li>
                             <a href="{% url 'designs_table' %}" style="color: white; text-decoration: none; font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 1px;">Designs Table</a>
                         </li>
                         <li>
@@ -216,7 +348,7 @@
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Delivery Boy</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Delivery Date</th>
                                                             <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Delivery Status</th>
-                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Actions</th>
+                                                            <th style="background-color: #2c3e50; color: white; padding: 12px; text-align: left;">Action</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -227,90 +359,132 @@
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.product.name }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.quantity }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.amount.amount }}</td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_date|date:"Y-m-d H:i" }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_date|date:"Y-m-d h:i A" }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.order_status }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_type.payment_type }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.payment_status }}</td>
                                                             <td style="border-bottom: 1px solid #ddd; padding: 12px;">
-                                                                {% if order.order_status == 'Cancelled' %}
-                                                                    None
-                                                                {% elif order.delivery_boy %}
-                                                                    {{ order.delivery_boy.username }}
-                                                                {% elif order.order_status == 'Approved' %}
-                                                                    {% if order.available_delivery_boys %}
-                                                                        <form method="post" style="display: inline;" id="assignForm{{ order.id }}">
+                                                                {% if order.delivery_boy %}
+                                                                    <div class="tooltip">
+                                                                        {{ order.delivery_boy.username }}
+                                                                        <div class="tooltip-content">
+                                                                            <div class="tooltip-detail">
+                                                                                <i class="fas fa-user"></i>
+                                                                                {{ order.delivery_boy.name }}
+                                                                            </div>
+                                                                            <div class="tooltip-detail">
+                                                                                <i class="fas fa-phone"></i>
+                                                                                {{ order.delivery_boy.phone }}
+                                                                            </div>
+                                                                            <div class="tooltip-detail">
+                                                                                <i class="fas fa-envelope"></i>
+                                                                                {{ order.delivery_boy.email }}
+                                                                            </div>
+                                                                            <div class="tooltip-detail">
+                                                                                <i class="fas fa-map-marker-alt"></i>
+                                                                                {{ order.delivery_boy.pincode }}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                {% else %}
+                                                                    Not Assigned
+                                                                {% endif %}
+                                                            </td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                {% if order.delivery_date %}
+                                                                    {{ order.delivery_date|date:"Y-m-d h:i A" }}
+                                                                {% else %}
+                                                                    Not Delivered
+                                                                {% endif %}
+                                                            </td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_status }}</td>
+                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                {% if order.order_status == 'Approved' and not order.delivery_boy %}
+                                                                    {% if order.has_available_delivery_boys %}
+                                                                        <form method="POST" class="d-inline">
                                                                             {% csrf_token %}
                                                                             <input type="hidden" name="order_id" value="{{ order.id }}">
                                                                             <input type="hidden" name="action" value="assign_delivery_boy">
                                                                             <select name="delivery_boy_id" 
-                                                                                    onchange="confirmAssignment(this, {{ order.id }}, 
-                                                                                        {
-                                                                                            customerId: '{{ order.user.id }}',
-                                                                                            customerName: '{{ order.user.name }}',
-                                                                                            customerPhone: '{{ order.user.phone }}',
-                                                                                            customerEmail: '{{ order.user.email }}',
-                                                                                            customerAddress: '{{ order.user.address }}',
-                                                                                            customerDistrict: '{{ order.user.district }}',
-                                                                                            customerPincode: '{{ order.user.pincode }}',
-                                                                                            orderAmount: '{{ order.amount.amount }}',
-                                                                                            orderProduct: '{{ order.product.name }}',
-                                                                                            orderQuantity: '{{ order.quantity }}'
-                                                                                        })" 
-                                                                                    style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+                                                                                    onchange="confirmAssignment(this, '{{ order.id }}')"
+                                                                                    class="form-select form-select-sm">
                                                                                 <option value="">Select Delivery Boy</option>
-                                                                                {% for db in order.available_delivery_boys %}
-                                                                                    <option value="{{ db.id }}" 
-                                                                                            data-name="{{ db.name }}"
-                                                                                            data-phone="{{ db.phone }}"
-                                                                                            data-email="{{ db.email }}"
-                                                                                            data-district="{{ db.district }}"
-                                                                                            data-hometown="{{ db.home_town }}"
-                                                                                            data-status="{{ db.status }}">
-                                                                                        {{ db.name }} ({{ db.district }})
+                                                                                {% for delivery_boy in order.available_delivery_boys %}
+                                                                                    <option value="{{ delivery_boy.id }}">
+                                                                                        {{ delivery_boy.name }} ({{ delivery_boy.pincode }})
                                                                                     </option>
                                                                                 {% endfor %}
                                                                             </select>
                                                                         </form>
                                                                     {% else %}
-                                                                        <span style="color: #e74c3c;">No delivery boys available in {{ order.user.district }}</span>
+                                                                        <a href="{% url 'add_deliveryboy' %}" 
+                                                                           class="add-delivery-btn"
+                                                                           style="
+                                                                               background-color: #2c3e50;
+                                                                               color: white;
+                                                                               padding: 6px 12px;
+                                                                               font-size: 13px;
+                                                                               text-decoration: none;
+                                                                               border-radius: 4px;
+                                                                               display: inline-flex;
+                                                                               align-items: center;
+                                                                               gap: 6px;
+                                                                               transition: all 0.3s ease;
+                                                                               border: 1px solid #2c3e50;
+                                                                           "
+                                                                           onmouseover="this.style.backgroundColor='white'; this.style.color='#2c3e50';"
+                                                                           onmouseout="this.style.backgroundColor='#2c3e50'; this.style.color='white';"
+                                                                        >
+                                                                            <i class="fas fa-plus" style="font-size: 11px;"></i>
+                                                                            Delivery Boy
+                                                                        </a>
                                                                     {% endif %}
-                                                                {% else %}
-                                                                    Cannot add delivery boy until order is approved
-                                                                {% endif %}
-                                                            </td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_date|date:"Y-m-d H:i" }}</td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">{{ order.delivery_status }}</td>
-                                                            <td style="border-bottom: 1px solid #ddd; padding: 12px;">
-                                                                {% if order.order_status == 'Pending' %}
-                                                                    <form method="post" style="display: inline;">
-                                                                        {% csrf_token %}
-                                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
-                                                                        <input type="hidden" name="action" value="approve">
-                                                                        <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; margin-right: 5px;">
-                                                                            Approve
-                                                                        </button>
-                                                                    </form>
-                                                                    <form method="post" style="display: inline;">
-                                                                        {% csrf_token %}
-                                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
-                                                                        <input type="hidden" name="action" value="cancel">
-                                                                        <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
-                                                                            Cancel
-                                                                        </button>
-                                                                    </form>
-                                                                {% elif order.order_status == 'Approved' and order.delivery_status != 'Delivered' %}
-                                                                    <form method="post" style="display: inline;">
-                                                                        {% csrf_token %}
-                                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
-                                                                        <input type="hidden" name="action" value="cancel">
-                                                                        <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">
-                                                                            Cancel
-                                                                        </button>
-                                                                    </form>
-                                                                {% elif order.delivery_status == 'Delivered' %}
+                                                                {% elif order.delivery_status == 'Delivered' and not order.delivery_payment_status %}
+                                                                    <button onclick="initializeRazorpay('{{ order.id }}')" 
+                                                                            class="pay-delivery-btn"
+                                                                            style="
+                                                                                background-color: #27ae60;
+                                                                                color: white;
+                                                                                border: none;
+                                                                                padding: 5px 10px;
+                                                                                border-radius: 4px;
+                                                                                cursor: pointer;
+                                                                            ">
+                                                                        Pay Rs. 100
+                                                                    </button>
+                                                                {% elif order.delivery_status == 'Delivered' and order.delivery_payment_status %}
                                                                     <span style="color: #27ae60; font-weight: bold;">
-                                                                        <i class="fas fa-check-circle"></i> Order Completed
+                                                                        Delivery charge paid
                                                                     </span>
+                                                                {% elif order.order_status == 'Cancelled' %}
+                                                                    {% if order.refund_status == 'Not Required' %}
+                                                                        <button onclick="initializeRefundRazorpay('{{ order.id }}', '{{ order.amount.amount }}')" 
+                                                                                class="refund-btn"
+                                                                                style="
+                                                                                    background-color: #e74c3c;
+                                                                                    color: white;
+                                                                                    border: none;
+                                                                                    padding: 5px 10px;
+                                                                                    border-radius: 4px;
+                                                                                    cursor: pointer;
+                                                                                ">
+                                                                            Process Refund (₹{{ order.amount.amount }})
+                                                                        </button>
+                                                                    {% elif order.refund_status == 'Processing' %}
+                                                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                                                            <span style="color: #f39c12; font-weight: bold;">
+                                                                                <i class="fas fa-sync fa-spin"></i> Refund Processing
+                                                                            </span>
+                                                                            <span style="color: #666; font-size: 12px;">Amount: ₹{{ order.amount.amount }}</span>
+                                                                        </div>
+                                                                    {% elif order.refund_status == 'Completed' %}
+                                                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                                                            <span style="color: #27ae60; font-weight: bold;">
+                                                                                <i class="fas fa-check-circle"></i> Refund Completed
+                                                                            </span>
+                                                                            <!-- <span style="color: #666; font-size: 12px;">Amount: ₹{{ order.amount.amount }}</span> -->
+                                                                              </div>
+                                                                    {% endif %}
                                                                 {% endif %}
                                                             </td>
                                                         </tr>
@@ -340,6 +514,60 @@
                         <!--  social-wrap  end-->
                     </div>
                     <!-- content end -->
+                    <!-- Add Razorpay script -->
+                    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+                    <script>
+                        function initializeRefundRazorpay(orderId, amount) {
+                            var options = {
+                                "key": "rzp_test_3ybzcJKABRAGdi",
+                                "amount": amount * 100, // Convert to paise
+                                "currency": "INR",
+                                "name": "ElegantDecor",
+                                "description": "Order Refund #" + orderId,
+                                "handler": function (response) {
+                                    // Send the refund information to your backend
+                                    $.ajax({
+                                        url: '{% url "process_refund" %}',
+                                        type: 'POST',
+                                        data: {
+                                            'order_id': orderId,
+                                            'payment_id': response.razorpay_payment_id,
+                                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                                        },
+                                        success: function(response) {
+                                            if(response.status === 'success') {
+                                                Swal.fire({
+                                                    title: 'Success!',
+                                                    text: 'Refund has been processed successfully.',
+                                                    icon: 'success'
+                                                }).then(() => {
+                                                    location.reload();
+                                                });
+                                            } else {
+                                                Swal.fire({
+                                                    title: 'Error',
+                                                    text: response.message || 'Failed to process refund.',
+                                                    icon: 'error'
+                                                });
+                                            }
+                                        },
+                                        error: function() {
+                                            Swal.fire({
+                                                title: 'Error',
+                                                text: 'Something went wrong. Please try again.',
+                                                icon: 'error'
+                                            });
+                                        }
+                                    });
+                                },
+                                "theme": {
+                                    "color": "#e74c3c"
+                                }
+                            };
+                            var rzp1 = new Razorpay(options);
+                            rzp1.open();
+                        }
+                    </script>
                     <!--=============== content-footer   ===============-->
                     <div class="height-emulator"></div>
                     <footer class="content-footer">
@@ -421,6 +649,14 @@
                                 onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
                                 onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
                                     Designers Table
+                                </a>
+                            </li>
+                            <li style="margin-bottom: 30px; text-align: center;">
+                                <a href="{% url 'deliveryboys_table' %}" 
+                                style="color: #ecf0f1; text-decoration: none; font-size: 18px; font-weight: bold; display: block; padding: 15px 20px; border-bottom: 2px solid #ffffff; transition: background-color 0.3s, color 0.3s;"
+                                onmouseover="this.style.backgroundColor='#ffffff'; this.style.color='#000000';"
+                                onmouseout="this.style.backgroundColor=''; this.style.color='#ecf0f1';">
+                                    Delivery Boys Table
                                 </a>
                             </li>
                             <li style="margin-bottom: 20px;">
@@ -544,157 +780,14 @@
             <script type="text/javascript" src="{% static 'index/js/plugins.js' %}"></script>
             <script type="text/javascript" src="{% static 'index/js/scripts.js' %}"></script>
             <script>
-            function confirmAssignment(selectElement, orderId, customerData) {
-                event.preventDefault();
-                
-                if (!selectElement.value) return;
-
-                const selectedOption = selectElement.options[selectElement.selectedIndex];
-                const deliveryBoyData = {
-                    id: selectElement.value,
-                    name: selectedOption.dataset.name,
-                    phone: selectedOption.dataset.phone,
-                    email: selectedOption.dataset.email,
-                    district: selectedOption.dataset.district,
-                    hometown: selectedOption.dataset.hometown,
-                    status: selectedOption.dataset.status
-                };
-
-                const detailsHtml = `
-                    <div class="details-container">
-                        <!-- Customer Details -->
-                        <div class="details-box">
-                            <div class="details-header">
-                                <i class="fa-solid fa-user-circle" style="color: #3498db;"></i>
-                                Customer Information
-                            </div>
-                            <div class="details-content">
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-user"></i> Name:</span>
-                                    <span class="detail-value">${customerData.customerName}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-phone"></i> Phone:</span>
-                                    <span class="detail-value">${customerData.customerPhone}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-envelope"></i> Email:</span>
-                                    <span class="detail-value">${customerData.customerEmail}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-location-dot"></i> Address:</span>
-                                    <span class="detail-value">${customerData.customerAddress}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-map"></i> District:</span>
-                                    <span class="detail-value">${customerData.customerDistrict}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-hashtag"></i> Pincode:</span>
-                                    <span class="detail-value">${customerData.customerPincode}</span>
-                                </div>
-                            </div>
-
-                            <div class="order-details">
-                                <div class="details-header" style="border-color: #2ecc71;">
-                                    <i class="fa-solid fa-shopping-cart" style="color: #2ecc71;"></i>
-                                    Order Details
-                                </div>
-                                <div class="details-content">
-                                    <div class="detail-item">
-                                        <span class="detail-label"><i class="fa-solid fa-box"></i> Product:</span>
-                                        <span class="detail-value">${customerData.orderProduct}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label"><i class="fa-solid fa-cubes"></i> Quantity:</span>
-                                        <span class="detail-value">${customerData.orderQuantity}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label"><i class="fa-solid fa-indian-rupee-sign"></i> Amount:</span>
-                                        <span class="detail-value">₹${customerData.orderAmount}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Delivery Boy Details -->
-                        <div class="details-box">
-                            <div class="details-header">
-                                <i class="fa-solid fa-motorcycle" style="color: #e74c3c;"></i>
-                                Delivery Boy Information
-                            </div>
-                            <div class="details-content">
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-user"></i> Name:</span>
-                                    <span class="detail-value">${deliveryBoyData.name}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-phone"></i> Phone:</span>
-                                    <span class="detail-value">${deliveryBoyData.phone}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-envelope"></i> Email:</span>
-                                    <span class="detail-value">${deliveryBoyData.email}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-map"></i> District:</span>
-                                    <span class="detail-value">${deliveryBoyData.district}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-house"></i> Home Town:</span>
-                                    <span class="detail-value">${deliveryBoyData.hometown}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label"><i class="fa-solid fa-circle-check"></i> Status:</span>
-                                    <span class="status-badge ${deliveryBoyData.status === 'active' ? 'status-active' : 'status-inactive'}">
-                                        ${deliveryBoyData.status.toUpperCase()}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                Swal.fire({
-                    title: '<span style="color: #2c3e50; font-size: 24px;"><i class="fa-solid fa-clipboard-check"></i> Confirm Delivery Assignment</span>',
-                    html: detailsHtml,
-                    icon: null,
-                    showCancelButton: true,
-                    confirmButtonColor: '#2ecc71',
-                    cancelButtonColor: '#95a5a6',
-                    confirmButtonText: '<i class="fa-solid fa-check"></i> Confirm Assignment',
-                    cancelButtonText: '<i class="fa-solid fa-xmark"></i> Cancel',
-                    customClass: {
-                        container: 'custom-swal-container',
-                        popup: 'custom-swal-popup',
-                        content: 'custom-swal-content',
-                        confirmButton: 'custom-confirm-button',
-                        cancelButton: 'custom-cancel-button'
-                    },
-                    buttonsStyling: true,
-                    reverseButtons: true,
-                    focusConfirm: false,
-                    showCloseButton: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                            title: 'Assigning Delivery Boy',
-                            html: `
-                                <div style="text-align: center;">
-                                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #3498db; margin-bottom: 10px;"></i>
-                                    <p style="margin: 0;">Please wait while we process your request...</p>
-                                </div>
-                            `,
-                            showConfirmButton: false,
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                document.getElementById(`assignForm${orderId}`).submit();
-                            }
-                        });
+            function confirmAssignment(selectElement, orderId) {
+                if (selectElement.value) {
+                    if (confirm('Are you sure you want to assign this delivery boy to the order?')) {
+                        selectElement.form.submit();
                     } else {
-                        selectElement.value = "";
+                        selectElement.value = '';
                     }
-                });
+                }
             }
             </script>
             <style>

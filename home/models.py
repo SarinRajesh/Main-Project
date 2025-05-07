@@ -121,6 +121,14 @@ class Order(models.Model):
         limit_choices_to={'user_type_id__user_type': 'DeliveryBoy'}
     )
     delivery_status = models.CharField(max_length=100, default='Pending')
+    delivery_payment_status = models.BooleanField(default=False)
+    delivery_payment_id = models.CharField(max_length=100, null=True, blank=True)
+    refund_status = models.CharField(max_length=100, default='Not Required')
+    refund_payment_id = models.CharField(max_length=100, null=True, blank=True)
+    delivery_otp = models.CharField(max_length=6, null=True, blank=True)
+    otp_created_at = models.DateTimeField(null=True, blank=True)
+    otp_verified = models.BooleanField(default=False)
+
     def __str__(self):
         return f'Order {self.id}'
     

@@ -1061,6 +1061,43 @@ def create_order_from_product(request):
             # Get or create the Payment_Type instance
             payment_type, _ = Payment_Type.objects.get_or_create(payment_type='online')
             
+            # Get all delivery boys in the same pincode as the customer
+            delivery_boys = Users.objects.filter(
+                user_type_id__user_type='Delivery_boy',
+                pincode=request.user.pincode,
+                status='active'
+            )
+            
+            # Initialize delivery boy to None
+            delivery_boy = None
+            
+            if delivery_boys.exists():
+                # Get delivery boys who don't have pending orders
+                available_delivery_boys = []
+                for db in delivery_boys:
+                    # Check if this delivery boy has any pending orders
+                    has_pending = Order.objects.filter(
+                        delivery_boy=db,
+                        delivery_status='Pending'
+                    ).exists()
+                    
+                    if not has_pending:
+                        # Count total deliveries for this delivery boy
+                        total_deliveries = Order.objects.filter(
+                            delivery_boy=db
+                        ).count()
+                        
+                        available_delivery_boys.append({
+                            'delivery_boy': db,
+                            'total_deliveries': total_deliveries,
+                            'date_joined': db.date_joined
+                        })
+                
+                if available_delivery_boys:
+                    # Sort by total deliveries (ascending) and then by date_joined (ascending)
+                    available_delivery_boys.sort(key=lambda x: (x['total_deliveries'], x['date_joined']))
+                    delivery_boy = available_delivery_boys[0]['delivery_boy']
+            
             # Create the order
             order = Order.objects.create(
                 user=request.user,
@@ -1068,10 +1105,12 @@ def create_order_from_product(request):
                 quantity=quantity,
                 amount=amount,
                 order_date=timezone.now(),
-                order_status='Pending',
+                order_status='Approved',
                 delivery_date=timezone.now() + timedelta(days=7),
                 payment_type=payment_type,
-                payment_status='Paid'
+                payment_status='Paid',
+                delivery_boy=delivery_boy,
+                delivery_status='Not Assigned' if not delivery_boy else 'Pending'
             )
             
             # Update product stock
@@ -1081,14 +1120,11 @@ def create_order_from_product(request):
             return JsonResponse({
                 'status': 'success',
                 'message': 'Order created successfully.',
-                'order_id': order.id
+                'order_id': order.id,
+                'delivery_boy_assigned': bool(delivery_boy)
             })
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-import logging
-
-logger = logging.getLogger(__name__)
 
 @login_required
 @require_POST
@@ -1099,6 +1135,43 @@ def create_order_from_cart(request):
             
             if not cart_items.exists():
                 return JsonResponse({'status': 'error', 'message': 'Your cart is empty'}, status=400)
+            
+            # Get all delivery boys in the same pincode as the customer
+            delivery_boys = Users.objects.filter(
+                user_type_id__user_type='Delivery_boy',
+                pincode=request.user.pincode,
+                status='active'
+            )
+            
+            # Initialize delivery boy to None
+            delivery_boy = None
+            
+            if delivery_boys.exists():
+                # Get delivery boys who don't have pending orders
+                available_delivery_boys = []
+                for db in delivery_boys:
+                    # Check if this delivery boy has any pending orders
+                    has_pending = Order.objects.filter(
+                        delivery_boy=db,
+                        delivery_status='Pending'
+                    ).exists()
+                    
+                    if not has_pending:
+                        # Count total deliveries for this delivery boy
+                        total_deliveries = Order.objects.filter(
+                            delivery_boy=db
+                        ).count()
+                        
+                        available_delivery_boys.append({
+                            'delivery_boy': db,
+                            'total_deliveries': total_deliveries,
+                            'date_joined': db.date_joined
+                        })
+                
+                if available_delivery_boys:
+                    # Sort by total deliveries (ascending) and then by date_joined (ascending)
+                    available_delivery_boys.sort(key=lambda x: (x['total_deliveries'], x['date_joined']))
+                    delivery_boy = available_delivery_boys[0]['delivery_boy']
             
             orders_created = []
             
@@ -1111,7 +1184,7 @@ def create_order_from_cart(request):
                     if quantity == 1:
                         return JsonResponse({'status': 'error', 'message': f'Not enough stock for {product.name}, only {product.stock} available.'}, status=400)
                     else:
-                        continue  # Skip this item if quantity is greater than available stock
+                        continue
                 
                 # Create or get the Amount instance
                 amount_value = product.amount.amount * quantity
@@ -1127,10 +1200,12 @@ def create_order_from_cart(request):
                     quantity=quantity,
                     amount=amount,
                     order_date=timezone.now(),
-                    order_status='Pending',
+                    order_status='Approved',
                     delivery_date=timezone.now() + timedelta(days=7),
                     payment_type=payment_type,
-                    payment_status='Paid'
+                    payment_status='Paid',
+                    delivery_boy=delivery_boy,
+                    delivery_status='Not Assigned' if not delivery_boy else 'Pending'
                 )
                 
                 orders_created.append(order)
@@ -1145,10 +1220,11 @@ def create_order_from_cart(request):
             return JsonResponse({
                 'status': 'success',
                 'message': f'Successfully created {len(orders_created)} orders.',
-                'order_ids': [order.id for order in orders_created]
+                'order_ids': [order.id for order in orders_created],
+                'delivery_boy_assigned': bool(delivery_boy)
             })
     except Exception as e:
-        logger.error(f"Error processing order: {e}")  # Log the error for debugging
+        logger.error(f"Error processing order: {e}")
         return JsonResponse({'status': 'error', 'message': 'An error occurred while processing your order. Please try again later.'}, status=500)
 
 @nocache
@@ -1606,6 +1682,98 @@ def deliveryboy_index(request):
     }
     return render(request, 'delivery_boy/index.html', context)
 
+def generate_delivery_otp():
+    """Generate a 6-digit OTP"""
+    return ''.join([str(random.randint(0, 9)) for _ in range(6)])
+
+@login_required
+@require_POST
+def send_delivery_otp(request):
+    """Send OTP to customer for delivery verification"""
+    order_id = request.POST.get('order_id')
+    try:
+        order = Order.objects.get(id=order_id)
+        if order.delivery_status != 'Out for Delivery':
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Order is not out for delivery'
+            })
+        
+        # Generate new OTP
+        otp = generate_delivery_otp()
+        order.delivery_otp = otp
+        order.otp_created_at = timezone.now()
+        order.otp_verified = False
+        order.save()
+        
+        # Send OTP via email
+        subject = 'Delivery OTP for Order #{}'.format(order.id)
+        message = f'Your delivery OTP for order #{order.id} is: {otp}. This OTP is valid for 10 minutes.'
+        order.user.email_user(subject, message)
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'OTP sent successfully'
+        })
+    except Order.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Order not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })
+
+@login_required
+@require_POST
+def verify_delivery_otp(request):
+    """Verify OTP for delivery completion"""
+    order_id = request.POST.get('order_id')
+    otp = request.POST.get('otp')
+    
+    try:
+        order = Order.objects.get(id=order_id)
+        
+        # Check if OTP exists and is not expired (10 minutes validity)
+        if not order.delivery_otp or not order.otp_created_at:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No OTP generated for this order'
+            })
+            
+        if timezone.now() - order.otp_created_at > timedelta(minutes=10):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'OTP has expired'
+            })
+            
+        if order.delivery_otp != otp:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid OTP'
+            })
+            
+        # Mark OTP as verified
+        order.otp_verified = True
+        order.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'OTP verified successfully'
+        })
+    except Order.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Order not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })
+
 @login_required
 @never_cache
 def delivery(request):
@@ -1633,6 +1801,11 @@ def delivery(request):
                 messages.success(request, 'Order marked as out for delivery')
                 
             elif action == 'delivered':
+                # Check if OTP is verified
+                if not order.otp_verified:
+                    messages.error(request, 'Please verify OTP before marking as delivered')
+                    return redirect('delivery')
+                    
                 order.delivery_status = 'Delivered'
                 order.delivery_date = timezone.now()
                 order.save()
@@ -1658,30 +1831,15 @@ def delivery(request):
             
         return redirect('delivery')
 
-    # Get available orders in the delivery boy's district
-    available_orders = Order.objects.filter(
-        delivery_boy__isnull=True,
-        order_status='Approved',
-        user__district=request.user.district
-    ).select_related(
-        'user',
-        'product',
-        'amount'
-    ).order_by('-order_date')
-
-    # Combine my orders and available orders
     context = {
         'my_orders': my_orders,
-        'available_orders': available_orders,
-        'user': request.user,
         'delivery_stats': {
+            'total': my_orders.count(),
             'pending': my_orders.filter(delivery_status='Pending').count(),
             'out_for_delivery': my_orders.filter(delivery_status='Out for Delivery').count(),
             'delivered': my_orders.filter(delivery_status='Delivered').count(),
-            'total': my_orders.count()
         }
     }
-    
     return render(request, 'delivery_boy/delivery.html', context)
 
 @login_required
@@ -1772,6 +1930,26 @@ def designers_table(request):
     return render(request, 'admin_page/designers_table.html', {  # Changed from users_table.html to designers_table.html
         'designers': designers,
     })
+@nocache
+@login_required
+def deliveryboys_table(request):
+    # Get download parameter from URL
+    download_type = request.GET.get('download')
+    user_type = 'delivery_boy'  # Changed from 'designer' to 'delivery_boy'
+
+    if download_type:
+        if download_type == 'excel':
+            return download_excel(request, 'users', user_type)
+        elif download_type == 'pdf':
+            return download_pdf(request, 'users', user_type)
+
+    # Get all delivery boys
+    delivery_boys = Users.objects.filter(user_type_id__user_type='Delivery_boy')
+    
+    return render(request, 'admin_page/deliveryboys_table.html', {
+        'delivery_boys': delivery_boys,
+    })
+
 
 @nocache
 @login_required
@@ -1927,13 +2105,29 @@ def download_pdf(request, data_type, user_type=None):
                 {'name': 'Pincode', 'class': 'col-pincode'},
                 {'name': 'Status', 'class': 'col-status'}
             ]
+        elif user_type == 'delivery_boy':
+            filename = 'deliveryboys_table.pdf'
+            title = 'Delivery Boys'
+            users = Users.objects.filter(user_type_id__user_type='Delivery_boy')
+            styles += user_table_styles
+            headers = [
+                {'name': 'Name', 'class': 'col-name'},
+                {'name': 'Email', 'class': 'col-email'},
+                {'name': 'Phone', 'class': 'col-phone'},
+                {'name': 'Address', 'class': 'col-address'},
+                {'name': 'Home Town', 'class': 'col-hometown'},
+                {'name': 'District', 'class': 'col-district'},
+                {'name': 'State', 'class': 'col-state'},
+                {'name': 'Pincode', 'class': 'col-pincode'},
+                {'name': 'Status', 'class': 'col-status'}
+            ]
         else:
             filename = 'all_users_table.pdf'
             title = 'All Users'
             users = Users.objects.exclude(user_type_id__user_type='Admin')
             headers = ['Name', 'Email', 'Phone', 'Address', 'Home Town', 'District', 'State', 'Pincode', 'Status', 'User Type']
 
-        if user_type in ['customer', 'designer']:
+        if user_type in ['customer', 'designer', 'delivery_boy']:
             items = [
                 [
                     user.name or 'N/A',
@@ -2072,7 +2266,7 @@ def download_pdf(request, data_type, user_type=None):
         'items': items,
         'styles': styles,
         'generated_date': generated_date,
-        'is_user_table': data_type == 'users' and user_type in ['customer', 'designer']
+        'is_user_table': data_type == 'users' and user_type in ['customer', 'designer', 'delivery_boy']
     }
 
     return generate_pdf_response(template_path, context, filename)
@@ -2086,6 +2280,10 @@ def download_excel(request, data_type, user_type=None):
             worksheet.title = 'Customers'
             filename = 'customers_table.xlsx'
             data = Users.objects.filter(user_type_id__user_type='Customer')
+        elif user_type == 'delivery_boy':
+            worksheet.title = 'Delivery Boys'
+            filename = 'deliveryboys_table.xlsx'
+            data = Users.objects.filter(user_type_id__user_type='Delivery_boy')
         else:  # designer
             worksheet.title = 'Designers'
             filename = 'designers_table.xlsx'
@@ -2284,34 +2482,33 @@ def orders_table(request):
         try:
             order = Order.objects.get(id=order_id)
             
-            if action == 'approve':
-                order.order_status = 'Approved'
-                order.save()
-                messages.success(request, 'Order approved successfully.')
-            
-            elif action == 'cancel':
-                order.order_status = 'Cancelled'
-                order.save()
-                messages.success(request, 'Order cancelled successfully.')
-            
-            elif action == 'assign_delivery_boy':
+            if action == 'assign_delivery_boy':
                 delivery_boy_id = request.POST.get('delivery_boy_id')
                 if delivery_boy_id:
                     delivery_boy = Users.objects.get(id=delivery_boy_id)
-                    # Verify delivery boy is from same district
-                    if delivery_boy.district == order.user.district:
-                        order.delivery_boy = delivery_boy
-                        order.delivery_status = 'Pending'
-                        order.save()
+                    # Verify delivery boy is from same pincode
+                    if delivery_boy.pincode == order.user.pincode:
+                        # Check if delivery boy has any pending orders
+                        has_pending = Order.objects.filter(
+                            delivery_boy=delivery_boy,
+                            delivery_status='Pending'
+                        ).exists()
                         
-                        messages.success(
-                            request, 
-                            f'Successfully assigned delivery boy: {delivery_boy.name}\n'
-                            f'Contact: {delivery_boy.phone}\n'
-                            f'District: {delivery_boy.district}'
-                        )
+                        if not has_pending:
+                            order.delivery_boy = delivery_boy
+                            order.delivery_status = 'Pending'
+                            order.save()
+                            
+                            messages.success(
+                                request, 
+                                f'Successfully assigned delivery boy: {delivery_boy.name}\n'
+                                f'Contact: {delivery_boy.phone}\n'
+                                f'Pincode: {delivery_boy.pincode}'
+                            )
+                        else:
+                            messages.error(request, 'Selected delivery boy has pending orders.')
                     else:
-                        messages.error(request, 'Delivery boy must be from the same district as the customer.')
+                        messages.error(request, 'Delivery boy must be from the same pincode as the customer.')
                 else:
                     messages.error(request, 'Please select a delivery boy.')
                     
@@ -2320,14 +2517,44 @@ def orders_table(request):
         
         return redirect('orders_table')
 
-    # For each order, get delivery boys from the same district
+    # For each order, get available delivery boys
     for order in orders:
         if order.order_status == 'Approved' and not order.delivery_boy:
-            order.available_delivery_boys = Users.objects.filter(
+            # Get all delivery boys from same pincode
+            delivery_boys = Users.objects.filter(
                 user_type_id__user_type='Delivery_boy',
                 status='active',
-                district=order.user.district
+                pincode=order.user.pincode
             ).select_related('user_type_id')
+            
+            # Filter out delivery boys with pending orders
+            available_delivery_boys = []
+            for db in delivery_boys:
+                # Check if this delivery boy has any pending orders
+                has_pending = Order.objects.filter(
+                    delivery_boy=db,
+                    delivery_status='Pending'
+                ).exists()
+                
+                if not has_pending:
+                    # Count total deliveries for this delivery boy
+                    total_deliveries = Order.objects.filter(
+                        delivery_boy=db,
+                        delivery_status='Delivered'
+                    ).count()
+                    
+                    available_delivery_boys.append({
+                        'delivery_boy': db,
+                        'total_deliveries': total_deliveries,
+                        'date_joined': db.date_joined
+                    })
+            
+            # Sort by total deliveries (ascending) and then by date_joined (ascending)
+            available_delivery_boys.sort(key=lambda x: (x['total_deliveries'], x['date_joined']))
+            
+            # Store the sorted delivery boys and availability flag
+            order.available_delivery_boys = [item['delivery_boy'] for item in available_delivery_boys]
+            order.has_available_delivery_boys = bool(available_delivery_boys)
 
     context = {
         'orders': orders
@@ -3579,4 +3806,201 @@ def get_category_from_name(name):
     
     # Default category
     return 'furniture'
+
+@login_required
+@require_POST
+def cancel_order(request):
+    try:
+        order_id = request.POST.get('order_id')
+        order = Order.objects.get(id=order_id, user=request.user)
+        
+        # Only allow cancellation if order is not delivered
+        if order.delivery_status == 'Delivered':
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Cannot cancel a delivered order.'
+            }, status=400)
+        
+        # Update order status
+        order.order_status = 'Cancelled'
+        order.delivery_status = 'Cancelled'
+        order.save()
+        
+        # Return the stock
+        product = order.product
+        product.stock += order.quantity
+        product.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Order cancelled successfully.'
+        })
+    except Order.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Order not found.'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+@nocache
+@login_required
+def my_orders(request):
+    user = request.user
+    # Get all orders for the current user, ordered by most recent first
+    orders = Order.objects.filter(user=user).select_related(
+        'product', 
+        'amount', 
+        'payment_type',
+        'delivery_boy'
+    ).order_by('-order_date')
+    
+    context = {
+        'orders': orders,
+        'user': user,
+        'user_type': user.user_type_id.user_type if user.user_type_id else None
+    }
+    
+    return render(request, 'my_orders.html', context)
+
+@login_required
+@require_POST
+def update_delivery_payment(request):
+    order_id = request.POST.get('order_id')
+    payment_id = request.POST.get('payment_id')
+    
+    try:
+        order = Order.objects.get(id=order_id)
+        if order.delivery_status == 'Delivered' and not order.delivery_payment_status:
+            order.delivery_payment_status = True
+            order.delivery_payment_id = payment_id
+            order.save()
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Delivery payment processed successfully'
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid order status or payment already processed'
+            })
+    except Order.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Order not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })
+
+@login_required
+@require_POST
+def process_refund(request):
+    order_id = request.POST.get('order_id')
+    payment_id = request.POST.get('payment_id')
+    
+    try:
+        order = Order.objects.get(id=order_id)
+        if order.order_status == 'Cancelled' and order.refund_status == 'Not Required':
+            order.refund_status = 'Completed'
+            order.refund_payment_id = payment_id
+            order.save()
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Refund processed successfully'
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid order status or refund already processed'
+            })
+    except Order.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Order not found'
+        })
+
+@login_required
+@require_POST
+def update_user_status(request):
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        action = request.POST.get('action')
+        reason = request.POST.get('reason', '')
+        user_type = request.POST.get('user_type')
+        
+        try:
+            user = Users.objects.get(id=user_id)  # Changed User to Users
+            
+            if action == 'deactivate':
+                if not reason:
+                    messages.error(request, 'Please provide a reason for deactivation.')
+                    if user_type == 'Designer':
+                        return redirect('designers_table')
+                    elif user_type == 'Delivery Boy':
+                        return redirect('deliveryboys_table')
+                    return redirect('customers_table')
+                
+                user.status = 'inactive'
+                user.save()
+                
+                # Send deactivation email
+                subject = 'Account Deactivation Notice'
+                message = f"""
+                Dear {user.name},
+
+                Your account has been deactivated by the administrator.
+
+                Reason for deactivation:
+                {reason}
+
+                If you believe this is an error or have any questions, please contact our support team.
+
+                Best regards,
+                Elegant Decor Team
+                """
+                user.email_user(subject, message)
+                
+                messages.success(request, f'User {user.name} has been deactivated successfully.')
+            elif action == 'activate':
+                user.status = 'active'
+                user.save()
+                
+                # Send activation email
+                subject = 'Account Activation Notice'
+                message = f"""
+                Dear {user.name},
+
+                Your account has been activated by the administrator.
+
+                You can now log in and access your account.
+
+                Best regards,
+                Elegant Decor Team
+                """
+                user.email_user(subject, message)
+                
+                messages.success(request, f'User {user.name} has been activated successfully.')
+            
+            # Redirect based on user type
+            if user_type == 'Designer':
+                return redirect('designers_table')
+            elif user_type == 'Delivery Boy':
+                return redirect('deliveryboys_table')
+            return redirect('customers_table')
+            
+        except Users.DoesNotExist:  # Changed User to Users
+            messages.error(request, 'User not found.')
+            if user_type == 'Designer':
+                return redirect('designers_table')
+            elif user_type == 'Delivery Boy':
+                return redirect('deliveryboys_table')
+            return redirect('customers_table')
+    
+    return redirect('customers_table')
 

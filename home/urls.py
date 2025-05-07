@@ -45,6 +45,7 @@ path('delete-portfolio/<int:portfolio_id>/', views.delete_portfolio, name='delet
 
     path('customers_table/', views.customers_table, name='customers_table'),
     path('designers_table/', views.designers_table, name='designers_table'),
+    path('deliveryboys_table/', views.deliveryboys_table, name='deliveryboys_table'),
     path('admin_page/designs_table/', views.designs_table, name='designs_table'),
     path('admin_page/consultations_table/', views.consultations_table, name='consultations_table'),
     path('admin_page/products_table/', views.products_table, name='products_table'),
@@ -108,6 +109,12 @@ path('virtual-room/get-models/', views.get_models, name='get_models'),
 
     path('virtual-room/get-rooms/', views.get_rooms, name='get_rooms'),
     path('virtual-room/get-rooms/<int:room_id>/', views.get_rooms, name='get_room'),
+    path('cancel_order/', views.cancel_order, name='cancel_order'),
+    path('update_delivery_payment/', views.update_delivery_payment, name='update_delivery_payment'),
+    path('process_refund/', views.process_refund, name='process_refund'),
+    path('update_user_status/', views.update_user_status, name='update_user_status'),
+    path('send-delivery-otp/', views.send_delivery_otp, name='send_delivery_otp'),
+    path('verify-delivery-otp/', views.verify_delivery_otp, name='verify_delivery_otp'),
 ]
 
 # Serve media files during development
