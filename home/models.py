@@ -254,6 +254,7 @@ class ProjectFeedback(models.Model):
 class VirtualRoom(models.Model):
     user = models.ForeignKey('Users', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
+    room_category = models.CharField(max_length=50, default='living room')
     width = models.FloatField()
     length = models.FloatField() 
     height = models.FloatField()

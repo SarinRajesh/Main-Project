@@ -93,6 +93,7 @@ path('virtual-room/rooms/<int:room_id>/', views.get_rooms, name='get_room_detail
 path('virtual-room/save/', views.save_room, name='save_room'),
 path('virtual-room/save/<int:room_id>/', views.save_room, name='update_room'),
 path('virtual-room/delete/<int:room_id>/', views.delete_room, name='delete_room'),
+path('virtual-room/delete-post/<int:room_id>/', views.delete_room_post, name='delete_room_post'),
 
 path('api/user-info/', views.get_user_info, name='user_info'),
 path('admin_page/add_models/', views.add_models, name='add_models'),

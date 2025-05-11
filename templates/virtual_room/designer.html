@@ -307,18 +307,37 @@
                 </div>
                 
                 <div class="mb-2">
+                    <label for="roomCategory">Room Category</label>
+                    <select class="form-select" id="roomCategory" name="room_category">
+                        <option value="living room">Living Room</option>
+                        <option value="bedroom">Bedroom</option>
+                        <option value="kitchen">Kitchen</option>
+                        <option value="bathroom">Bathroom</option>
+                        <option value="dining room">Dining Room</option>
+                        <option value="office">Office</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="mb-2">
+                    <label for="roomSquareFeet">Room Size (Square Feet)</label>
+                    <input type="number" class="form-control" id="roomSquareFeet" name="square_feet" placeholder="Enter room size in sq ft" min="50" max="2000" step="1">
+                </div>
+                
+                <div class="mb-2">
                     <label>Room Dimensions (meters)</label>
                     <div class="row g-2">
                         <div class="col">
-                            <input type="number" class="form-control room-param" id="roomWidth" name="width" placeholder="Width" min="1" max="20" step="0.1" required>
+                            <input type="number" class="form-control room-param" id="roomWidth" name="width" placeholder="Width" min="1" max="20" step="0.1" required readonly>
                         </div>
                         <div class="col">
-                            <input type="number" class="form-control room-param" id="roomLength" name="length" placeholder="Length" min="1" max="20" step="0.1" required>
+                            <input type="number" class="form-control room-param" id="roomLength" name="length" placeholder="Length" min="1" max="20" step="0.1" required readonly>
                         </div>
                         <div class="col">
                             <input type="number" class="form-control room-param" id="roomHeight" name="height" placeholder="Height" min="1" max="5" step="0.1" required>
                         </div>
                     </div>
+                    <small class="text-muted">Width and length will be automatically calculated from square feet</small>
                 </div>
                 
                 <div class="mb-3">
@@ -358,7 +377,35 @@
             hideLoadingShowError('JavaScript error: ' + event.message);
         });
 
-        // Add the getCookie function for CSRF token handling
+        // Add square feet conversion functionality
+        document.getElementById('roomSquareFeet').addEventListener('input', function(e) {
+            const squareFeet = parseFloat(e.target.value);
+            if (squareFeet && squareFeet > 0) {
+                // Convert square feet to square meters
+                const squareMeters = squareFeet * 0.092903;
+                
+                // Calculate width and length maintaining a reasonable aspect ratio
+                // Using square root to get equal sides, then adjusting one dimension by 20%
+                const baseSize = Math.sqrt(squareMeters);
+                const width = baseSize * 0.9;  // Make width slightly smaller
+                const length = baseSize * 1.1; // Make length slightly larger
+                
+                // Update the room dimension inputs
+                document.getElementById('roomWidth').value = width.toFixed(2);
+                document.getElementById('roomLength').value = length.toFixed(2);
+                
+                // If height is not set, set a default height based on square footage
+                const heightInput = document.getElementById('roomHeight');
+                if (!heightInput.value) {
+                    heightInput.value = Math.min(3 + (squareFeet / 500) * 0.5, 5).toFixed(2);
+                }
+                
+                // Update the room instantly
+                updateRoomInstantly();
+            }
+        });
+
+        // Function to get CSRF token from cookies
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -1505,6 +1552,9 @@
                 return;
             }
             
+            // Get room category
+            const roomCategory = document.getElementById('roomCategory').value;
+            
             // Get room dimensions with validation
             let roomWidth, roomLength, roomHeight;
             try {
@@ -1553,6 +1603,7 @@
             // Prepare data for API
             const roomData = {
                 name: roomName,
+                room_category: roomCategory,
                 width: roomWidth,
                 length: roomLength,
                 height: roomHeight,
@@ -1720,6 +1771,9 @@
                 
                 // Add event listener for the refresh button
                 document.getElementById('refreshRoomsBtn').addEventListener('click', fetchUserRooms);
+                
+                // Add event listener for the create new room button
+                document.getElementById('createNewRoomBtn').addEventListener('click', createNewRoom);
                 
                 // Add this function to observe clicks on room elements
                 setupRoomSelectionListeners();
@@ -2917,9 +2971,24 @@
                     
                     // Update form fields with room data
                     document.getElementById('roomName').value = data.room.name;
+                    
+                    // Set room category if available
+                    const roomCategorySelect = document.getElementById('roomCategory');
+                    if (data.room.room_category && roomCategorySelect) {
+                        roomCategorySelect.value = data.room.room_category;
+                    }
+                    
+                    // Calculate and set square feet
+                    const squareMeters = data.room.width * data.room.length;
+                    const squareFeet = Math.round(squareMeters / 0.092903);
+                    document.getElementById('roomSquareFeet').value = squareFeet;
+                    
+                    // Set dimensions (make them readonly since they're calculated from square feet)
                     document.getElementById('roomWidth').value = data.room.width;
                     document.getElementById('roomLength').value = data.room.length;
                     document.getElementById('roomHeight').value = data.room.height;
+                    
+                    // Set colors
                     document.getElementById('wallColor').value = data.room.wall_color;
                     document.getElementById('floorColor').value = data.room.floor_color;
                     document.getElementById('ceilingColor').value = data.room.ceiling_color;
@@ -3083,42 +3152,53 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/virtual-room/delete/${roomId}/`, {
-                        method: 'DELETE',
+                    const csrftoken = getCookie('csrftoken');
+                    
+                    // Use the new POST endpoint
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', csrftoken);
+                    
+                    fetch(`/virtual-room/delete-post/${roomId}/`, {
+                        method: 'POST',
                         headers: {
-                            'X-CSRFToken': getCookie('csrftoken'),
-                            'Content-Type': 'application/json'
-                        }
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: formData
                     })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.status === 'success') {
-                            Swal.fire(
-                                'Deleted!',
-                                'Your room has been deleted.',
-                                'success'
-                            );
-                            
-                            // Refresh the room list
-                            fetchRooms();
-                        } else {
-                            Swal.fire(
-                                'Error!',
-                                data.message || 'Failed to delete room',
-                                'error'
-                            );
-                        }
+                        handleDeleteResponse(data);
                     })
                     .catch(error => {
                         console.error('Error deleting room:', error);
                         Swal.fire(
                             'Error!',
-                            'Failed to delete room: ' + error.message,
+                            'Failed to delete room. Please try again later.',
                             'error'
                         );
                     });
                 }
             });
+        }
+
+        // Helper function to handle delete response
+        function handleDeleteResponse(data) {
+            if (data.success || data.status === 'success') {
+                Swal.fire(
+                    'Deleted!',
+                    'Your room has been deleted.',
+                    'success'
+                );
+                
+                // Refresh the room list
+                fetchRooms();
+            } else {
+                Swal.fire(
+                    'Error!',
+                    data.message || 'Failed to delete room',
+                    'error'
+                );
+            }
         }
 
         // Make sure this function exists to fetch and display rooms
@@ -3298,7 +3378,7 @@
             
             contentContainer.appendChild(modeRow);
             
-            // Add height adjustment controls (NEW)
+            // Add height adjustment controls
             const heightControls = document.createElement('div');
             heightControls.style.display = 'flex';
             heightControls.style.alignItems = 'center';
@@ -3338,6 +3418,48 @@
             heightControls.appendChild(heightValue);
             
             contentContainer.appendChild(heightControls);
+            
+            // Add front/back movement controls
+            const frontBackControls = document.createElement('div');
+            frontBackControls.style.display = 'flex';
+            frontBackControls.style.alignItems = 'center';
+            frontBackControls.style.gap = '8px';
+            frontBackControls.style.marginBottom = '12px';
+            
+            const frontBackLabel = document.createElement('label');
+            frontBackLabel.style.minWidth = '100px';
+            frontBackLabel.style.fontWeight = 'bold';
+            frontBackLabel.textContent = 'Front/Back:';
+            
+            // Get current Z position
+            const currentZ = model.position.z;
+            
+            // Forward button (into the scene)
+            const moveForwardBtn = document.createElement('button');
+            moveForwardBtn.className = 'btn btn-sm btn-outline-secondary';
+            moveForwardBtn.innerHTML = '↓'; // Front direction
+            moveForwardBtn.title = 'Move forward';
+            moveForwardBtn.onclick = () => adjustModelFrontBack(model, 0.1);
+            
+            // Backward button (out of the scene)
+            const moveBackwardBtn = document.createElement('button');
+            moveBackwardBtn.className = 'btn btn-sm btn-outline-secondary';
+            moveBackwardBtn.innerHTML = '↑'; // Back direction
+            moveBackwardBtn.title = 'Move backward';
+            moveBackwardBtn.onclick = () => adjustModelFrontBack(model, -0.1);
+            
+            const frontBackValue = document.createElement('span');
+            frontBackValue.className = 'front-back-value';
+            frontBackValue.style.minWidth = '60px';
+            frontBackValue.style.textAlign = 'center';
+            frontBackValue.textContent = currentZ.toFixed(1) + 'm';
+            
+            frontBackControls.appendChild(frontBackLabel);
+            frontBackControls.appendChild(moveForwardBtn);
+            frontBackControls.appendChild(moveBackwardBtn);
+            frontBackControls.appendChild(frontBackValue);
+            
+            contentContainer.appendChild(frontBackControls);
 
             // Add left/right movement controls
             const horizontalControls = document.createElement('div');
@@ -3525,10 +3647,56 @@
             
             // Add keyboard shortcuts hint
             const shortcutsHint = document.createElement('div');
-            shortcutsHint.className = 'mt-2 text-secondary';
-            shortcutsHint.style.fontSize = '0.8rem';
-            shortcutsHint.innerHTML = 'Keyboard: <span class="key-hint">Q/E</span> Y-rotate <span class="key-hint">A/D</span> X-rotate <span class="key-hint">Z/C</span> Z-rotate <span class="key-hint">W/S</span> Height <span class="key-hint">+/-</span> Scale <span class="key-hint">R</span> Reset <span class="key-hint">Del</span> Delete';
+            shortcutsHint.style.fontSize = '0.75rem';
+            shortcutsHint.style.marginTop = '5px';
+            shortcutsHint.style.color = '#555';
+            shortcutsHint.style.textAlign = 'center';
+            shortcutsHint.innerHTML = 'Keyboard: <span class="key-hint">Q/E</span> Y-rotate <span class="key-hint">A/D</span> X-rotate <span class="key-hint">Z/C</span> Z-rotate <span class="key-hint">W/S</span> Height <span class="key-hint">I/K</span> Front/Back <span class="key-hint">+/-</span> Scale <span class="key-hint">R</span> Reset <span class="key-hint">Del</span> Delete';
             contentContainer.appendChild(shortcutsHint);
+            
+            // Add keyboard shortcuts info
+            const keyboardHelpContainer = document.createElement('div');
+            keyboardHelpContainer.style.margin = '10px 0';
+            keyboardHelpContainer.style.padding = '8px';
+            keyboardHelpContainer.style.backgroundColor = 'rgba(0,0,0,0.05)';
+            keyboardHelpContainer.style.borderRadius = '5px';
+            keyboardHelpContainer.style.fontSize = '0.85rem';
+            
+            const keyboardHelpTitle = document.createElement('div');
+            keyboardHelpTitle.style.fontWeight = 'bold';
+            keyboardHelpTitle.style.marginBottom = '5px';
+            keyboardHelpTitle.textContent = 'Keyboard Shortcuts:';
+            keyboardHelpContainer.appendChild(keyboardHelpTitle);
+            
+            const shortcutsList = document.createElement('div');
+            shortcutsList.style.display = 'grid';
+            shortcutsList.style.gridTemplateColumns = '80px 1fr';
+            shortcutsList.style.rowGap = '3px';
+            
+            const shortcuts = [
+                { key: 'W / S', action: 'Move Up/Down' },
+                { key: 'I / K', action: 'Move Forward/Back' },
+                { key: 'Q / E', action: 'Rotate Y-axis' },
+                { key: 'R', action: 'Reset transformations' }
+            ];
+            
+            shortcuts.forEach(shortcut => {
+                const keySpan = document.createElement('span');
+                keySpan.style.fontFamily = 'monospace';
+                keySpan.style.backgroundColor = 'rgba(255,255,255,0.7)';
+                keySpan.style.padding = '2px 5px';
+                keySpan.style.borderRadius = '3px';
+                keySpan.textContent = shortcut.key;
+                
+                const actionSpan = document.createElement('span');
+                actionSpan.textContent = shortcut.action;
+                
+                shortcutsList.appendChild(keySpan);
+                shortcutsList.appendChild(actionSpan);
+            });
+            
+            keyboardHelpContainer.appendChild(shortcutsList);
+            contentContainer.appendChild(keyboardHelpContainer);
             
             // Append the panel to the scene container
             document.getElementById('scene-container').appendChild(panel);
@@ -4148,9 +4316,16 @@
             
             // Clear form fields
             document.getElementById('roomName').value = '';
-            document.getElementById('roomWidth').value = '5';
-            document.getElementById('roomLength').value = '5';
-            document.getElementById('roomHeight').value = '3';
+            document.getElementById('roomCategory').value = 'living room';
+            document.getElementById('roomSquareFeet').value = '200'; // Set default square feet
+            document.getElementById('roomWidth').value = '';
+            document.getElementById('roomLength').value = '';
+            document.getElementById('roomHeight').value = '';
+            
+            // Trigger the square feet calculation
+            document.getElementById('roomSquareFeet').dispatchEvent(new Event('input'));
+            
+            // Reset colors
             document.getElementById('wallColor').value = '#FFFFFF';
             document.getElementById('floorColor').value = '#FFFFFF';
             document.getElementById('ceilingColor').value = '#FFFFFF';
@@ -4163,11 +4338,11 @@
             // Reset current room ID
             currentRoomId = null;
             
-            // Update room object with default values
+            // Update room object with default values (will be set by square feet calculation)
             room = {
-                width: 5,
-                length: 5,
-                height: 3,
+                width: parseFloat(document.getElementById('roomWidth').value),
+                length: parseFloat(document.getElementById('roomLength').value),
+                height: parseFloat(document.getElementById('roomHeight').value),
                 wallColor: '#FFFFFF',
                 floorColor: '#FFFFFF',
                 ceilingColor: '#FFFFFF'
@@ -4641,6 +4816,126 @@
         }
 
         // ... existing code ...
+
+        // Add front/back movement function
+        function adjustModelFrontBack(model, amount) {
+            // Forward is positive Z, backward is negative Z
+            model.position.z += amount;
+            
+            // Update UI if the panel exists
+            const panel = document.getElementById('transform-controls-panel');
+            if (panel) {
+                // Find the front/back position text and update it
+                const positionText = panel.querySelector('.front-back-value');
+                if (positionText) {
+                    positionText.textContent = model.position.z.toFixed(1) + 'm';
+                }
+            }
+            
+            // Show status message
+            showStatus(`Moved ${amount > 0 ? 'forward' : 'backward'} by ${Math.abs(amount)}m`);
+        }
+        
+        // Update keydown event handler to include front/back movement
+        document.addEventListener('keydown', function(event) {
+            // Delete key pressed with a selected object
+            if ((event.key === 'Delete' || event.key === 'Del') && lastSelectedObject) {
+                // Delete the selected object
+                deleteObject(lastSelectedObject);
+            }
+            
+            // Check if Escape key is pressed
+            if (event.key === 'Escape') {
+                hideTransformControls();
+                // Make sure orbit controls are re-enabled
+                controls.enabled = true;
+            }
+            
+            // Only process other keyboard shortcuts if we have a last selected object
+            if (!lastSelectedObject) return;
+            
+            // Rotation - use Q/E for Y-axis, A/D for X-axis, Z/C for Z-axis
+            const rotationAmount = THREE.MathUtils.degToRad(15);
+            
+            switch(event.key.toLowerCase()) {
+                // Height adjustment (up/down)
+                case 'w': 
+                    adjustModelHeight(lastSelectedObject, 0.1);
+                    break;
+                case 's': 
+                    adjustModelHeight(lastSelectedObject, -0.1);
+                    break;
+                    
+                // Front/back movement (forward/backward)
+                case 'i': // Forward
+                    adjustModelFrontBack(lastSelectedObject, 0.1);
+                    break;
+                case 'k': // Backward
+                    adjustModelFrontBack(lastSelectedObject, -0.1);
+                    break;
+                    
+                // Rotation controls
+                case 'q': 
+                    rotateModel(lastSelectedObject, 'y', -15);
+                    break;
+                case 'e': 
+                    rotateModel(lastSelectedObject, 'y', 15);
+                    break;
+                case 'a': 
+                    rotateModel(lastSelectedObject, 'x', -15);
+                    break;
+                case 'd': 
+                    rotateModel(lastSelectedObject, 'x', 15);
+                    break;
+                case 'z': 
+                    rotateModel(lastSelectedObject, 'z', -15);
+                    break;
+                case 'c': 
+                    rotateModel(lastSelectedObject, 'z', 15);
+                    break;
+                
+                // Scale controls
+                case '+':
+                case '=': // Same key on most keyboards
+                    scaleModel(lastSelectedObject, 1.1);
+                    break;
+                case '-':
+                    scaleModel(lastSelectedObject, 0.9);
+                    break;
+                
+                // Reset transformations with R
+                case 'r':
+                    lastSelectedObject.rotation.set(0, 0, 0);
+                    lastSelectedObject.scale.set(1, 1, 1);
+                    
+                    // Reset height to floor level (NEW)
+                    const bbox = new THREE.Box3().setFromObject(lastSelectedObject);
+                    const bottomY = bbox.min.y;
+                    lastSelectedObject.position.y = -bottomY;
+                    
+                    showStatus('Transformations reset');
+                    
+                    // Update UI if panel exists
+                    const panel = document.getElementById('transform-controls-panel');
+                    if (panel) {
+                        const scaleInput = panel.querySelector('input[type="range"]');
+                        const scaleValue = panel.querySelector('span');
+                        const heightInput = panel.querySelector('input[type="range"]:not([min="0.1"])');
+                        const heightValue = panel.querySelector('label:contains("Height:") + button + input + button + span');
+                        
+                        if (scaleInput && scaleValue) {
+                            scaleInput.value = 1;
+                            scaleValue.textContent = '1.0x';
+                        }
+                        
+                        if (heightInput && heightValue) {
+                            heightInput.value = lastSelectedObject.position.y;
+                            heightValue.textContent = lastSelectedObject.position.y.toFixed(1) + 'm';
+                        }
+                    }
+                    break;
+            }
+        });
     </script>
 </body>
 </html>

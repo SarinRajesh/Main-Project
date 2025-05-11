@@ -3504,6 +3504,7 @@ def get_rooms(request, room_id=None):
                 rooms_data.append({
                     'id': room.id,
                     'name': room.name,
+                    'room_category': room.room_category,
                     'width': float(room.width),
                     'length': float(room.length),
                     'height': float(room.height),
@@ -3531,6 +3532,7 @@ def get_rooms(request, room_id=None):
                 'room': {
                     'id': room.id,
                     'name': room.name,
+                    'room_category': room.room_category,
                     'width': float(room.width),
                     'length': float(room.length),
                     'height': float(room.height),
@@ -3586,20 +3588,24 @@ def get_rooms(request, room_id=None):
 @login_required
 @require_http_methods(["DELETE"])
 def delete_room(request, room_id):
+    """Delete a virtual room by ID."""
     try:
         room = VirtualRoom.objects.get(id=room_id, user=request.user)
         room.delete()
         return JsonResponse({
+            'success': True,
             'status': 'success',
             'message': 'Room deleted successfully'
         })
     except VirtualRoom.DoesNotExist:
         return JsonResponse({
+            'success': False,
             'status': 'error',
-            'message': 'Room not found'
+            'message': 'Room not found or you do not have permission to delete it'
         }, status=404)
     except Exception as e:
         return JsonResponse({
+            'success': False,
             'status': 'error',
             'message': str(e)
         }, status=400)
@@ -3622,6 +3628,9 @@ def save_room(request, room_id=None):
         name = data.get('name')
         if not name:
             return JsonResponse({'success': False, 'message': 'Room name is required'}, status=400)
+            
+        # Get room category
+        room_category = data.get('room_category', 'living room')
             
         # Get or validate numeric values
         try:
@@ -3655,6 +3664,7 @@ def save_room(request, room_id=None):
                 room = VirtualRoom.objects.get(id=room_id, user=request.user)
                 # Update existing room
                 room.name = name
+                room.room_category = room_category
                 room.width = width
                 room.length = length
                 room.height = height
@@ -3678,6 +3688,7 @@ def save_room(request, room_id=None):
             
             if existing_room:
                 # Update existing room with the same name
+                existing_room.room_category = room_category
                 existing_room.width = width
                 existing_room.length = length
                 existing_room.height = height
@@ -3696,6 +3707,7 @@ def save_room(request, room_id=None):
                 room = VirtualRoom.objects.create(
                     user=request.user,
                     name=name,
+                    room_category=room_category,
                     width=width,
                     length=length,
                     height=height,
@@ -4003,4 +4015,30 @@ def update_user_status(request):
             return redirect('customers_table')
     
     return redirect('customers_table')
+
+@login_required
+@csrf_exempt
+@require_POST
+def delete_room_post(request, room_id):
+    """Delete a virtual room by ID using POST method."""
+    try:
+        room = VirtualRoom.objects.get(id=room_id, user=request.user)
+        room.delete()
+        return JsonResponse({
+            'success': True,
+            'status': 'success',
+            'message': 'Room deleted successfully'
+        })
+    except VirtualRoom.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'status': 'error',
+            'message': 'Room not found or you do not have permission to delete it'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
 
