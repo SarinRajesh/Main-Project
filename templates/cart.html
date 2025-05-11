@@ -184,7 +184,15 @@
                                                     <div class="row">
                                                         <div class="col-md-10">
                                                             <p>
-                                                                <button class="btn btn-sm out-of-stock-btn" style="background-color:#ff0000;color:#ffffff;cursor:not-allowed;padding:5px 10px;font-size:12px;border:none;{% if item.product_id.stock == 0 %}display:inline-block;{% else %}display:none;{% endif %}" disabled>Out of Stock</button>
+                                                                <button class="btn btn-sm out-of-stock-btn" 
+                                                                    style="background-color:#ff0000;
+                                                                          color:#ffffff;
+                                                                          cursor:not-allowed;
+                                                                          padding:5px 10px;
+                                                                          font-size:12px;
+                                                                          border:none;
+                                                                          display:{% if item.product_id.stock == 0 %}inline-block{% else %}none{% endif %};" 
+                                                                    disabled>Out of Stock</button>
                                                             </p>
                                                         </div>
                                                         <div class="col-md-2"><a href="{% url 'remove_from_cart' item.id %}" class="pr-remove"><i class="fa fa-times"></i></a></div>
@@ -233,7 +241,14 @@
                                         });
                             
                                         function checkProfileCompleteness() {
-                                            return {% if user.address and user.home_town and user.state and user.district and user.pincode %}true{% else %}false{% endif %};
+                                            // Convert Django template variables to JavaScript
+                                            const hasAddress = '{{ user.address }}' !== '';
+                                            const hasHomeTown = '{{ user.home_town }}' !== '';
+                                            const hasState = '{{ user.state }}' !== '';
+                                            const hasDistrict = '{{ user.district }}' !== '';
+                                            const hasPincode = '{{ user.pincode }}' !== '';
+                                            
+                                            return hasAddress && hasHomeTown && hasState && hasDistrict && hasPincode;
                                         }
                             
                                         function initializeRazorpay() {
@@ -258,6 +273,7 @@
                                                         url: '{% url "create_order_from_cart" %}',
                                                         type: 'POST',
                                                         data: {
+                                                            'delivery_charge': 80,
                                                             'csrfmiddlewaretoken': '{{ csrf_token }}'
                                                         },
                                                         success: function(data) {

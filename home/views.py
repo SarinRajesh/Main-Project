@@ -1136,6 +1136,9 @@ def create_order_from_cart(request):
             if not cart_items.exists():
                 return JsonResponse({'status': 'error', 'message': 'Your cart is empty'}, status=400)
             
+            # Get delivery charge from request
+            delivery_charge = int(request.POST.get('delivery_charge', 80))
+            
             # Get all delivery boys in the same pincode as the customer
             delivery_boys = Users.objects.filter(
                 user_type_id__user_type='Delivery_boy',
